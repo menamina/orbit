@@ -3,7 +3,7 @@ import { express } from "express";
 
 const server = express();
 const port = process.env.PORT;
-const router = require("./routes");
+const routes = require("./routes");
 
 function handleError(error) {
   if (error) {
@@ -12,7 +12,7 @@ function handleError(error) {
   }
   console.log(`yay :-)`);
 }
-
+server.use("/", routes);
 server.listen(port, handleError);
 
 module.exports = server;
