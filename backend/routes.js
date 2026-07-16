@@ -10,7 +10,7 @@ router.get("/api/month/:month/:year");
 router.post("/api/track/pill");
 router.delete("/api/track/pill/delete/:pillID");
 
-// ======== CYCLEs ======== \\
+// ======== CYCLE ======== \\
 router.post("/api/track/period");
 router.delete("/api/track/pill/delete/:pillID");
 

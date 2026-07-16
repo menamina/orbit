@@ -1,0 +1,33 @@
+
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+}
+
+model AccountSettings {
+  id Int @id @default(autoincrement())
+
+}
+
+model PillTracking {
+    id Int @id @default(autoincrement())
+
+}
+
+model CycleTracking {
+    id Int @id @default(autoincrement())
+
+}
+
+model Notes {
+    id Int @id @default(autoincrement())
+
+}
