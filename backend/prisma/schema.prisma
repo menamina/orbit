@@ -32,7 +32,7 @@ model AccountSettings {
 model CycleTracking {
     id Int @id @default(autoincrement())
     userID Int @unique
-    month String
+    month Int
     year Int
     startDate Int
     endDate Int
@@ -46,7 +46,7 @@ model CycleTracking {
 model PillTracking {
     id Int @id @default(autoincrement())
     userID Int @unique
-    month String
+    month Int
     year Int
     daysTaken Int[]
 
@@ -58,6 +58,10 @@ model PillTracking {
 model Notes {
     id Int @id @default(autoincrement())
     userID Int @unique
+    month Int
+    day Int
+    year Int
+    note String
 
     user User @relation(fields: [userID], references: [id])
 
