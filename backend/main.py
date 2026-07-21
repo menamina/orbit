@@ -27,4 +27,3 @@ router = FastAPI()
 
 # ======== DLT ACC ======== 
 @router.delete("/api/delete/account")
-
