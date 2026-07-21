@@ -9,25 +9,56 @@ datasource db {
 
 model User {
   id Int @id @default(autoincrement())
+  settings AccountSettings?
+  cycle CycleTracking[]
+  birthControl PillTracking[]
+  notes Notes[]
 
 }
 
 model AccountSettings {
   id Int @id @default(autoincrement())
+  userID Int @unique
+  username String
+  email String
+  saltedHash String
+  cycleAvg Int
+  periodAvg Int
 
-}
-
-model PillTracking {
-    id Int @id @default(autoincrement())
+  user User @relation(fields: [userID], references: [id])
 
 }
 
 model CycleTracking {
     id Int @id @default(autoincrement())
+    userID Int @unique
+    month String
+    year Int
+    startDate Int
+    endDate Int
+    predictions Int
+
+
+    user User @relation(fields: [userID], references: [id])
 
 }
 
+model PillTracking {
+    id Int @id @default(autoincrement())
+    userID Int @unique
+    month String
+    year Int
+    daysTaken Int[]
+
+    user User @relation(fields: [userID], references: [id])
+
+}
+
+
 model Notes {
     id Int @id @default(autoincrement())
+    userID Int @unique
+
+    user User @relation(fields: [userID], references: [id])
 
 }
