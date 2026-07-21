@@ -5,6 +5,8 @@ router = FastAPI()
 @router.get("/")
 
 @router.get("/api/login")
+@router.get("/api/signup")
+@router.get("/api/logout")
 
 @router.get("/api/month/:month/:year")
 
