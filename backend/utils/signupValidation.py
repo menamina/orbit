@@ -1,41 +1,17 @@
-const { body, validationResult } = require("express-validator");
+from pydantic import BaseModel, EmailStr
 
-const validation = [
-  body("name").trim().notEmpty().withMessage("Name required"),
-  body("username")
-    .trim()
-    .notEmpty()
-    .withMessage("Username required")
-    .matches(/^[a-zA-Z0-9_-]+$/)
-    .withMessage("Username can only contain letters, numbers, _ or -")
-    .isLength({ min: 3, max: 30 })
-    .withMessage("Username must be between 3 and 30 characters"),
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("An email is required")
-    .isEmail()
-    .withMessage("Valid email required"),
-  body("password")
-    .trim()
-    .notEmpty()
-    .withMessage("Password required")
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters"),
-  body("confirmPassword").custom((value, { req }) => {
-    if (value !== req.body.password) {
-      throw new Error("Passwords must match");
-    }
-    return true;
-  }),
+class SignupValidator(BaseModel):
+    username: str
+    email: str
+    password: str
+    confirmPassword: str
 
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (errors.isEmpty()) {
-      return next();
-    }
-    return res.status(400).json({ validationErrors: errors.array() });
-  },
-];
+    @field_validator("confirmPassword")
+    def matchingPasswords(cls, currentValue, info):
+        if "password" in info.data and currentValue != info.data["password"]:
+            raise ValueError["Passwords must be the same"]
+        return currentValue 
 
-module.exports = validation;
+# cls - current class we are validating
+# currentValue or V - current value we are validating in @field_validator
+# info // info.data all the currently validated fields in this class up until this point of custom validator

@@ -1,8 +1,19 @@
 from fastapi import APIRouter
 
+from controls import loginSignup
+
+from utils import isAuth
+from utils.signupValidation import SignupValidator
+
 router = APIRouter()
 
-@router.get("/api/signup")
+@router.get("/")
+
+@router.post("/api/signup")
+def signup(signupData: SignupValidator):
+    return loginSignup.signup_user(signupData)
+
+
 @router.get("/api/login")
 @router.get("/api/logout")
 
