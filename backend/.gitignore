@@ -1,3 +1,11 @@
 node_modules/
 .env
 /generated/prisma
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+/generated/prisma
