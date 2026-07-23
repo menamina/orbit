@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,3 +5,49 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id            Int             @id @default(autoincrement())
+  username      String          @unique
+  name          String
+  settings      Settings?
+  cycleTracking CycleTracking[]
+  pillTracking  PillTracking[]
+  notes         Notes[]
+}
+
+model Settings {
+  id        Int      @id @default(autoincrement())
+  userID    Int      @unique
+  email     String
+  saltedHash String
+
+  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+}
+
+model CycleTracking {
+  id        Int      @id @default(autoincrement())
+  userID    Int
+  date DateTime @default(now())
+
+
+  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+}
+
+model PillTracking {
+  id        Int      @id @default(autoincrement())
+  userID    Int
+  date DateTime @default(now())
+
+
+  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+}
+
+model Notes {
+  id        Int      @id @default(autoincrement())
+  userID    Int
+  date DateTime @default(now())
+
+  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+}
+
