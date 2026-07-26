@@ -1,9 +1,10 @@
 require("dotenv").config();
-import { express } from "express";
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const routes = require("./router/routes");
 
 const server = express();
 const port = process.env.PORT;
-const routes = require("./routes");
 
 function handleError(error) {
   if (error) {
@@ -12,7 +13,11 @@ function handleError(error) {
   }
   console.log(`yay :-)`);
 }
+
+server.use(express.json());
+server.use(cookieParser());
 server.use("/", routes);
+
 server.listen(port, handleError);
 
 module.exports = server;

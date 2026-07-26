@@ -15,15 +15,15 @@ import { checkAuth } from "../utils/checkToken";
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth);
-router.get("/api/checkRefreshToken", refreshToken);
+router.post("/api/checkRefreshToken", refreshToken);
 
 router.get("/api/signup/isUsernameInUse", usernameInUse);
 router.get("/api/signup/isEmailInUse", emailInUse);
-router.get("/api/signup", signup);
+router.post("/api/signup", signup);
 
-router.get("/api/login", login);
-router.get("/api/logout", logout);
-router.get("/api/logoutEverywhere", logoutEverywhere);
+router.post("/api/login", login);
+router.post("/api/logout", logout);
+router.post("/api/logoutEverywhere", logoutEverywhere);
 
 // ======== PILL ======== \\
 router.get("/api/pill/:month/:year", checkAuth);
