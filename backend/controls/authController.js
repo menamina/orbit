@@ -1,4 +1,5 @@
 const prisma = require("../prisma/client");
+import { deleteAllRefreshTokens } from "../auth/jwt";
 import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 
 async function login(req, res) {
@@ -108,8 +109,13 @@ async function logout(req, res){
   return res.json({ message: 'Logged out successfully' });
 }
 
+async function logoutEverywhere(req, res){
+  const userID = Number(req.user.userID);
+  deleteAllRefreshTokens(userID)
+  res.clearCookie('refreshToken');
+  return res.json({ message: 'Logged out from all devices' });
 
-
+}
 
 function refreshToken(req, res){
   try {
@@ -149,5 +155,7 @@ module.exports = {
   usernameInUse,
   emailInUse,
   signup,
-  refreshToken
+  refreshToken,
+  logout,
+  logoutEverywhere
 };

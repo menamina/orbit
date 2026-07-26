@@ -69,7 +69,7 @@ async function deleteRefreshToken(token) {
   }
 }
 
-async function deleteAllRefreshTokens(userId) {
+async function deleteAllRefreshTokens(userID) {
   try {
     await prisma.refreshToken.deleteMany({
       where: { userID: userID },

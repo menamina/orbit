@@ -7,6 +7,7 @@ import {
   signup,
   refreshToken,
   logout,
+  logoutEverywhere,
 } from "../controls/authController";
 
 import { checkAuth } from "../utils/checkToken";
@@ -22,6 +23,7 @@ router.get("/api/signup", signup);
 
 router.get("/api/login", login);
 router.get("/api/logout", logout);
+router.get("/api/logoutEverywhere", logoutEverywhere);
 
 // ======== PILL ======== \\
 router.get("/api/pill/:month/:year", checkAuth);
