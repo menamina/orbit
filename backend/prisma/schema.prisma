@@ -8,8 +8,9 @@ datasource db {
 
 model User {
   id            Int             @id @default(autoincrement())
-  username      String          @unique
   name          String
+  username      String          @unique
+  email         String          @unique
   settings      Settings?
   cycleTracking CycleTracking[]
   pillTracking  PillTracking[]
@@ -19,8 +20,10 @@ model User {
 model Settings {
   id        Int      @id @default(autoincrement())
   userID    Int      @unique
-  email     String
   saltedHash String
+  cycleLength Int
+  daysBetweenPeriod Int
+  predictionAlg  String?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
@@ -28,10 +31,12 @@ model Settings {
 model CycleTracking {
   id        Int      @id @default(autoincrement())
   userID    Int
-  date DateTime @default(now())
-
+  startDate      DateTime
+  endDate        DateTime?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+
+  @@index([userID, startDate])
 }
 
 model PillTracking {
@@ -41,13 +46,16 @@ model PillTracking {
 
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  @@index([userID, date]) 
 }
 
 model Notes {
   id        Int      @id @default(autoincrement())
   userID    Int
   date DateTime @default(now())
+  note String
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  @@index([userID, date]) 
 }
 
