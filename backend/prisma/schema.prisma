@@ -20,17 +20,16 @@ model User {
 }
 
 model RefreshToken {
-  id        Int   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   token     String   @unique
   userID    Int
   expiresAt DateTime
   createdAt DateTime @default(now())
-  
+
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
-  
+
   @@index([token])
   @@index([userID])
-
 }
 
 model Settings {
