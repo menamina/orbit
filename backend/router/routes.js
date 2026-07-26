@@ -1,9 +1,19 @@
 const express = require("express");
 const router = express.Router();
+import {
+  login,
+  usernameInUse,
+  emailInUse,
+  signup,
+} from "../controls/authController";
+
+// ======== AUTH ======== \\
 
 router.get("/");
-router.get("/api/signup");
-router.get("/api/login");
+router.get("/api/signup/isUsernameInUse", usernameInUse);
+router.get("/api/signup/isEmailInUse", emailInUse);
+router.get("/api/signup", signup);
+router.get("/api/login", login);
 router.get("/api/logout");
 
 // ======== PILL ======== \\

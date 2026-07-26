@@ -15,6 +15,22 @@ model User {
   cycleTracking CycleTracking[]
   pillTracking  PillTracking[]
   notes         Notes[]
+
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        Int   @id @default(uuid())
+  token     String   @unique
+  userID    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userID])
+
 }
 
 model Settings {
