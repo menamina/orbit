@@ -5,6 +5,7 @@ import {
   usernameInUse,
   emailInUse,
   signup,
+  refreshToken,
 } from "../controls/authController";
 
 import { checkAuth } from "../utils/checkToken";
@@ -12,30 +13,33 @@ import { checkAuth } from "../utils/checkToken";
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth);
+router.get("/api/checkRefreshToken", refreshToken);
+
 router.get("/api/signup/isUsernameInUse", usernameInUse);
 router.get("/api/signup/isEmailInUse", emailInUse);
 router.get("/api/signup", signup);
+
 router.get("/api/login", login);
 router.get("/api/logout");
 
 // ======== PILL ======== \\
-router.get("/api/pill/:month/:year");
-router.post("/api/track/pill");
-router.delete("/api/track/pill/delete/:pillID");
+router.get("/api/pill/:month/:year", checkAuth);
+router.post("/api/track/pill", checkAuth);
+router.delete("/api/track/pill/delete/:pillID", checkAuth);
 
 // ======== CYCLEs ======== \\
-router.get("/api/cycle/:month/:year");
+router.get("/api/cycle/:month/:year", checkAuth);
 router.post("/api/track/period");
-router.delete("/api/track/pill/delete/:pillID");
+router.delete("/api/track/pill/delete/:pillID", checkAuth);
 
 // ======== SETTINGS ======== \\
-router.get("/api/settings");
-router.patch("/api/update/icon");
-router.patch("/api/update/color");
-router.patch("/api/update/password");
-router.patch("/api/update/email");
+router.get("/api/settings", checkAuth);
+router.patch("/api/update/icon", checkAuth);
+router.patch("/api/update/color", checkAuth);
+router.patch("/api/update/password", checkAuth);
+router.patch("/api/update/email", checkAuth);
 
 // ======== DLT ACC ======== \\
-router.delete("/api/delete/account");
+router.delete("/api/delete/account", checkAuth);
 
 module.exports = router;

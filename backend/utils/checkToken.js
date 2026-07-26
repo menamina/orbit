@@ -1,6 +1,6 @@
 import { verifyAccessToken } from "../auth/jwt.js";
 
-export function checkAuth(req, res) {
+export function checkAuth(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -14,11 +14,10 @@ export function checkAuth(req, res) {
     return res.status(401).json({ authenticated: false });
   }
 
-  return res.status(200).json({
-    authenticated: true,
-    user: {
-      userID: decoded.userID,
-      email: decoded.email,
-    },
-  });
+  req.user = {
+    userID: decoded.userID,
+    email: decoded.email,
+  };
+
+  next();
 }
