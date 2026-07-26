@@ -10,7 +10,9 @@ async function login(req, res) {
       },
       include: {
         settings: {
-          select: saltedHash,
+          select: {
+            saltedHash: true,
+          },
         },
       },
     });

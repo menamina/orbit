@@ -7,9 +7,11 @@ import {
   signup,
 } from "../controls/authController";
 
+import { checkAuth } from "../utils/checkToken";
+
 // ======== AUTH ======== \\
 
-router.get("/");
+router.get("/", checkAuth);
 router.get("/api/signup/isUsernameInUse", usernameInUse);
 router.get("/api/signup/isEmailInUse", emailInUse);
 router.get("/api/signup", signup);
