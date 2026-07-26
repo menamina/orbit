@@ -6,6 +6,7 @@ import {
   emailInUse,
   signup,
   refreshToken,
+  logout,
 } from "../controls/authController";
 
 import { checkAuth } from "../utils/checkToken";
@@ -20,7 +21,7 @@ router.get("/api/signup/isEmailInUse", emailInUse);
 router.get("/api/signup", signup);
 
 router.get("/api/login", login);
-router.get("/api/logout");
+router.get("/api/logout", logout);
 
 // ======== PILL ======== \\
 router.get("/api/pill/:month/:year", checkAuth);

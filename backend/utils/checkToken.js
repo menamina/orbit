@@ -14,10 +14,5 @@ export function checkAuth(req, res, next) {
     return res.status(401).json({ authenticated: false });
   }
 
-  req.user = {
-    userID: decoded.userID,
-    email: decoded.email,
-  };
-
   next();
 }

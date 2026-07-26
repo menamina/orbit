@@ -97,10 +97,24 @@ async function signup(req, res) {
   }
 }
 
+async function logout(req, res){
+  const { refreshToken } = req.cookies;
+  
+  if (refreshToken) {
+    await deleteRefreshToken(refreshToken); 
+  }
+  
+  res.clearCookie('refreshToken');  
+  return res.json({ message: 'Logged out successfully' });
+}
+
+
+
+
 function refreshToken(req, res){
   try {
-     const { refreshToken } = req.cookies;
-     // ^ sent by browser w http
+  const { refreshToken } = req.cookies;
+  // ^ sent by browser w http
   
   if (!refreshToken) {
     return res.status(401).json({ error: 'No refresh token' });
