@@ -6,13 +6,13 @@ router.get("/api/signup");
 router.get("/api/login");
 router.get("/api/logout");
 
-router.get("/api/month/:month/:year");
-
 // ======== PILL ======== \\
+router.get("/api/pill/:month/:year");
 router.post("/api/track/pill");
 router.delete("/api/track/pill/delete/:pillID");
 
 // ======== CYCLEs ======== \\
+router.get("/api/cycle/:month/:year");
 router.post("/api/track/period");
 router.delete("/api/track/pill/delete/:pillID");
 
