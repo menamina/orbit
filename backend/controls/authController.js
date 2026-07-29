@@ -145,7 +145,8 @@ function refreshToken(req, res){
   
   return res.json({ accessToken: newAccessToken });
   } catch(error){
-
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
   }
 
 }

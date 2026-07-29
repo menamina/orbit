@@ -14,7 +14,9 @@ import { checkAuth } from "../utils/checkToken";
 
 // ======== AUTH ======== \\
 
-router.get("/", checkAuth);
+router.get("/", checkAuth, (req, res) => {
+  res.json({ authenticated: true });
+});
 router.post("/api/checkRefreshToken", refreshToken);
 
 router.get("/api/signup/isUsernameInUse", usernameInUse);

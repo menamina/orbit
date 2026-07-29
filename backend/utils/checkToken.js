@@ -11,7 +11,7 @@ export function checkAuth(req, res, next) {
   const decoded = verifyAccessToken(token);
 
   if (!decoded) {
-    return res.status(401).json({ authenticated: false });
+    return res.status(403).json({ accessTokenExpired: true });
   }
 
   req.user = {

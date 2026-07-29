@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 // --------- TANSTACK QUERY OPTIONS --------- \\
 
-export const authenticateQuery = (accessToken) => {
+export const authenticateQuery = (accessToken: string) => {
   return queryOptions({
     queryKey: ["auth", accessToken],
     queryFn: () => checkAuth(accessToken),
@@ -12,7 +12,7 @@ export const authenticateQuery = (accessToken) => {
 
 // --------- API CALLS --------- \\
 
-async function checkAuth(accessToken) {
+async function checkAuth(accessToken: string) {
   const res = await fetch(`http://localhost:5555/`, {
     method: "GET",
     headers: {
