@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { TextField } from "@mui/material";
 
 interface LoginInfo {
   email: string;
@@ -16,7 +17,7 @@ interface SignupInfo {
 }
 
 function Login() {
-  const [toggle, setToggle] = useState<boolean>(false);
+  const [toggle, setToggle] = useState("login");
   const [loginInfo, setloginInfo] = useState<LoginInfo>({
     email: "",
     password: "",
@@ -28,6 +29,13 @@ function Login() {
     password: "",
     confirmPassword: "",
   });
+
+  return (
+    <>
+      {toggle === "login" && <div></div>}
+      {toggle === "signup" && <div></div>}
+    </>
+  );
 }
 
 export default Login;
