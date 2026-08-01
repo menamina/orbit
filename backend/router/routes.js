@@ -33,15 +33,20 @@ router.post("/api/signup", signup);
 router.post("/api/login", login);
 
 // GitHub OAuth - Initiate authentication
-router.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+router.get(
+  "/auth/github",
+  passport.authenticate("github", { scope: ["user:email"] }),
+);
 
 // GitHub OAuth - Callback after GitHub authentication
 router.get(
   "/auth/github/callback",
-  passport.authenticate("github", { failureRedirect: "/login", session: false }),
+  passport.authenticate("github", {
+    failureRedirect: "/login",
+    session: false,
+  }),
   async (req, res) => {
     try {
-      // req.user comes from passport strategy
       const user = req.user;
 
       // Generate JWT tokens
@@ -51,7 +56,6 @@ router.get(
       // Store refresh token
       await storeRefreshToken(user.id, refreshTokenValue);
 
-      // Set refresh token as httpOnly cookie
       res.cookie("refreshToken", refreshTokenValue, {
         httpOnly: true,
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
@@ -59,12 +63,14 @@ router.get(
 
       // Redirect to frontend with access token
       // Frontend will extract token from URL and store it
-      res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${accessToken}`);
+      res.redirect(
+        `${process.env.FRONTEND_URL}/auth/callback?token=${accessToken}`,
+      );
     } catch (error) {
       console.error("OAuth callback error:", error);
       res.redirect("/login?error=oauth_failed");
     }
-  }
+  },
 );
 
 router.post("/api/logout", logout);
