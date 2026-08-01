@@ -35,7 +35,8 @@ passport.use(
           return done(null, existingAccount.user);
         }
 
-        const email = profile.emails?.[0]?.value || `${profile.username}@github.local`;
+        const email =
+          profile.emails?.[0]?.value || `${profile.username}@github.local`;
         const name = profile.displayName || profile.username;
         const githubUsername = profile.username;
 
@@ -48,7 +49,7 @@ passport.use(
           // User exists - link this GitHub account to existing user
           await prisma.account.create({
             data: {
-              userId: user.id,
+              userID: user.id,
               provider: "github",
               providerId: profile.id,
             },
@@ -88,8 +89,8 @@ passport.use(
         console.error("GitHub OAuth error:", error);
         return done(error, null);
       }
-    }
-  )
+    },
+  ),
 );
 
 export default passport;
