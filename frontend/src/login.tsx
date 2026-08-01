@@ -3,7 +3,10 @@ import { useNavigation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { TextField, Button } from "@mui/material";
 
-import {checkIfUsernameIsInUser, checkIfEmailIsInUse} from "./tanstack/authTS"
+import {
+  checkIfUsernameIsInUser,
+  checkIfEmailIsInUse,
+} from "./tanstack/authTS";
 
 interface LoginInfo {
   email: string;
@@ -43,52 +46,47 @@ function Login() {
 
   // --------- TANSTACK --------- \\
 
-  // debounce useQuery for searching for usernames + emails \\
-  
   //  mutations for logging in + signing up \\
 
-  const {
-    data: userNameSignupQuery,
-    error: usernameInUse,
-  } = useQuery(checkIfUsernameIsInUser(usernameQuery))
+  const { data: loginMutation, error: loginError } = useMutation({});
 
-    const {
-    data: emailSignupQuery,
-    error: emailInUse,
-  } = useQuery(checkIfEmailIsInUse(emailQuery))
+  const { data: signupMutation, error: signupError } = useMutation({});
 
+  // debounce useQuery for searching for usernames + emails \\
+
+  const { data: userNameSignupQuery, error: usernameInUse } = useQuery(
+    checkIfUsernameIsInUser(usernameQuery),
+  );
+
+  const { data: emailSignupQuery, error: emailInUse } = useQuery(
+    checkIfEmailIsInUse(emailQuery),
+  );
 
   useEffect(() => {
-
     if (signupInfo.username === "") {
-      setUsernameQuery("")
-      return
-    };
+      setUsernameQuery("");
+      return;
+    }
 
     const timer = setTimeout(() => {
-      setUsernameQuery(signupInfo.username)
-
+      setUsernameQuery(signupInfo.username);
     }, 300);
 
     return () => clearTimeout(timer);
-
-  }, [signupInfo.username])
+  }, [signupInfo.username]);
 
   useEffect(() => {
-
     if (signupInfo.email === "") {
-      setEmailQuery("")
-      return
-    };
+      setEmailQuery("");
+      return;
+    }
 
     const timer = setTimeout(() => {
-      setEmailQuery(signupInfo.username)
-
+      setEmailQuery(signupInfo.email);
     }, 300);
 
-    return () => clearTimeout(timer)
-
-  }, [signupInfo.email])
+    return () => clearTimeout(timer);
+  }, [signupInfo.email]);
 
   return (
     <>
@@ -128,13 +126,7 @@ function Login() {
         <div>
           {/* any signup errors above here */}
 
-          {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => {(
-
-            {if (field === "ddd") {
-
-            }
-
-
+          {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => (
             <TextField
               key={field}
               label={field.charAt(0).toUpperCase() + field.slice(1)}
@@ -145,8 +137,7 @@ function Login() {
                 setSignupInfo((prev) => ({ ...prev, [field]: e.target.value }));
               }}
             />
-            }
-          )})}
+          ))}
 
           {signupComplete && (
             <Button variant="outlined" onClick={signupMutation}>

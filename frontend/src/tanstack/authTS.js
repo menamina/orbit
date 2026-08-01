@@ -2,6 +2,8 @@ import { queryOptions } from "@tanstack/react-query";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
+// tokens \\
+
 export const authenticateQuery = (accessToken: string) => {
   return queryOptions({
     queryKey: ["auth", accessToken],
@@ -9,6 +11,8 @@ export const authenticateQuery = (accessToken: string) => {
     enabled: !!accessToken,
   });
 };
+
+// checking if username +/ email taken when signing up \\
 
 export const checkIfUsernameIsInUse = (username: string) => {
   return queryOptions({
@@ -27,6 +31,10 @@ export const checkIfEmailIsInUse = (email: string) => {
   })
 
 }
+
+// logging in + signing up muts \\
+
+
 
 // --------- API CALLS --------- \\
 
