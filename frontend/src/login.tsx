@@ -3,6 +3,8 @@ import { useNavigation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { TextField, Button } from "@mui/material";
 
+import {checkIfUsernameIsInUser, checkIfEmailIsInUse} from "./tanstack/authTS"
+
 interface LoginInfo {
   email: string;
   password: string;
@@ -31,6 +33,9 @@ function Login() {
     confirmPassword: "",
   });
 
+  const [usernameQuery, setUsernameQuery] = useState("");
+  const [emailQuery, setEmailQuery] = useState("");
+
   const loginComplete = Object.values(loginInfo).every((value) => value !== "");
   const signupComplete = Object.values(signupInfo).every(
     (value) => value !== "",
@@ -42,12 +47,26 @@ function Login() {
   
   //  mutations for logging in + signing up \\
 
+  const {
+    data: userNameSignupQuery,
+    error: usernameInUse,
+  } = useQuery(checkIfUsernameIsInUser(usernameQuery))
+
+    const {
+    data: emailSignupQuery,
+    error: emailInUse,
+  } = useQuery(checkIfEmailIsInUse(emailQuery))
+
+
   useEffect(() => {
 
-    if (signupInfo.username === "") return;
+    if (signupInfo.username === "") {
+      setUsernameQuery("")
+      return
+    };
 
     const timer = setTimeout(() => {
-
+      setUsernameQuery(signupInfo.username)
 
     }, 300);
 
@@ -57,7 +76,17 @@ function Login() {
 
   useEffect(() => {
 
-    if (signupInfo.email === "") return;
+    if (signupInfo.email === "") {
+      setEmailQuery("")
+      return
+    };
+
+    const timer = setTimeout(() => {
+      setEmailQuery(signupInfo.username)
+
+    }, 300);
+
+    return () => clearTimeout(timer)
 
   }, [signupInfo.email])
 

@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-// --------- TANSTACK QUERY OPTIONS --------- \\
+// --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
 export const authenticateQuery = (accessToken: string) => {
   return queryOptions({
@@ -9,6 +9,24 @@ export const authenticateQuery = (accessToken: string) => {
     enabled: !!accessToken,
   });
 };
+
+export const checkIfUsernameIsInUse = (username: string) => {
+  return queryOptions({
+    queryKey: ["isUsernameTaken", username],
+    queryFN: () => isUsernameTaken(username),
+    enabled: !!username,
+  })
+
+}
+
+export const checkIfEmailIsInUse = (email: string) => {
+  return queryOptions({
+    queryKey: ["isUsernameTaken", email],
+    queryFN: () => isEmailTaken(email),
+    enabled: !!email,
+  })
+
+}
 
 // --------- API CALLS --------- \\
 
