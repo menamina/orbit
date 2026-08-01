@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { TextField, Button } from "@mui/material";
+import { TextField, Button, Box, Paper } from "@mui/material";
 
 import {
   checkIfUsernameIsInUser,
@@ -46,6 +46,8 @@ function Login() {
     (value) => value !== "",
   );
 
+  const nav = useNavigation();
+
   // --------- TANSTACK --------- \\
 
   //  mutations for logging in + signing up \\
@@ -53,26 +55,24 @@ function Login() {
   const { data: login, error: loginError } = useMutation({
     ...loginMut(loginInfo),
     onSuccess: () => {
-      // invalidate the access token \\
+      // invalidate the access token + nav to home\\
     },
   });
 
   const { data: signup, error: signupError } = useMutation({
     ...signupMut(signupInfo),
     onSuccess: () => {
-      // redirect to login \\
+      setToggle("login");
     },
   });
 
   // debounce useQuery for searching for usernames + emails \\
 
-  const { data: userNameSignupQuery, error: usernameInUse } = useQuery(
+  const { error: usernameInUse } = useQuery(
     checkIfUsernameIsInUser(usernameQuery),
   );
 
-  const { data: emailSignupQuery, error: emailInUse } = useQuery(
-    checkIfEmailIsInUse(emailQuery),
-  );
+  const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
 
   useEffect(() => {
     if (signupInfo.username === "") {
@@ -104,7 +104,7 @@ function Login() {
     <>
       {toggle === "login" && (
         <div>
-          {/* any manual login errors above here */}
+          <Box>{loginError && <Paper>{loginError.message}</Paper>}</Box>
 
           {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
             <TextField
@@ -136,7 +136,13 @@ function Login() {
       )}
       {toggle === "signup" && (
         <div>
-          {/* any signup errors above here */}
+          <Box>
+            {usernameInUse && <Paper>{loginError.message}</Paper>}
+            {emailInUse && <Paper>{emailError.message}</Paper>}
+            {signupError.map((error) => {
+              <Paper>{error}</Paper>;
+            })}
+          </Box>
 
           {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => (
             <TextField
