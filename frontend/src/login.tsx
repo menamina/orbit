@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigation } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
 
 import {
@@ -47,6 +47,7 @@ function Login() {
   );
 
   const nav = useNavigation();
+  const queryClient = useQueryClient();
 
   // --------- TANSTACK --------- \\
 
@@ -55,7 +56,7 @@ function Login() {
   const { data: login, error: loginError } = useMutation({
     ...loginMut(loginInfo),
     onSuccess: () => {
-      // invalidate the access token + nav to home\\
+      queries;
     },
   });
 
@@ -103,7 +104,7 @@ function Login() {
   return (
     <>
       {toggle === "login" && (
-        <div>
+        <Box>
           <Box>{loginError && <Paper>{loginError.message}</Paper>}</Box>
 
           {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
@@ -132,10 +133,17 @@ function Login() {
           )}
 
           {/* oauth login */}
-        </div>
+        </Box>
       )}
       {toggle === "signup" && (
-        <div>
+        <Box>
+          <Box>
+            <Paper>Already have an account?</Paper>
+            <Button variant="outlined" onClick={() => setToggle("login")}>
+              login here
+            </Button>
+          </Box>
+
           <Box>
             {usernameInUse && <Paper>{loginError.message}</Paper>}
             {emailInUse && <Paper>{emailError.message}</Paper>}
@@ -163,14 +171,15 @@ function Login() {
             </Button>
           )}
 
-          {!signupComplete && (
-            <Button variant="outlined" disabled>
-              signup
-            </Button>
-          )}
+          {!signupComplete ||
+            ((usernameInUse || emailInUse) && (
+              <Button variant="outlined" disabled>
+                signup
+              </Button>
+            ))}
 
           {/* oauth login */}
-        </div>
+        </Box>
       )}
     </>
   );
