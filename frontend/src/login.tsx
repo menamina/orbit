@@ -56,7 +56,9 @@ function Login() {
   const { data: login, error: loginError } = useMutation({
     ...loginMut(loginInfo),
     onSuccess: () => {
-      queries;
+      queryClient.invalidateQueries({
+        queryKey: ["auth", login.accessToken],
+      });
     },
   });
 

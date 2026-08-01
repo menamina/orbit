@@ -7,7 +7,7 @@ function App() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const nav = useNavigation();
 
-  const { error: authError, isLoading } = useQuery({
+  const { error: authError } = useQuery({
     ...authenticateQuery(accessToken),
     onSuccess: (data: { accessToken?: string }) => {
       if (data?.accessToken) {
