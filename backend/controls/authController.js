@@ -80,17 +80,28 @@ async function emailInUse(req, res) {
 async function signup(req, res) {
   try {
     const { name, username, email, password } = req.body;
-    const saltedHash = passwordGenie(password);
-    const user = prisma.user.create({
+    const saltedHash = await passwordGenie(password);
+
+    // Create user with settings (for password) and local account
+    const user = await prisma.user.create({
       data: {
         name,
         username,
         email,
-        profile: {
-          create: saltedHash,
+        settings: {
+          create: {
+            saltedHash,
+          },
+        },
+        accounts: {
+          create: {
+            provider: "local",
+            providerId: email, // Use email as identifier for local auth
+          },
         },
       },
     });
+
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);

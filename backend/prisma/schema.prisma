@@ -22,15 +22,15 @@ model User {
 
 model Account {
   id         Int    @id @default(autoincrement())
-  userId     Int
+  userID     Int
   provider   String // "github", "google", "local", etc.
   providerId String // OAuth provider's user ID (or email for local auth)
   createdAt  DateTime @default(now())
 
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User   @relation(fields: [userID], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
-  @@index([userId])
+  @@index([userID])
 }
 
 model RefreshToken {
@@ -50,8 +50,8 @@ model Settings {
   id        Int      @id @default(autoincrement())
   userID    Int      @unique
   saltedHash String?  // Optional - GitHub/OAuth users won't have password
-  cycleLength Int
-  daysBetweenPeriod Int
+  cycleLength Int?
+  daysBetweenPeriod Int?
   predictionAlg  String?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
