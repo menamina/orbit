@@ -1,28 +1,30 @@
-import { useState } from "react";
-import { useNavigation } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { authenticateQuery } from "./tanstack/authTS";
+import { useAuth } from "./main";
 
-function App() {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const nav = useNavigation();
+function Index() {
+  const { accessToken, setAccessToken } = useAuth();
+  const nav = useNavigate();
 
   useQuery({
     ...authenticateQuery(accessToken),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       // Server returned a new access token (from refresh token)
       if (typeof data === "object" && data !== null && "accessToken" in data) {
         const newToken = data.accessToken;
         setAccessToken(newToken);
       }
-      // If data is "Access token accepted" string, do nothing - token is still valid
+
+      nav("/home");
     },
-    onError: (error: Error) => {
-      console.log(error);
+    onError: (error: any) => {
       setAccessToken(null);
       nav("/login");
     },
   });
+
+  return <Outlet context={{ accessToken, setAccessToken }} />;
 }
 
-export default App;
+export default Index;

@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigation } from "react-router-dom";
+import { useNavigation, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
+import { useAuth } from "../src/main";
 
 import {
   checkIfUsernameIsInUser,
   checkIfEmailIsInUse,
   loginMut,
   signupMut,
-} from "./tanstack/authTS";
+} from "../src/tanstack/authTS";
+
+import GitHubBlack from "./imgs/GitHub_Invertocat_Black_Clearspace.png";
 
 interface LoginInfo {
   email: string;
@@ -23,8 +26,20 @@ interface SignupInfo {
   confirmPassword: string;
 }
 
+interface LoginResponse {
+  accessToken: string;
+  userINFO: {
+    name: string;
+    username: string;
+    email: string;
+  };
+}
+
 function Login() {
+  const { setAccessToken } = useAuth();
   const [toggle, setToggle] = useState("login");
+  const [searchParams] = useSearchParams();
+  const urlError = searchParams.get("error");
 
   const [loginInfo, setloginInfo] = useState<LoginInfo>({
     email: "",
@@ -53,17 +68,21 @@ function Login() {
 
   //  mutations for logging in + signing up \\
 
-  const { data: login, error: loginError } = useMutation({
+  const { mutate: login, error: loginError } = useMutation({
     ...loginMut(loginInfo),
-    onSuccess: () => {
+    onSuccess: (data: LoginResponse) => {
+      // Update access token state FIRST
+      setAccessToken(data.accessToken);
+
+      // Then invalidate auth query
       queryClient.invalidateQueries({
-        queryKey: ["auth", login.accessToken],
+        queryKey: ["auth", data.accessToken],
       });
       nav("/home");
     },
   });
 
-  const { data: signup, error: signupError } = useMutation({
+  const { mutate: signup, error: signupError } = useMutation({
     ...signupMut(signupInfo),
     onSuccess: () => {
       setToggle("login");
@@ -108,7 +127,33 @@ function Login() {
     <>
       {toggle === "login" && (
         <Box>
-          <Box>{loginError && <Paper>{loginError.message}</Paper>}</Box>
+          <Box>
+            {urlError && (
+              <Paper>
+                {urlError === "oauth_failed"
+                  ? "GitHub login failed. Please try again."
+                  : urlError === "no_token"
+                    ? "No token received from GitHub."
+                    : "Authentication error. Please try again."}
+              </Paper>
+            )}
+            {loginError && <Paper>{loginError.message}</Paper>}
+          </Box>
+
+          <Button
+            variant="outlined"
+            onClick={() => {
+              window.location.href = "http://localhost:5555/auth/github";
+            }}
+            sx={{ display: "flex", gap: 1, alignItems: "center" }}
+          >
+            <img
+              src={GitHubBlack}
+              alt="github logo"
+              style={{ width: 24, height: 24 }}
+            />
+            <Box>Login with GitHub</Box>
+          </Button>
 
           {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
             <TextField
@@ -124,7 +169,7 @@ function Login() {
           ))}
 
           {loginComplete && (
-            <Button variant="outlined" onClick={login}>
+            <Button variant="outlined" onClick={() => login()}>
               login
             </Button>
           )}
@@ -134,18 +179,41 @@ function Login() {
               login
             </Button>
           )}
-
-          {/* oauth login */}
         </Box>
       )}
       {toggle === "signup" && (
         <Box>
+          {urlError && (
+            <Paper>
+              {urlError === "oauth_failed"
+                ? "GitHub authentication failed. Please try again."
+                : urlError === "no_token"
+                  ? "No token received from GitHub."
+                  : "Authentication error. Please try again."}
+            </Paper>
+          )}
+
           <Box>
             <Paper>Already have an account?</Paper>
             <Button variant="outlined" onClick={() => setToggle("login")}>
               login here
             </Button>
           </Box>
+
+          <Button
+            variant="outlined"
+            onClick={() => {
+              window.location.href = "http://localhost:5555/auth/github";
+            }}
+            sx={{ display: "flex", gap: 1, alignItems: "center" }}
+          >
+            <img
+              src={GitHubBlack}
+              alt="github logo"
+              style={{ width: 24, height: 24 }}
+            />
+            <Box>Continue with GitHub</Box>
+          </Button>
 
           <Box>
             {usernameInUse && <Paper>{loginError.message}</Paper>}
@@ -169,7 +237,7 @@ function Login() {
           ))}
 
           {signupComplete && (
-            <Button variant="outlined" onClick={signup}>
+            <Button variant="outlined" onClick={() => signup()}>
               signup
             </Button>
           )}
