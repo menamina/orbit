@@ -11,16 +11,26 @@ model User {
   name          String
   username      String          @unique
   email         String          @unique
-  provider      String?         // "local", "github", "google", etc.
-  providerId    String?         // OAuth provider's user ID
   settings      Settings?
   cycleTracking CycleTracking[]
   pillTracking  PillTracking[]
   notes         Notes[]
 
   refreshTokens RefreshToken[]
+  accounts      Account[]       // Multiple OAuth providers support
+}
+
+model Account {
+  id         Int    @id @default(autoincrement())
+  userId     Int
+  provider   String // "github", "google", "local", etc.
+  providerId String // OAuth provider's user ID (or email for local auth)
+  createdAt  DateTime @default(now())
+
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
+  @@index([userId])
 }
 
 model RefreshToken {

@@ -19,38 +19,73 @@ passport.use(
       // - profile.photos: Avatar URLs
 
       try {
-        // Check if user already exists
-        let user = await prisma.user.findUnique({
+        // 1. Check if this GitHub account is already linked to a user
+        const existingAccount = await prisma.account.findUnique({
           where: {
             provider_providerId: {
               provider: "github",
               providerId: profile.id,
             },
           },
+          include: { user: true },
+        });
+
+        if (existingAccount) {
+          // Account already exists, return the associated user
+          return done(null, existingAccount.user);
+        }
+
+        const email = profile.emails?.[0]?.value || `${profile.username}@github.local`;
+        const name = profile.displayName || profile.username;
+        const githubUsername = profile.username;
+
+        // 2. Check if a user exists with this email (account linking)
+        let user = await prisma.user.findUnique({
+          where: { email },
         });
 
         if (user) {
-          // User exists, return it
+          // User exists - link this GitHub account to existing user
+          await prisma.account.create({
+            data: {
+              userId: user.id,
+              provider: "github",
+              providerId: profile.id,
+            },
+          });
           return done(null, user);
         }
 
-        // User doesn't exist, create new user
-        const email = profile.emails?.[0]?.value || `${profile.username}@github.local`;
-        const name = profile.displayName || profile.username;
-        const username = profile.username;
+        // 3. New user - create User + Account atomically
+        // Handle potential username conflicts by appending random suffix
+        let username = githubUsername;
+        let usernameExists = await prisma.user.findUnique({
+          where: { username },
+        });
 
+        if (usernameExists) {
+          // Username taken, append random suffix
+          username = `${githubUsername}_${Math.random().toString(36).substring(2, 8)}`;
+        }
+
+        // Create user and account in a transaction to ensure atomicity
         user = await prisma.user.create({
           data: {
             name,
             username,
             email,
-            provider: "github",
-            providerId: profile.id,
+            accounts: {
+              create: {
+                provider: "github",
+                providerId: profile.id,
+              },
+            },
           },
         });
 
         return done(null, user);
       } catch (error) {
+        console.error("GitHub OAuth error:", error);
         return done(error, null);
       }
     }
