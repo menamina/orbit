@@ -6,6 +6,8 @@ import { TextField, Button } from "@mui/material";
 import {
   checkIfUsernameIsInUser,
   checkIfEmailIsInUse,
+  loginMut,
+  signupMut,
 } from "./tanstack/authTS";
 
 interface LoginInfo {
@@ -48,9 +50,19 @@ function Login() {
 
   //  mutations for logging in + signing up \\
 
-  const { data: loginMutation, error: loginError } = useMutation({});
+  const { data: login, error: loginError } = useMutation({
+    ...loginMut(loginInfo),
+    onSuccess: () => {
+      // invalidate the access token \\
+    },
+  });
 
-  const { data: signupMutation, error: signupError } = useMutation({});
+  const { data: signup, error: signupError } = useMutation({
+    ...signupMut(signupInfo),
+    onSuccess: () => {
+      // redirect to login \\
+    },
+  });
 
   // debounce useQuery for searching for usernames + emails \\
 
@@ -108,7 +120,7 @@ function Login() {
           ))}
 
           {loginComplete && (
-            <Button variant="outlined" onClick={loginMutation}>
+            <Button variant="outlined" onClick={login}>
               login
             </Button>
           )}
@@ -140,7 +152,7 @@ function Login() {
           ))}
 
           {signupComplete && (
-            <Button variant="outlined" onClick={signupMutation}>
+            <Button variant="outlined" onClick={signup}>
               signup
             </Button>
           )}

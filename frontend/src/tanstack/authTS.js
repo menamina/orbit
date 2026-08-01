@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, mutationOptions } from "@tanstack/react-query";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -33,6 +33,18 @@ export const checkIfEmailIsInUse = (email: string) => {
 }
 
 // logging in + signing up muts \\
+
+export const loginMut = () => {
+  return mutationOptions({
+    mutationFn: login,
+  })
+}
+
+export const signupMut = () => {
+  return mutationOptions({
+    mutationFn: signup,
+  })
+}
 
 
 
