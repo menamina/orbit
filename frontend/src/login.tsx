@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { TextField } from "@mui/material";
+import { TextField, Button } from "@mui/material";
 
 interface LoginInfo {
   email: string;
@@ -30,6 +30,13 @@ function Login() {
     confirmPassword: "",
   });
 
+  const loginComplete = Object.values(loginInfo).every(
+    (value) => value !== "",
+  );
+  const signupComplete = Object.values(signupInfo).every(
+    (value) => value !== "",
+  );
+
   return (
     <>
       {toggle === "login" && (
@@ -37,7 +44,7 @@ function Login() {
           {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
             <TextField
               key={field}
-              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              label={field.charAt(0).toUpperCase()}
               variant="outlined"
               required
               value={loginInfo[field]}
@@ -46,6 +53,18 @@ function Login() {
               }}
             />
           ))}
+
+          {loginComplete && (
+            <Button variant="outlined" onClick={loginMutation}>
+              login
+            </Button>
+          )}
+
+          {!loginComplete && (
+            <Button variant="outlined" disabled>
+              login
+            </Button>
+          )}
         </div>
       )}
       {toggle === "signup" && (
@@ -62,6 +81,19 @@ function Login() {
               }}
             />
           ))}
+
+          {signupComplete && (
+            <Button variant="outlined" onClick={signupMutation}>
+              login
+            </Button>
+          )}
+
+          {!signupComplete && (
+            <Button variant="outlined" disabled>
+              login
+            </Button>
+          )}
+        </div>
         </div>
       )}
     </>
