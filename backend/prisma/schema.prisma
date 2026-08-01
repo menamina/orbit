@@ -16,8 +16,10 @@ model User {
   pillTracking  PillTracking[]
   notes         Notes[]
 
-  refreshTokens RefreshToken[]
   accounts      Account[]       // Multiple OAuth providers support
+  refreshTokens RefreshToken[]
+
+  @@index([id])
 }
 
 model Account {
