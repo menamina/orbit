@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { TextField, Button } from "@mui/material";
@@ -18,6 +18,7 @@ interface SignupInfo {
 
 function Login() {
   const [toggle, setToggle] = useState("login");
+
   const [loginInfo, setloginInfo] = useState<LoginInfo>({
     email: "",
     password: "",
@@ -30,17 +31,42 @@ function Login() {
     confirmPassword: "",
   });
 
-  const loginComplete = Object.values(loginInfo).every(
-    (value) => value !== "",
-  );
+  const loginComplete = Object.values(loginInfo).every((value) => value !== "");
   const signupComplete = Object.values(signupInfo).every(
     (value) => value !== "",
   );
+
+  // --------- TANSTACK --------- \\
+
+  // debounce useQuery for searching for usernames + emails \\
+  
+  //  mutations for logging in + signing up \\
+
+  useEffect(() => {
+
+    if (signupInfo.username === "") return;
+
+    const timer = setTimeout(() => {
+
+
+    }, 300);
+
+    return () => clearTimeout(timer);
+
+  }, [signupInfo.username])
+
+  useEffect(() => {
+
+    if (signupInfo.email === "") return;
+
+  }, [signupInfo.email])
 
   return (
     <>
       {toggle === "login" && (
         <div>
+          {/* any manual login errors above here */}
+
           {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
             <TextField
               key={field}
@@ -65,11 +91,21 @@ function Login() {
               login
             </Button>
           )}
+
+          {/* oauth login */}
         </div>
       )}
       {toggle === "signup" && (
         <div>
-          {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => (
+          {/* any signup errors above here */}
+
+          {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => {(
+
+            {if (field === "ddd") {
+
+            }
+
+
             <TextField
               key={field}
               label={field.charAt(0).toUpperCase() + field.slice(1)}
@@ -80,20 +116,22 @@ function Login() {
                 setSignupInfo((prev) => ({ ...prev, [field]: e.target.value }));
               }}
             />
-          ))}
+            }
+          )})}
 
           {signupComplete && (
             <Button variant="outlined" onClick={signupMutation}>
-              login
+              signup
             </Button>
           )}
 
           {!signupComplete && (
             <Button variant="outlined" disabled>
-              login
+              signup
             </Button>
           )}
-        </div>
+
+          {/* oauth login */}
         </div>
       )}
     </>
