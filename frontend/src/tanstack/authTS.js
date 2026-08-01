@@ -81,12 +81,13 @@ async function checkAuth(accessToken: string) {
         }
         throw error;
       }
-      const data = await res.json();
-      return data;
+      const accessToken = await res.json();
+      return accessToken;
     }
   }
 
   const data = await res.json();
-  const accessTokenAccepted = "Access token accepted";
-  return accessTokenAccepted;
+  return data; // { authenticated: true }
 }
+
+

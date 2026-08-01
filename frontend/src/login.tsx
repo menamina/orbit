@@ -59,6 +59,7 @@ function Login() {
       queryClient.invalidateQueries({
         queryKey: ["auth", login.accessToken],
       });
+      nav("/home");
     },
   });
 
