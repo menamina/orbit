@@ -32,8 +32,38 @@ function Login() {
 
   return (
     <>
-      {toggle === "login" && <div></div>}
-      {toggle === "signup" && <div></div>}
+      {toggle === "login" && (
+        <div>
+          {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
+            <TextField
+              key={field}
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              variant="outlined"
+              required
+              value={loginInfo[field]}
+              onChange={(e) => {
+                setloginInfo((prev) => ({ ...prev, [field]: e.target.value }));
+              }}
+            />
+          ))}
+        </div>
+      )}
+      {toggle === "signup" && (
+        <div>
+          {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => (
+            <TextField
+              key={field}
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              variant="outlined"
+              required
+              value={signupInfo[field]}
+              onChange={(e) => {
+                setSignupInfo((prev) => ({ ...prev, [field]: e.target.value }));
+              }}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }
