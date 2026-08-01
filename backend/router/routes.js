@@ -10,7 +10,7 @@ import {
   logoutEverywhere,
 } from "../controls/authController";
 
-import { checkAuth } from "../utils/checkToken";
+import { checkAuth } from "../auth/checkToken";
 
 // ======== AUTH ======== \\
 

@@ -11,12 +11,16 @@ model User {
   name          String
   username      String          @unique
   email         String          @unique
+  provider      String?         // "local", "github", "google", etc.
+  providerId    String?         // OAuth provider's user ID
   settings      Settings?
   cycleTracking CycleTracking[]
   pillTracking  PillTracking[]
   notes         Notes[]
 
   refreshTokens RefreshToken[]
+
+  @@unique([provider, providerId])
 }
 
 model RefreshToken {
@@ -35,7 +39,7 @@ model RefreshToken {
 model Settings {
   id        Int      @id @default(autoincrement())
   userID    Int      @unique
-  saltedHash String
+  saltedHash String?  // Optional - GitHub/OAuth users won't have password
   cycleLength Int
   daysBetweenPeriod Int
   predictionAlg  String?
