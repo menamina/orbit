@@ -5,7 +5,6 @@ require("dotenv").config();
 
 const accessTokenSec = process.env.ACCESS_SECRET;
 const accessExpiry = process.env.ACCESS_EXPIRES_IN;
-const refreshTokenSec = process.env.REFRESH_SECRET;
 const refreshExpiry = process.env.REFRESH_EXPIRES_IN;
 
 function generateAccessToken(userID, email) {
@@ -14,14 +13,14 @@ function generateAccessToken(userID, email) {
   });
 }
 
-function generateSec() {
+function generateRefreshToken() {
   return crypto.randomBytes(40).toString("hex");
 }
 
-async function storeSec(userID, token) {
+async function storeRefreshToken(userID, token) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + Number(refreshExpiry));
-  return await prisma.Sec.create({
+  return await prisma.refreshToken.create({
     data: {
       token,
       userID,
@@ -32,20 +31,20 @@ async function storeSec(userID, token) {
 
 function verifyAccessToken(token) {
   try {
-    return jwt.verify(token, accessToken);
+    return jwt.verify(token, accessTokenSec);
   } catch (error) {
     return null;
   }
 }
 
-async function verifySec(token) {
+async function verifyRefreshToken(token) {
   try {
-    const Sec = await prisma.Sec.findUnique({
+    const refreshToken = await prisma.refreshToken.findUnique({
       where: { token },
       include: { user: true },
     });
 
-    if (!Sec) {
+    if (!refreshToken) {
       return null;
     }
 
