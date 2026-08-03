@@ -1,5 +1,5 @@
 const prisma = require("../prisma/client");
-import { deleteAllRefreshTokens } from "../auth/jwt";
+import { deleteAllRefreshTokens, deleteRefreshToken } from "../auth/jwt";
 import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 
 async function login(req, res) {

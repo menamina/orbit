@@ -38,3 +38,21 @@ beforeAll(async () => {
 afterAll(async () => {
   await prisma.$disconnect();
 });
+
+describe(" checking access token ", () => {});
+
+describe(" checking refresh token ", () => {});
+
+describe(" checking username for usage during signup ", () => {});
+
+describe(" checking email for usage during signup ", () => {});
+
+describe(" signing ", () => {});
+
+describe(" logging in locally ", () => {});
+
+describe(" logging in with oauth - github ", () => {});
+
+describe(" logging out ", () => {});
+
+describe(" logging out everywhere ", () => {});

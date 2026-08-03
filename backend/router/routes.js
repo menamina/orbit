@@ -1,5 +1,19 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
+
+import { checkAuth } from "../auth/checkToken";
+
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  storeRefreshToken,
+  verifyRefreshToken,
+} from "../auth/jwt";
+
+import passport from "../auth/passport";
+
+import validator from "../utils/validator";
+
 import {
   login,
   usernameInUse,
@@ -10,25 +24,17 @@ import {
   logoutEverywhere,
 } from "../controls/authController";
 
-import { checkAuth } from "../auth/checkToken";
-import passport from "../auth/passport";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  storeRefreshToken,
-} from "../auth/jwt";
-
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth, (req, res) => {
   res.json({ authenticated: true });
 });
 
-router.post("/api/checkRefreshToken", refreshToken);
+router.post("/api/checkRefreshToken", verifyRefreshToken);
 
 router.get("/api/signup/isUsernameInUse", usernameInUse);
 router.get("/api/signup/isEmailInUse", emailInUse);
-router.post("/api/signup", signup);
+router.post("/api/signup", validator, signup);
 
 router.post("/api/login", login);
 
