@@ -12,7 +12,29 @@ jest.setTimeout(5500);
 
 // helper functions \\
 async function createTestUser(
+  username = "orbiter",
   email = "test@gmail.com",
-  username = "test",
-  password = "hello",
-) {}
+  password = "777IMINHEAVEN",
+) {
+  const hashedPassword = await passwordGenie(password);
+  return await prisma.user.create({
+    data: {
+      name: "Orbit",
+      username,
+      email,
+      settings: {
+        create: {
+          saledHash: hashedPassword,
+        },
+      },
+    },
+  });
+}
+
+beforeAll(async () => {
+  await prisma.user.deleteMany({});
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
