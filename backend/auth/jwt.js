@@ -3,23 +3,25 @@ import crypto from "crypto";
 import prisma from "../prisma/client.js";
 require("dotenv").config();
 
-const accessToken = process.env.ACCESS_SECRET;
+const accessTokenSec = process.env.ACCESS_SECRET;
 const accessExpiry = process.env.ACCESS_EXPIRES_IN;
-const refreshToken = process.env.REFRESH_SECRET;
+const refreshTokenSec = process.env.REFRESH_SECRET;
 const refreshExpiry = process.env.REFRESH_EXPIRES_IN;
 
 function generateAccessToken(userID, email) {
-  return jwt.sign({ userID, email }, accessToken, { expiresIn: accessExpiry });
+  return jwt.sign({ userID, email }, accessTokenSec, {
+    expiresIn: accessExpiry,
+  });
 }
 
-function generateRefreshToken() {
+function generateSec() {
   return crypto.randomBytes(40).toString("hex");
 }
 
-async function storeRefreshToken(userID, token) {
+async function storeSec(userID, token) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + Number(refreshExpiry));
-  return await prisma.refreshToken.create({
+  return await prisma.Sec.create({
     data: {
       token,
       userID,
@@ -36,14 +38,14 @@ function verifyAccessToken(token) {
   }
 }
 
-async function verifyRefreshToken(token) {
+async function verifySec(token) {
   try {
-    const refreshToken = await prisma.refreshToken.findUnique({
+    const Sec = await prisma.Sec.findUnique({
       where: { token },
       include: { user: true },
     });
 
-    if (!refreshToken) {
+    if (!Sec) {
       return null;
     }
 
