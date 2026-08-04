@@ -85,9 +85,7 @@ afterAll(async () => {
 
 describe(" checking username for usage during signup ", () => {
   it("returns a status of 400 when wanted username is in use", async () => {
-    const res = await request.get("/api/signup/isUsernameInUse").send({
-      username: "orbiter",
-    });
+    const res = await request.get("/api/signup/isUsernameInUse?username=orbiter");
 
     expect(res.status).toBe(400);
     expect(res.body.message).toBe("Username in use");
@@ -95,9 +93,7 @@ describe(" checking username for usage during signup ", () => {
 
   it("returns a status of 200 when wanted username is NOT in use", async () => {
     await dlt(user.id);
-    const res = await request.get("/api/signup/isUsernameInUse").send({
-      username: "orbiter",
-    });
+    const res = await request.get("/api/signup/isUsernameInUse?username=orbiter");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -106,9 +102,7 @@ describe(" checking username for usage during signup ", () => {
 
 describe(" checking email for usage during signup ", () => {
   it("returns a status of 400 when wanted email is in use", async () => {
-    const res = await request.get("/api/signup/isEmailInUse").send({
-      email: "test@gmail.com",
-    });
+    const res = await request.get("/api/signup/isEmailInUse?email=test@gmail.com");
 
     expect(res.status).toBe(400);
     expect(res.body.message).toBe("Email in use");
@@ -116,9 +110,7 @@ describe(" checking email for usage during signup ", () => {
 
   it("returns a status of 200 when wanted email is NOT in use", async () => {
     await dlt(user.id);
-    const res = await request.get("/api/signup/isEmailInUse").send({
-      email: "test@gmail.com",
-    });
+    const res = await request.get("/api/signup/isEmailInUse?email=test@gmail.com");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

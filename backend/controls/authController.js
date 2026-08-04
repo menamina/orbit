@@ -51,7 +51,7 @@ async function login(req, res) {
 
 async function usernameInUse(req, res) {
   try {
-    const { username } = req.body;
+    const { username } = req.query;
     const inUse = await prisma.user.findUnique({ where: { username } });
     if (!inUse) {
       return res.status(200).json({ success: true });
@@ -65,7 +65,7 @@ async function usernameInUse(req, res) {
 
 async function emailInUse(req, res) {
   try {
-    const { email } = req.body;
+    const { email } = req.query;
     const inUse = await prisma.user.findUnique({ where: { email } });
     if (!inUse) {
       return res.status(200).json({ success: true });

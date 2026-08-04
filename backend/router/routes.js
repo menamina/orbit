@@ -32,8 +32,8 @@ router.get("/", checkAuth, (req, res) => {
 
 router.post("/api/checkRefreshToken", verifyRefreshToken);
 
-router.get("/api/signup/isUsernameInUse", usernameInUse);
-router.get("/api/signup/isEmailInUse", emailInUse);
+router.get("/api/signup/username", usernameInUse);
+router.get("/api/signup/email", emailInUse);
 router.post("/api/signup", validator, signup);
 
 router.post("/api/login", login);

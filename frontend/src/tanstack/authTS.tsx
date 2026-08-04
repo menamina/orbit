@@ -17,36 +17,38 @@ export const authenticateQuery = (accessToken: string) => {
 export const checkIfUsernameIsInUse = (username: string) => {
   return queryOptions({
     queryKey: ["isUsernameTaken", username],
-    queryFN: () => isUsernameTaken(username),
-    enabled: !!username,
-  })
-
-}
+    queryFn: () => isUsernameTaken(username),
+    enabled: !!username && username.length > 3,
+  });
+};
 
 export const checkIfEmailIsInUse = (email: string) => {
   return queryOptions({
-    queryKey: ["isUsernameTaken", email],
-    queryFN: () => isEmailTaken(email),
+    queryKey: ["isEmailTaken", email],
+    queryFn: () => isEmailTaken(email),
     enabled: !!email,
-  })
-
-}
+  });
+};
 
 // logging in + signing up muts \\
 
 export const signupMut = () => {
   return mutationOptions({
     mutationFn: signup,
-  })
-}
+  });
+};
 
 export const loginMut = () => {
   return mutationOptions({
     mutationFn: login,
-  })
-}
+  });
+};
 
-
+export const loginWithGithub = () => {
+  return mutationOptions({
+    mutationFn: githubLogin,
+  });
+};
 
 // --------- API CALLS --------- \\
 
@@ -90,19 +92,58 @@ async function checkAuth(accessToken: string) {
   return data; // { authenticated: true }
 }
 
+async function isUsernameTaken(username: string) {
+  const res = await fetch(
+    `http://localhost:5555/api/signup/username?username=${username}`,
+  );
+  const data = await res.json();
 
-async function isUsernameTaken(){
+  if (!res.ok) {
+    const error = new Error();
+    if (res.status === 400) {
+      error.message = "Username is in use";
+      throw error;
+    } else if (res.status === 500) {
+      error.message = "Server error, please try again.";
+      throw error;
+    }
+  }
 
+  return data;
 }
 
-async function isEmailTaken(){
+async function isEmailTaken(email: string) {
+  const res = await fetch(
+    `http://localhost:5555/api/signup/email?email=${email}`,
+  );
+  const data = await res.json();
 
+  if (!res.ok) {
+    const error = new Error();
+    if (res.status === 400) {
+      error.message = "Email is in use";
+      throw error;
+    } else if (res.status === 500) {
+      error.message = "Server error, please try again.";
+      throw error;
+    }
+  }
+
+  return data;
 }
 
-async function signup(){
-
+async function signup(signupData: string) {
+  const res = await fetch(`http://localhost:5555/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: signupData,
+  });
 }
 
-async function login(){
+async function login() {
+  const res = await fetch(`http://localhost:5555/`, {});
+}
 
+async function githubLogin() {
+  const res = await fetch(`http://localhost:5555/`, {});
 }
