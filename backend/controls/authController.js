@@ -135,7 +135,7 @@ async function logout(req, res) {
 
 async function logoutEverywhere(req, res) {
   const userID = Number(req.user.userID);
-  deleteAllRefreshTokens(userID);
+  await deleteAllRefreshTokens(userID);
   res.clearCookie("refreshToken");
   return res.json({ message: "Logged out from all devices" });
 }

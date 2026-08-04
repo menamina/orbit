@@ -64,21 +64,21 @@ async function checkAuth(
       throw new Error("Must login");
     } else if (res.status === 403) {
       // if it is 403 the token is expired must check refresh \\
-      const res = await fetch(`http://localhost:5555/api/checkRefreshToken`, {
+      const refreshRes = await fetch(`http://localhost:5555/api/checkRefreshToken`, {
         method: "post",
         credentials: "include",
       });
 
-      if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
+      if (!refreshRes.ok) {
+        if (refreshRes.status === 401 || refreshRes.status === 403) {
           // 401 or 403 means refresh token is expired or deleted \\
           throw new Error("Must login");
-        } else if (res.status === 500) {
+        } else if (refreshRes.status === 500) {
           throw new Error("Oops something went wrong - there's a server error");
         }
       }
-      const accessToken = await res.json();
-      return accessToken;
+      const newToken = await refreshRes.json();
+      return newToken;
     }
   }
 
