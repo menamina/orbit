@@ -34,15 +34,15 @@ export const checkIfEmailIsInUse = (email: string) => {
 
 // logging in + signing up muts \\
 
-export const loginMut = () => {
-  return mutationOptions({
-    mutationFn: login,
-  })
-}
-
 export const signupMut = () => {
   return mutationOptions({
     mutationFn: signup,
+  })
+}
+
+export const loginMut = () => {
+  return mutationOptions({
+    mutationFn: login,
   })
 }
 
@@ -91,3 +91,18 @@ async function checkAuth(accessToken: string) {
 }
 
 
+async function isUsernameTaken(){
+
+}
+
+async function isEmailTaken(){
+
+}
+
+async function signup(){
+
+}
+
+async function login(){
+
+}
