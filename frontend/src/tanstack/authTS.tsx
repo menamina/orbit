@@ -133,17 +133,35 @@ async function isEmailTaken(email: string) {
 }
 
 async function signup(signupData: string) {
-  const res = await fetch(`http://localhost:5555/`, {
+  const res = await fetch(`http://localhost:5555/api/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: signupData,
   });
+
+  const data = res.json();
+
+  if (!res.ok) {
+    const error = new Error();
+
+    if (res.status === 400) {
+      return data;
+      // array of validator errors \\
+    }
+  }
+  return data;
 }
 
-async function login() {
-  const res = await fetch(`http://localhost:5555/`, {});
+async function login(loginData: string) {
+  const res = await fetch(`http://localhost:5555/api/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: loginData,
+  });
+
+  const data = res.json();
 }
 
 async function githubLogin() {
-  const res = await fetch(`http://localhost:5555/`, {});
+  const res = await fetch(`http://localhost:5555/auth/github/callback`, {});
 }
