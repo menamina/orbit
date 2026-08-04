@@ -27,7 +27,7 @@ import {
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth, (req, res) => {
-  res.json({ authenticated: true });
+  res.status(200).json({ authenticated: true });
 });
 
 router.post("/api/checkRefreshToken", verifyRefreshToken);

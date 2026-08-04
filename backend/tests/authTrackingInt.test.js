@@ -42,7 +42,7 @@ async function createTestUser(
 }
 
 async function login() {
-  return await agent.post("/login-API").send({
+  return await agent.post("/api/login").send({
     email: "test@gmail.com",
     password: "777IMINHEAVEN",
   });
@@ -168,7 +168,7 @@ describe(" logging in // token checking ", () => {
   });
 
   it("does not log a user in with incorrect email", () => {
-    const res = await supertest.post("/login", {
+    const res = await supertest.post("/api/login", {
         email: "uWu",
         password: "uWugorl"
     })
@@ -180,26 +180,63 @@ describe(" logging in // token checking ", () => {
   });
 
     it("does not log a user in with incorrect password", () => {
-    const res = await supertest.post("/login", {
+    const res = await supertest.post("/api/login", {
         email: "test@gmail.com",
         password: "uWugorl"
     })
 
     expect(res.status).toBe(400)
-        expect(res.body).toHaveProperty("invalidPassword")
+    expect(res.body).toHaveProperty("invalidPassword")
     expect(res.body.invalidPassword).toBe("Invalid password")
 
   });
 
   it("verifies a valid access token", () => {
+    const loggingIn = await login();
+    const loginRes = await loggingIn;
+    const accessToken = loginRes.accessToken;
+
+    const res = await agent.get("/").set("Authorization", `Bearer ${accessToken}`)
+    expect(res.status).toBe(200)
+    expect(res.body.authenticated).toBe(true)
+
+    logout()
+
+  });
+
+  it("does not verify an invalid access token", () => {
+    const loggingIn = await login();
+    const loginRes = await loggingIn;
+
+    const res = await agent.get("/").set("Authorization", `Bearer fakeToken`)
+    expect(res.status).toBe(403)
+    expect(res.status).notToBe(200)
+    expect(res.body).toHaveProperty("accessTokenExpired")
+
+    logout()
+  });
+
+  it("does not verify a missing access token", () => {
+    const loggingIn = await login();
+    const loginRes = await loggingIn;
+
+    const res = await agent.get("/").set("Authorization", `Bearer`)
+    expect(res.status).toBe(401)
+    expect(res.status).notToBe(200)
+    expect(res.body).toHaveProperty("authenticated")
+
+    logout()
+  });
+
+  it("verifies valid refresh token", () => {
     const loggingIn = login();
   });
 
-  it("does not varify an invalid access token", () => {
+ it("does not verify invalid refresh token", () => {
     const loggingIn = login();
   });
 
-  it("checks refresh token", () => {
+ it("does not verify missing refresh token", () => {
     const loggingIn = login();
   });
 });
