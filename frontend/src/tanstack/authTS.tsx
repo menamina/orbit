@@ -73,15 +73,12 @@ async function checkAuth(accessToken: string) {
       });
 
       if (!res.ok) {
-        const error = new Error();
-
         if (res.status === 401 || res.status === 403) {
           // 401 or 403 means refresh token is expired or deleted \\
-          error.noRefreshToken = "Must login";
+          throw new Error("Must login");
         } else if (res.status === 500) {
-          error.serverError = "A server error occured. Please try again";
+          throw new Error("Oops something went wrong - there's a server error");
         }
-        throw error;
       }
       const accessToken = await res.json();
       return accessToken;
@@ -99,13 +96,10 @@ async function isUsernameTaken(username: string) {
   const data = await res.json();
 
   if (!res.ok) {
-    const error = new Error();
-    if (res.status === 400) {
-      error.message = "Username is in use";
-      throw error;
-    } else if (res.status === 500) {
-      error.message = "Server error, please try again.";
-      throw error;
+    if (res.status === 500) {
+      throw new Error("Oops something went wrong - there's a server error");
+    } else {
+      throw data;
     }
   }
 
@@ -119,13 +113,10 @@ async function isEmailTaken(email: string) {
   const data = await res.json();
 
   if (!res.ok) {
-    const error = new Error();
-    if (res.status === 400) {
-      error.message = "Email is in use";
-      throw error;
-    } else if (res.status === 500) {
-      error.message = "Server error, please try again.";
-      throw error;
+    if (res.status === 500) {
+      throw new Error("Oops something went wrong - there's a server error");
+    } else {
+      throw data;
     }
   }
 
@@ -139,16 +130,16 @@ async function signup(signupData: string) {
     body: signupData,
   });
 
-  const data = res.json();
+  const data = await res.json();
 
   if (!res.ok) {
-    const error = new Error();
-
-    if (res.status === 400) {
-      return data;
-      // array of validator errors \\
+    if (res.status === 500) {
+      throw new Error("Oops something went wrong - there's a server error");
+    } else {
+      throw data;
     }
   }
+
   return data;
 }
 
@@ -156,12 +147,23 @@ async function login(loginData: string) {
   const res = await fetch(`http://localhost:5555/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: loginData,
   });
 
-  const data = res.json();
+  const data = await res.json();
+
+  if (!res.ok) {
+    if (res.status === 500) {
+      throw new Error("Oops something went wrong - there's a server error");
+    } else {
+      throw data;
+    }
+  }
+
+  return data;
 }
 
 async function githubLogin() {
-  const res = await fetch(`http://localhost:5555/auth/github/callback`, {});
+  window.location.href = "http://localhost:5555/auth/github";
 }
