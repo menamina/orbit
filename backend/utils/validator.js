@@ -2,10 +2,10 @@ import validator from "validator";
 const usernameRegEx = /^[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*$/;
 
 export function validateSignup(req, res, next) {
-  const { email, password, password_confirm, username, name } = req.body;
+  const { email, password, confirmPassword, username, name } = req.body;
   const errors = [];
 
-  if (!email || !password || !password_confirm || !username) {
+  if (!email || !password || !confirmPassword || !username) {
     return res.status(400).json({ errors: "Missing required fields" });
   }
 
@@ -27,7 +27,7 @@ export function validateSignup(req, res, next) {
     errors.push("Password must be at least 8 characters");
   }
 
-  if (password !== password_confirm) {
+  if (password !== confirmPassword) {
     errors.push("Passwords do not match");
   }
 
