@@ -1,4 +1,5 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
+import { SignupData, LoginData } from "./authTypes";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -44,15 +45,11 @@ export const loginMut = () => {
   });
 };
 
-export const loginWithGithub = () => {
-  return mutationOptions({
-    mutationFn: githubLogin,
-  });
-};
-
 // --------- API CALLS --------- \\
 
-async function checkAuth(accessToken: string) {
+async function checkAuth(
+  accessToken: string,
+): Promise<{ authenticated: boolean } | { newAccessToken: string }> {
   const res = await fetch(`http://localhost:5555/`, {
     method: "GET",
     headers: {
@@ -89,7 +86,11 @@ async function checkAuth(accessToken: string) {
   return data; // { authenticated: true }
 }
 
-async function isUsernameTaken(username: string) {
+async function isUsernameTaken(
+  username: string,
+): Promise<
+  { success: boolean } | { message: string } | { serverError: string }
+> {
   const res = await fetch(
     `http://localhost:5555/api/signup/username?username=${username}`,
   );
@@ -106,7 +107,11 @@ async function isUsernameTaken(username: string) {
   return data;
 }
 
-async function isEmailTaken(email: string) {
+async function isEmailTaken(
+  email: string,
+): Promise<
+  { success: boolean } | { message: string } | { serverError: string }
+> {
   const res = await fetch(
     `http://localhost:5555/api/signup/email?email=${email}`,
   );
@@ -123,13 +128,9 @@ async function isEmailTaken(email: string) {
   return data;
 }
 
-async function signup(data: {
-  name: string;
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}) {
+async function signup(
+  data: SignupData,
+): Promise<{ success: boolean } | { serverError: string }> {
   const res = await fetch(`http://localhost:5555/api/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -149,7 +150,13 @@ async function signup(data: {
   return responseData;
 }
 
-async function login(data: { email: string; password: string }) {
+async function login(
+  data: LoginData,
+): Promise<
+  | { invalidEmail: string }
+  | { invalidPassword: string }
+  | { serverError: string }
+> {
   const res = await fetch(`http://localhost:5555/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
