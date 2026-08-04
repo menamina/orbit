@@ -65,6 +65,15 @@ beforeAll(async () => {
   user = await createTestUser();
 });
 
+afterEach(async () => {
+  // Clean up any active sessions after each test
+  try {
+    await agent.post("/api/logout");
+  } catch (e) {
+    // Ignore if already logged out
+  }
+});
+
 afterAll(async () => {
   if (user) {
     await dlt(user.id);
@@ -197,8 +206,6 @@ describe(" logging in // token checking ", () => {
     const res = await agent.get("/").set("Authorization", `Bearer ${accessToken}`);
     expect(res.status).toBe(200);
     expect(res.body.authenticated).toBe(true);
-
-    await logout();
   });
 
   it("does not verify an invalid access token", async () => {
@@ -207,8 +214,6 @@ describe(" logging in // token checking ", () => {
     const res = await agent.get("/").set("Authorization", `Bearer fakeToken`);
     expect(res.status).toBe(403);
     expect(res.body).toHaveProperty("accessTokenExpired");
-
-    await logout();
   });
 
   it("does not verify a missing access token", async () => {
@@ -222,7 +227,6 @@ describe(" logging in // token checking ", () => {
     const res = await agent.post("/api/checkRefreshToken");
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("newAccessToken");
-    await logout();
   });
 
   it("does not verify invalid refresh token", async () => {
