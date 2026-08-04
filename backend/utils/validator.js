@@ -28,11 +28,11 @@ export function validateSignup(req, res, next) {
   }
 
   if (password !== confirmPassword) {
-    errors.push("Passwords do not match");
+    errors.push("Passwords must match");
   }
 
   if (name && !validator.isLength(name, { min: 2, max: 50 })) {
-    errors.push("Name must be 2-50 characters");
+    errors.push("Name must be between 2-50 characters");
   }
 
   if (errors.length > 0) {

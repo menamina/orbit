@@ -42,7 +42,7 @@ async function createTestUser(
 }
 
 async function login() {
-  await agent.post("/login-API").send({
+  return await agent.post("/login-API").send({
     email: "test@gmail.com",
     password: "777IMINHEAVEN",
   });
@@ -117,9 +117,9 @@ describe(" checking email for usage during signup ", () => {
 });
 
 describe(" signing up locally ", () => {
-  it("signs a user up with fully passing validator middleware", () => {
+  it("signs a user up with complete data verified by middleware", () => {
     const res = superagent.post("/api/signup/").send({
-      name: "x",
+      name: "xy",
       username: "xyz",
       email: "xyz@gmail.com",
       password: "zzzzzzzz",
@@ -130,19 +130,82 @@ describe(" signing up locally ", () => {
     expect(res.status.success).toBe(true);
   });
 
-  // do it so it doesnt sign up a user
+  it("does not sign a user up with invalid data verified by middleware", () => {
+    const res = superagent.post("/api/signup/").send({
+      name: "x", // name is too short
+      username: "x", // username is too short
+      email: "xyz-gmail.com", // wrong email
+      password: "zzz", // password too short
+      confirmPassword: "zzzzzzzz", // passwords dont match
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty(" errors ");
+    expect(res.body.errors).toHaveLength(5);
+  });
+
+  it("does not sign a user up with partially valid data verified by middleware", () => {
+    const res = await superagent.post("/api/signup/").send({
+      name: "", // missing name
+      username: "x", // username is too short
+      email: "xyz@gmail.com",
+      password: "zzzzzzzz",
+      confirmPassword: "zzzzzzzz",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty(" errors ");
+    expect(res.body.errors).toHaveLength(2);
+  });
 });
 
-describe(" logging in // token checking ", () => {});
+describe(" logging in // token checking ", () => {
+  it("logs a user in with correct credentials", () => {
+    const loggingIn = await login();
+    expect(loggingIn.status).toBe(200);
+    expect(loggingIn.body).toHaveProperty("accessToken");
+    expect(loggingIn.body).toHaveProperty("userINFO");
+  });
 
-describe(" checking access token ", () => {
-  const generateToken = generateAccessToken();
+  it("does not log a user in with incorrect email", () => {
+    const res = await supertest.post("/login", {
+        email: "uWu",
+        password: "uWugorl"
+    })
+
+    expect(res.status).toBe(400)
+    expect(res.body).toHaveProperty("invalidEmail")
+    expect(res.body.invalidEmail).toBe("Email is invalid")
+
+  });
+
+    it("does not log a user in with incorrect password", () => {
+    const res = await supertest.post("/login", {
+        email: "test@gmail.com",
+        password: "uWugorl"
+    })
+
+    expect(res.status).toBe(400)
+        expect(res.body).toHaveProperty("invalidPassword")
+    expect(res.body.invalidPassword).toBe("Invalid password")
+
+  });
+
+  it("verifies a valid access token", () => {
+    const loggingIn = login();
+  });
+
+  it("does not varify an invalid access token", () => {
+    const loggingIn = login();
+  });
+
+  it("checks refresh token", () => {
+    const loggingIn = login();
+  });
 });
 
-describe(" checking refresh token ", () => {
-  logout();
+describe(" logging out ", () => {
+  it("logs out a user on a single device", () => {});
+
+  it("logs out a user on multiple devices", () => {});
 });
-
-describe(" logging out ", () => {});
-
-describe(" logging out everywhere ", () => {});

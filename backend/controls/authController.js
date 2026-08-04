@@ -28,7 +28,7 @@ async function login(req, res) {
     );
 
     if (!validPassword) {
-      res.status(400).json({ invalidPassword: "Password invalid" });
+      res.status(400).json({ invalidPassword: "Invalid password" });
     }
 
     const userINFO = {
@@ -42,7 +42,7 @@ async function login(req, res) {
 
     await storeRefreshToken(user.id, refreshToken);
     res.cookie("refreshToken", refreshToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
-    return res.json({ accessToken, userINFO });
+    return res.status(200).json({ accessToken, userINFO });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
