@@ -1,4 +1,5 @@
 const prisma = require("../prisma/client");
+
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -7,6 +8,7 @@ import {
   deleteAllRefreshTokens,
   deleteRefreshToken,
 } from "../auth/jwt";
+
 import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 
 async function login(req, res) {
@@ -39,6 +41,7 @@ async function login(req, res) {
     }
 
     const userINFO = {
+      id: user.id,
       name: user.name,
       username: user.username,
       email: user.email,
@@ -48,7 +51,10 @@ async function login(req, res) {
     const refreshToken = generateRefreshToken();
 
     await storeRefreshToken(user.id, refreshToken);
-    res.cookie("refreshToken", refreshToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
     return res.status(200).json({ accessToken, userINFO });
   } catch (error) {
     console.log(error);
@@ -116,57 +122,57 @@ async function signup(req, res) {
   }
 }
 
-async function logout(req, res){
+async function logout(req, res) {
   const { refreshToken } = req.cookies;
-  
+
   if (refreshToken) {
-    await deleteRefreshToken(refreshToken); 
+    await deleteRefreshToken(refreshToken);
   }
-  
-  res.clearCookie('refreshToken');  
-  return res.json({ message: 'Logged out successfully' });
+
+  res.clearCookie("refreshToken");
+  return res.json({ message: "Logged out successfully" });
 }
 
-async function logoutEverywhere(req, res){
+async function logoutEverywhere(req, res) {
   const userID = Number(req.user.userID);
-  deleteAllRefreshTokens(userID)
-  res.clearCookie('refreshToken');
-  return res.json({ message: 'Logged out from all devices' });
-
+  deleteAllRefreshTokens(userID);
+  res.clearCookie("refreshToken");
+  return res.json({ message: "Logged out from all devices" });
 }
 
-async function refreshToken(req, res){
+async function refreshToken(req, res) {
   try {
-  const { refreshToken } = req.cookies;
-  // ^ sent by browser w http
-  
-  if (!refreshToken) {
-    return res.status(401).json({ error: 'No refresh token' });
-  }
-  // if there is no refresh token it is expired
-  // and user is logged out and must log back in
+    const { refreshToken } = req.cookies;
+    // ^ sent by browser w http
 
-  // however if there is a refresh token - 
-  // lets check if its expired or not
-  const tokenData = await verifyRefreshToken(refreshToken);
-  
-  if (!tokenData) {
-    return res.status(403).json({ error: 'Invalid refresh token' });
-  }
-  // if it just so happens to be invalid when we check ..
-  // user is logged out and must log back in
+    if (!refreshToken) {
+      return res.status(401).json({ error: "No refresh token" });
+    }
+    // if there is no refresh token it is expired
+    // and user is logged out and must log back in
 
+    // however if there is a refresh token -
+    // lets check if its expired or not
+    const tokenData = await verifyRefreshToken(refreshToken);
 
-  // if the token is there and valid
-  // Generate new access token
-  const newAccessToken = generateAccessToken(tokenData.user.id, tokenData.user.email);
-  
-  return res.status(200).json({ newAccessToken });
-  } catch(error){
+    if (!tokenData) {
+      return res.status(403).json({ error: "Invalid refresh token" });
+    }
+    // if it just so happens to be invalid when we check ..
+    // user is logged out and must log back in
+
+    // if the token is there and valid
+    // Generate new access token
+    const newAccessToken = generateAccessToken(
+      tokenData.user.id,
+      tokenData.user.email,
+    );
+
+    return res.status(200).json({ newAccessToken });
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
   }
-
 }
 
 module.exports = {
@@ -176,5 +182,5 @@ module.exports = {
   signup,
   refreshToken,
   logout,
-  logoutEverywhere
+  logoutEverywhere,
 };

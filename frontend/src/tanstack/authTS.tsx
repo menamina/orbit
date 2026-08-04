@@ -88,9 +88,7 @@ async function checkAuth(
 
 async function isUsernameTaken(
   username: string,
-): Promise<
-  { success: boolean } | { message: string } | { serverError: string }
-> {
+): Promise<{ success: boolean }> {
   const res = await fetch(
     `http://localhost:5555/api/signup/username?username=${username}`,
   );
@@ -107,11 +105,7 @@ async function isUsernameTaken(
   return data;
 }
 
-async function isEmailTaken(
-  email: string,
-): Promise<
-  { success: boolean } | { message: string } | { serverError: string }
-> {
+async function isEmailTaken(email: string): Promise<{ success: boolean }> {
   const res = await fetch(
     `http://localhost:5555/api/signup/email?email=${email}`,
   );
@@ -128,9 +122,7 @@ async function isEmailTaken(
   return data;
 }
 
-async function signup(
-  data: SignupData,
-): Promise<{ success: boolean } | { serverError: string }> {
+async function signup(data: SignupData): Promise<{ success: boolean }> {
   const res = await fetch(`http://localhost:5555/api/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -152,11 +144,10 @@ async function signup(
 
 async function login(
   data: LoginData,
-): Promise<
-  | { invalidEmail: string }
-  | { invalidPassword: string }
-  | { serverError: string }
-> {
+): Promise<{
+  accessToken: string;
+  userINFO: { id: number; name: string; username: string; email: string };
+}> {
   const res = await fetch(`http://localhost:5555/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
