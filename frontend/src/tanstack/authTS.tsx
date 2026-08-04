@@ -123,47 +123,49 @@ async function isEmailTaken(email: string) {
   return data;
 }
 
-async function signup(signupData: string) {
+async function signup(data: {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}) {
   const res = await fetch(`http://localhost:5555/api/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: signupData,
+    body: JSON.stringify(data),
   });
 
-  const data = await res.json();
+  const responseData = await res.json();
 
   if (!res.ok) {
     if (res.status === 500) {
       throw new Error("Oops something went wrong - there's a server error");
     } else {
-      throw data;
+      throw responseData;
     }
   }
 
-  return data;
+  return responseData;
 }
 
-async function login(loginData: string) {
+async function login(data: { email: string; password: string }) {
   const res = await fetch(`http://localhost:5555/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: loginData,
+    body: JSON.stringify(data),
   });
 
-  const data = await res.json();
+  const responseData = await res.json();
 
   if (!res.ok) {
     if (res.status === 500) {
       throw new Error("Oops something went wrong - there's a server error");
     } else {
-      throw data;
+      throw responseData;
     }
   }
 
-  return data;
-}
-
-async function githubLogin() {
-  window.location.href = "http://localhost:5555/auth/github";
+  return responseData;
 }
