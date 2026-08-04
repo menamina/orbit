@@ -1,5 +1,12 @@
 const prisma = require("../prisma/client");
-import { deleteAllRefreshTokens, deleteRefreshToken } from "../auth/jwt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  storeRefreshToken,
+  verifyRefreshToken,
+  deleteAllRefreshTokens,
+  deleteRefreshToken,
+} from "../auth/jwt";
 import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 
 async function login(req, res) {
@@ -28,7 +35,7 @@ async function login(req, res) {
     );
 
     if (!validPassword) {
-      res.status(400).json({ invalidPassword: "Invalid password" });
+      return res.status(400).json({ invalidPassword: "Invalid password" });
     }
 
     const userINFO = {
@@ -128,7 +135,7 @@ async function logoutEverywhere(req, res){
 
 }
 
-function refreshToken(req, res){
+async function refreshToken(req, res){
   try {
   const { refreshToken } = req.cookies;
   // ^ sent by browser w http

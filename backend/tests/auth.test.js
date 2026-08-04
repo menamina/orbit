@@ -85,7 +85,7 @@ afterAll(async () => {
 
 describe(" checking username for usage during signup ", () => {
   it("returns a status of 400 when wanted username is in use", async () => {
-    const res = await request.get("/api/signup/isUsernameInUse?username=orbiter");
+    const res = await request.get("/api/signup/username?username=orbiter");
 
     expect(res.status).toBe(400);
     expect(res.body.message).toBe("Username in use");
@@ -93,7 +93,7 @@ describe(" checking username for usage during signup ", () => {
 
   it("returns a status of 200 when wanted username is NOT in use", async () => {
     await dlt(user.id);
-    const res = await request.get("/api/signup/isUsernameInUse?username=orbiter");
+    const res = await request.get("/api/signup/username?username=orbit");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -102,7 +102,7 @@ describe(" checking username for usage during signup ", () => {
 
 describe(" checking email for usage during signup ", () => {
   it("returns a status of 400 when wanted email is in use", async () => {
-    const res = await request.get("/api/signup/isEmailInUse?email=test@gmail.com");
+    const res = await request.get("/api/signup/email?email=test@gmail.com");
 
     expect(res.status).toBe(400);
     expect(res.body.message).toBe("Email in use");
@@ -110,7 +110,7 @@ describe(" checking email for usage during signup ", () => {
 
   it("returns a status of 200 when wanted email is NOT in use", async () => {
     await dlt(user.id);
-    const res = await request.get("/api/signup/isEmailInUse?email=test@gmail.com");
+    const res = await request.get("/api/signup/email?email=test@gmail.com");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -195,7 +195,9 @@ describe(" logging in // token checking ", () => {
     const loggingIn = await login();
     const accessToken = loggingIn.body.accessToken;
 
-    const res = await agent.get("/").set("Authorization", `Bearer ${accessToken}`);
+    const res = await agent
+      .get("/")
+      .set("Authorization", `Bearer ${accessToken}`);
     expect(res.status).toBe(200);
     expect(res.body.authenticated).toBe(true);
   });

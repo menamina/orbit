@@ -30,7 +30,7 @@ router.get("/", checkAuth, (req, res) => {
   res.status(200).json({ authenticated: true });
 });
 
-router.post("/api/checkRefreshToken", verifyRefreshToken);
+router.post("/api/checkRefreshToken", refreshToken);
 
 router.get("/api/signup/username", usernameInUse);
 router.get("/api/signup/email", emailInUse);
