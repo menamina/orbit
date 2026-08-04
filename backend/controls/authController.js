@@ -154,7 +154,7 @@ function refreshToken(req, res){
   // Generate new access token
   const newAccessToken = generateAccessToken(tokenData.user.id, tokenData.user.email);
   
-  return res.json({ newAccessToken });
+  return res.status(200).json({ newAccessToken });
   } catch(error){
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
