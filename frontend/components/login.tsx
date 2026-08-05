@@ -11,29 +11,13 @@ import {
   signupMut,
 } from "../src/tanstack/authTS";
 
+import {
+  LoginData,
+  SignupData,
+  LoginResponse,
+} from "../src/tanstack/authTypes";
+
 import GitHubBlack from "./imgs/GitHub_Invertocat_Black_Clearspace.png";
-
-interface LoginInfo {
-  email: string;
-  password: string;
-}
-
-interface SignupInfo {
-  name: string;
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
-interface LoginResponse {
-  accessToken: string;
-  userINFO: {
-    name: string;
-    username: string;
-    email: string;
-  };
-}
 
 function Login() {
   const { setAccessToken } = useAuth();
