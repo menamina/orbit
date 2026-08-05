@@ -1,5 +1,5 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import { SignupData, LoginData } from "./authTypes";
+import type { SignupData, LoginData, LoginResponse } from "./authTypes";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -144,10 +144,7 @@ async function signup(data: SignupData): Promise<{ success: boolean }> {
 
 async function login(
   data: LoginData,
-): Promise<{
-  accessToken: string;
-  userINFO: { id: number; name: string; username: string; email: string };
-}> {
+): Promise<LoginResponse> {
   const res = await fetch(`http://localhost:5555/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

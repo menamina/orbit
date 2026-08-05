@@ -11,7 +11,7 @@ import {
   signupMut,
 } from "../src/tanstack/authTS";
 
-import {
+import type {
   LoginData,
   SignupData,
   LoginResponse,
@@ -25,11 +25,11 @@ function Login() {
   const [searchParams] = useSearchParams();
   const urlError = searchParams.get("error");
 
-  const [loginInfo, setloginInfo] = useState<LoginInfo>({
+  const [loginInfo, setloginInfo] = useState<LoginData>({
     email: "",
     password: "",
   });
-  const [signupInfo, setSignupInfo] = useState<SignupInfo>({
+  const [signupInfo, setSignupInfo] = useState<SignupData>({
     name: "",
     username: "",
     email: "",
@@ -116,12 +116,11 @@ function Login() {
               <Paper>
                 {urlError === "oauth_failed"
                   ? "GitHub login failed. Please try again."
-                  : urlError === "no_token"
-                    ? "No token received from GitHub."
-                    : "Authentication error. Please try again."}
+                  : null}
               </Paper>
             )}
             {loginError && <Paper>{loginError.message}</Paper>}
+            {/* if the login error is email or password highlight the box later */}
           </Box>
 
           <Button
@@ -139,7 +138,7 @@ function Login() {
             <Box>Login with GitHub</Box>
           </Button>
 
-          {(Object.keys(loginInfo) as Array<keyof LoginInfo>).map((field) => (
+          {(Object.keys(loginInfo) as Array<keyof LoginData>).map((field) => (
             <TextField
               key={field}
               label={field.charAt(0).toUpperCase()}

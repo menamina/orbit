@@ -14,6 +14,7 @@ export type LoginData = {
 export type LoginResponse = {
   accessToken: string;
   userINFO: {
+    id: number;
     name: string;
     username: string;
     email: string;
