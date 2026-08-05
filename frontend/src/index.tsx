@@ -1,10 +1,10 @@
+import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { authenticateQuery } from "./tanstack/authTS";
-import { useAuth } from "./main";
 
 function Index() {
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, setAccessToken } = useState<string>("");
   const nav = useNavigate();
 
   useQuery({
@@ -18,7 +18,7 @@ function Index() {
 
       nav("/home");
     },
-    onError: (error: any) => {
+    onError: () => {
       setAccessToken(null);
       nav("/login");
     },

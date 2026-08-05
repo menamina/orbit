@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigation, useSearchParams } from "react-router-dom";
+import { useNavigation, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
 import { useAuth } from "../src/main";
 
 import {
-  checkIfUsernameIsInUser,
+  checkIfUsernameIsInUse,
   checkIfEmailIsInUse,
   loginMut,
   signupMut,
@@ -20,6 +20,9 @@ import type {
 import GitHubBlack from "./imgs/GitHub_Invertocat_Black_Clearspace.png";
 
 function Login() {
+  const nav = useNavigate();
+  const queryClient = useQueryClient();
+
   const { setAccessToken } = useAuth();
   const [toggle, setToggle] = useState("login");
   const [searchParams] = useSearchParams();
@@ -37,23 +40,20 @@ function Login() {
     confirmPassword: "",
   });
 
-  const [usernameQuery, setUsernameQuery] = useState("");
-  const [emailQuery, setEmailQuery] = useState("");
+  const [usernameQuery, setUsernameQuery] = useState<string>("");
+  const [emailQuery, setEmailQuery] = useState<string>("");
 
   const loginComplete = Object.values(loginInfo).every((value) => value !== "");
   const signupComplete = Object.values(signupInfo).every(
     (value) => value !== "",
   );
 
-  const nav = useNavigation();
-  const queryClient = useQueryClient();
-
   // --------- TANSTACK --------- \\
 
   //  mutations for logging in + signing up \\
 
   const { mutate: login, error: loginError } = useMutation({
-    ...loginMut(loginInfo),
+    ...loginMut(),
     onSuccess: (data: LoginResponse) => {
       // Update access token state FIRST
       setAccessToken(data.accessToken);
@@ -67,7 +67,7 @@ function Login() {
   });
 
   const { mutate: signup, error: signupError } = useMutation({
-    ...signupMut(signupInfo),
+    ...signupMut(),
     onSuccess: () => {
       setToggle("login");
     },
@@ -76,14 +76,13 @@ function Login() {
   // debounce useQuery for searching for usernames + emails \\
 
   const { error: usernameInUse } = useQuery(
-    checkIfUsernameIsInUser(usernameQuery),
+    checkIfUsernameIsInUse(usernameQuery),
   );
 
   const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
 
   useEffect(() => {
     if (signupInfo.username === "") {
-      setUsernameQuery("");
       return;
     }
 
@@ -96,7 +95,6 @@ function Login() {
 
   useEffect(() => {
     if (signupInfo.email === "") {
-      setEmailQuery("");
       return;
     }
 
@@ -152,7 +150,7 @@ function Login() {
           ))}
 
           {loginComplete && (
-            <Button variant="outlined" onClick={() => login()}>
+            <Button variant="outlined" onClick={() => login(loginInfo)}>
               login
             </Button>
           )}
@@ -206,7 +204,7 @@ function Login() {
             })}
           </Box>
 
-          {(Object.keys(signupInfo) as Array<keyof SignupInfo>).map((field) => (
+          {(Object.keys(signupInfo) as Array<keyof SignupData>).map((field) => (
             <TextField
               key={field}
               label={field.charAt(0).toUpperCase() + field.slice(1)}
@@ -220,7 +218,7 @@ function Login() {
           ))}
 
           {signupComplete && (
-            <Button variant="outlined" onClick={() => signup()}>
+            <Button variant="outlined" onClick={() => signup(signupInfo)}>
               signup
             </Button>
           )}
