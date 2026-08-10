@@ -76,24 +76,6 @@ async function dltCycle(req, res) {
   }
 }
 
-// ------- cycle info + algs  \\
-async function cycleInfo(req, res) {
-  try {
-    const cycleLength = Number(req.body.cyclelength);
-    const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
-  } catch (error) {}
-}
-
-async function updateCycleInfo(req, res) {
-  try {
-  } catch (error) {}
-}
-
-async function ovulationAlg(req, res) {
-  try {
-  } catch (error) {}
-}
-
 module.exports = {
   getCycleByMonthYear,
   trackCycle,

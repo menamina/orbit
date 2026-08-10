@@ -54,7 +54,7 @@ model Settings {
   saltedHash String?  // Optional - GitHub/OAuth users won't have password
   cycleLength Int?
   daysBetweenPeriod Int?
-  predictionAlg  String?
+  ovulation         Int?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
