@@ -57,7 +57,9 @@ model Settings {
   ovulation         Int?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  @@index([userID])
 }
+
 
 model CycleTracking {
   id        Int      @id @default(autoincrement())
