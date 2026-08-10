@@ -1,5 +1,5 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { SignupData, LoginData, LoginResponse } from "./authTypes";
+import type { SignupData, LoginData, LoginResponse, AuthCheckResponse } from "./authTypes";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -49,7 +49,7 @@ export const loginMut = () => {
 
 async function checkAuth(
   accessToken: string,
-): Promise<{ authenticated: boolean } | { newAccessToken: string }> {
+): Promise<AuthCheckResponse> {
   const res = await fetch(`http://localhost:5555/`, {
     method: "GET",
     headers: {
@@ -83,7 +83,7 @@ async function checkAuth(
   }
 
   const data = await res.json();
-  return data; // { authenticated: true }
+  return data; // { authenticated: true, user: { id, name, username, email } }
 }
 
 async function isUsernameTaken(

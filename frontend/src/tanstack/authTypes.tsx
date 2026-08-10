@@ -20,3 +20,14 @@ export type LoginResponse = {
     email: string;
   };
 };
+
+export type UserInfo = {
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+};
+
+export type AuthCheckResponse =
+  | { authenticated: true; user: UserInfo }
+  | { newAccessToken: string };
