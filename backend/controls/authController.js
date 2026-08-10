@@ -47,7 +47,12 @@ async function login(req, res) {
       email: user.email,
     };
 
-    const accessToken = generateAccessToken(user.id, user.email);
+    const accessToken = generateAccessToken(
+      user.id,
+      user.name,
+      user.username,
+      user.email,
+    );
     const refreshToken = generateRefreshToken();
 
     await storeRefreshToken(user.id, refreshToken);
@@ -168,7 +173,7 @@ async function refreshToken(req, res) {
       tokenData.user.email,
     );
 
-    return res.status(200).json({ newAccessToken });
+    return res.status(200).json(newAccessToken);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });

@@ -17,6 +17,8 @@ export function checkAuth(req, res, next) {
   req.user = {
     userID: decoded.userID,
     email: decoded.email,
+    username: decoded.username,
+    name: decoded.name,
   };
 
   next();

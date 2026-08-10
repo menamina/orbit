@@ -7,8 +7,8 @@ const accessTokenSec = process.env.ACCESS_SECRET;
 const accessExpiry = process.env.ACCESS_EXPIRES_IN;
 const refreshExpiry = process.env.REFRESH_EXPIRES_IN;
 
-function generateAccessToken(userID, email) {
-  return jwt.sign({ userID, email }, accessTokenSec, {
+function generateAccessToken(userID, name, username, email) {
+  return jwt.sign({ userID, name, username, email }, accessTokenSec, {
     expiresIn: accessExpiry,
   });
 }
