@@ -73,11 +73,12 @@ model CycleTracking {
 model PillTracking {
   id        Int      @id @default(autoincrement())
   userID    Int
-  date DateTime @default(now())
+  date      DateTime
 
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
   @@index([userID, date]) 
+  @@index([userID, id]) 
 }
 
 model Notes {

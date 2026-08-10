@@ -24,6 +24,12 @@ import {
   logoutEverywhere,
 } from "../controls/authController";
 
+import {
+  getBCPillByMonthYear,
+  takeBCPill,
+  dltBCPIll,
+} from "../controls/bcPillControl";
+
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth, (req, res) => {
@@ -34,7 +40,7 @@ router.get("/", checkAuth, (req, res) => {
       name: req.user.name,
       username: req.user.username,
       email: req.user.email,
-    }
+    },
   });
 });
 
@@ -91,9 +97,9 @@ router.post("/api/logout", logout);
 router.post("/api/logoutEverywhere", logoutEverywhere);
 
 // ======== PILL ======== \\
-router.get("/api/pill/:month/:year", checkAuth);
-router.post("/api/track/pill", checkAuth);
-router.delete("/api/track/pill/delete/:pillID", checkAuth);
+router.get("/api/pill/:userid/:month/:year", checkAuth, getBCPillByMonthYear);
+router.post("/api/track/pill", checkAuth, takeBCPill);
+router.delete("/api/pill/delete/:userid/:pillID", checkAuth);
 
 // ======== CYCLEs ======== \\
 router.get("/api/cycle/:month/:year", checkAuth);
