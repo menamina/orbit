@@ -1,67 +1,80 @@
 import prisma from "../prisma/client";
 import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 
-async function settingsUpdate(req, res){
-    try {
+async function settingsUpdate(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const { name, username, email } = req.body;
 
-        const userID = Number(req.user.userID)
-        const { name, username, email } = req.body
-
-        if (name === "" && username === "" && email === ""){
-            return res.status(400).json({error: "Cannot update with empty values"})
-        }
-
-        const updatedUser = await prisma.user.update({
-            where: { id: userID },
-            data: {
-                ...(name && {name}),
-                ...(username && {username}),
-                ...(email && {email})
-            }
-        })
-
-
-        // check user + email in front end
-
-        return res.status(200).json({success: true})
-
-    } catch(error){
-        console.log(error);
-        return res.status(500).json({ serverError: "Server error" });
-
+    if (name === "" && username === "" && email === "") {
+      return res.status(400).json({ error: "Cannot update with empty values" });
     }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userID,
+      },
+    });
+
+    if (username && username !== user.username) {
+      const existingUser = await prisma.user.findUnique({
+        where: { username },
+      });
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+    }
+
+    if (email && email !== user.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already taken" });
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userID },
+      data: {
+        ...(name && { name }),
+        ...(username && { username }),
+        ...(email && { email }),
+      },
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
 }
 
+async function changePassword(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const { oldPassword, password } = req.body;
 
-async function changePassword(req, res){
-    try {
+    const user = await prisma.settings.findUnique({
+      where: { userId: userID },
+    });
 
-        const userID = Number(req.user.userID)
-        const { oldPassword, password } = req.body
+    const match = await checkPassword(oldPassword, user.saltedHash);
 
-        const user = await prisma.settings.findUnique({
-            where: { userId: userID }
-        });
-
-        const match = checkPassword(oldPassword, user.saltedHash)
-
-            if (!isValid) {
+    if (!match) {
       return res.status(400).json({ error: "Current password is incorrect" });
     }
 
-        const newPassword = passwordGenie(password)
+    const newPassword = await passwordGenie(password);
 
-        await prisma.settings.update({
+    await prisma.settings.update({
       where: { userId: userID },
-      data: { saltedHash: newPassword }
+      data: { saltedHash: newPassword },
     });
 
-       return res.status(200).json({success: true})
-
-    } catch(error){
-        console.log(error);
-        return res.status(500).json({ serverError: "Server error" });
-    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
 }
 // ------- cycle info + algs  \\
 async function cycleInfo(req, res) {
@@ -69,19 +82,47 @@ async function cycleInfo(req, res) {
     const userID = Number(req.user.userID);
     const cycleLength = Number(req.body.cyclelength);
     const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
-    
-    const updatedSettings = 
+
+    const updatedSettings = await prisma.settings.create({
+      where: {
+        id: userID,
+      },
+      data: {
+        ...(cycleLength && { cycleLength }),
+        ...(daysBetweenPeriod && { daysBetweenPeriod }),
+      },
+    });
     // count from day one
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
 }
 
 async function updateCycleInfo(req, res) {
   try {
-  } catch (error) {}
+    const userID = Number(req.user.userID);
+    const cycleLength = Number(req.body.cyclelength);
+    const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
+
+    const updatedSettings = await prisma.settings.update({
+      where: {
+        id: userID,
+      },
+      data: {
+        ...(cycleLength && { cycleLength }),
+        ...(daysBetweenPeriod && { daysBetweenPeriod }),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
 }
 
 module.exports = {
-    changePassword,
-    cycleInfo,
-    updateCycleInfo
-}
+  settingsUpdate,
+  changePassword,
+  cycleInfo,
+  updateCycleInfo,
+};
