@@ -97,6 +97,72 @@ describe("birth control api", () => {
     expect(res.body).toHaveProperty("error");
   });
 
+  it("prevents duplicate pill tracking on the same date", async () => {
+    const date = "2026-08-09";
+    const res1 = await agent.post(`/api/track/pill`).send({ date });
+    expect(res1.status).toBe(200);
+
+    const res2 = await agent.post(`/api/track/pill`).send({ date });
+    expect(res2.status).toBe(400);
+    expect(res2.body).toHaveProperty("error");
+    expect(res2.body.error).toContain("already tracked");
+
+    await agent.delete(`/api/pill/${res1.body.id}`);
+  });
+
+  it("rejects invalid date format", async () => {
+    const res = await agent.post(`/api/track/pill`).send({
+      date: "not-a-date",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+  });
+
+  it("rejects pill tracking without date", async () => {
+    const res = await agent.post(`/api/track/pill`).send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("Date is required");
+  });
+
+  it("returns empty array for month with no pills", async () => {
+    const res = await agent.get(`/api/pill/12/2025`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(0);
+  });
+
+  it("returns error when deleting non-existent pill", async () => {
+    const res = await agent.delete(`/api/pill/999999`);
+
+    expect(res.status).toBe(404);
+    expect(res.body).toHaveProperty("error");
+  });
+
+  it("prevents deleting another user's pill", async () => {
+    const otherUser = await createTestUser(
+      "other",
+      "other@test.com",
+      "password123",
+    );
+
+    const otherPill = await prisma.pillTracking.create({
+      data: {
+        userID: otherUser.id,
+        date: new Date("2026-08-08"),
+      },
+    });
+
+    const res = await agent.delete(`/api/pill/${otherPill.id}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("Not authorized");
+
+    await dlt(otherUser.id);
+  });
+
   it("deletes birth control pill", async () => {
     const res = await agent.delete(`/api/pill/${pill}`);
 

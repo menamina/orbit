@@ -34,8 +34,16 @@ async function takeBCPill(req, res) {
     const userID = Number(req.user.userID);
     const { date } = req.body;
 
+    if (!date) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+
     const todaysDate = new Date();
     const dateToTrack = new Date(date);
+
+    if (isNaN(dateToTrack.getTime())) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
 
     if (dateToTrack > todaysDate) {
       return res
@@ -43,10 +51,30 @@ async function takeBCPill(req, res) {
         .json({ error: "Cannot track beyond today's date" });
     }
 
+    // Normalize to start of day for duplicate checking
+    const startOfDay = new Date(dateToTrack.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(dateToTrack.setHours(23, 59, 59, 999));
+
+    const isDayAlreadyEntered = await prisma.pillTracking.findFirst({
+      where: {
+        userID,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
+
+    if (isDayAlreadyEntered) {
+      return res
+        .status(400)
+        .json({ error: "Pill already tracked for this date" });
+    }
+
     const today = await prisma.pillTracking.create({
       data: {
         userID,
-        date: dateToTrack,
+        date: new Date(date),
       },
     });
 
@@ -62,11 +90,22 @@ async function dltBCPIll(req, res) {
     const userID = Number(req.user.userID);
     const pillID = Number(req.params.pillid);
 
-    const deleted = await prisma.pillTracking.delete({
-      where: {
-        id: pillID,
-        userID,
-      },
+    const pill = await prisma.pillTracking.findUnique({
+      where: { id: pillID },
+    });
+
+    if (!pill) {
+      return res.status(404).json({ error: "Pill record not found" });
+    }
+
+    if (pill.userID !== userID) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this record" });
+    }
+
+    await prisma.pillTracking.delete({
+      where: { id: pillID },
     });
 
     res.status(200).json({ success: true });
