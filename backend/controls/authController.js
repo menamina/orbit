@@ -1,4 +1,4 @@
-const prisma = require("../prisma/client");
+import prisma from "../prisma/client";
 
 import {
   generateAccessToken,
@@ -170,10 +170,12 @@ async function refreshToken(req, res) {
     // Generate new access token
     const newAccessToken = generateAccessToken(
       tokenData.user.id,
+      tokenData.user.name,
+      tokenData.user.username,
       tokenData.user.email,
     );
 
-    return res.status(200).json(newAccessToken);
+    return res.status(200).json({ newAccessToken });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
