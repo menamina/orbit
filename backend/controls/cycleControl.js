@@ -29,16 +29,6 @@ async function getCycleByMonthYear(req, res) {
   }
 }
 
-// async function cycleInfo(req, res) {
-//   try {
-//   } catch (error) {}
-// }
-
-// async function updateCycleInfo(req, res) {
-//   try {
-//   } catch (error) {}
-// }
-
 async function trackCycle(req, res) {
   try {
     const userID = Number(req.user.userID);
@@ -84,6 +74,24 @@ async function dltCycle(req, res) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
   }
+}
+
+// ------- cycle info + algs  \\
+async function cycleInfo(req, res) {
+  try {
+    const cycleLength = Number(req.body.cyclelength);
+    const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
+  } catch (error) {}
+}
+
+async function updateCycleInfo(req, res) {
+  try {
+  } catch (error) {}
+}
+
+async function ovulationAlg(req, res) {
+  try {
+  } catch (error) {}
 }
 
 module.exports = {
