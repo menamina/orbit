@@ -2,13 +2,12 @@ import prisma from "../prisma/client";
 
 async function getCycleByMonthYear(req, res) {
   try {
-    const { id, mo, yr } = req.body;
-    const userID = Number(id);
-    const month = Number(mo);
-    const year = Number(yr);
+    const userID = Number(req.user.userID);
+    const monthNum = Number(req.params.month);
+    const yearNum = Number(req.params.year);
 
-    const startOfMonth = new Date(year, month - 1, 1);
-    const startOfNextMonth = new Date(year, month, 1);
+    const startOfMonth = new Date(yearNum, monthNum - 1, 1);
+    const startOfNextMonth = new Date(yearNum, monthNum, 1);
 
     const cycleMonth = await prisma.cycleTracking.findMany({
       where: {
@@ -23,7 +22,7 @@ async function getCycleByMonthYear(req, res) {
       },
     });
 
-    return res.status(200).json(cyleMonth);
+    return res.status(200).json(cycleMonth);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
@@ -42,8 +41,18 @@ async function getCycleByMonthYear(req, res) {
 
 async function trackCycle(req, res) {
   try {
-    const { id, date } = req.body;
-    const userID = Number(id);
+    const userID = Number(req.user.userID);
+    const { date } = req.body;
+
+    const todaysDate = new Date();
+    const dateToTrack = new Date(date);
+
+    if (dateToTrack > todaysDate) {
+      return res
+        .status(400)
+        .json({ error: "Cannot track beyond today's date" });
+    }
+
     const today = await prisma.cycleTracking.create({
       data: {
         userID,
@@ -60,12 +69,13 @@ async function trackCycle(req, res) {
 
 async function dltCycle(req, res) {
   try {
-    const { cycleid } = req.body;
-    const cycleID = Number(cycleid);
+    const userID = Number(req.user.userID);
+    const cycleID = Number(req.params.cycleID);
 
     const deleted = await prisma.cycleTracking.delete({
       where: {
         id: cycleID,
+        userID,
       },
     });
 
@@ -75,3 +85,9 @@ async function dltCycle(req, res) {
     return res.status(500).json({ serverError: "Server error" });
   }
 }
+
+module.exports = {
+  getCycleByMonthYear,
+  trackCycle,
+  dltCycle,
+};

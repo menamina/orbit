@@ -30,6 +30,12 @@ import {
   dltBCPIll,
 } from "../controls/bcPillControl";
 
+import {
+  getCycleByMonthYear,
+  trackCycle,
+  dltCycle,
+} from "../controls/cycleControl";
+
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth, (req, res) => {
@@ -99,12 +105,12 @@ router.post("/api/logoutEverywhere", logoutEverywhere);
 // ======== PILL ======== \\
 router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);
 router.post("/api/track/pill", checkAuth, takeBCPill);
-router.delete("/api/pill/:pillID", checkAuth, dltBCPIll);
+router.delete("/api/pill/:pillid", checkAuth, dltBCPIll);
 
 // ======== CYCLEs ======== \\
-router.get("/api/cycle/:month/:year", checkAuth);
-router.post("/api/track/period");
-router.delete("/api/track/pill/delete/:pillID", checkAuth);
+router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);
+router.post("/api/track/period", checkAuth, trackCycle);
+router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth);
