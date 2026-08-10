@@ -3,10 +3,12 @@ import supertest from "supertest";
 const request = supertest(app);
 const agent = supertest.agent(app);
 import prisma from "../../prisma/client";
+import { passwordGenie } from "../../utils/password";
 
 jest.setTimeout(5500);
 
 let user;
+let pill;
 
 async function createTestUser(
   username = "orbiter",
@@ -56,7 +58,7 @@ async function dltAll() {
 beforeAll(async () => {
   await dltAll();
   user = await createTestUser();
-  login();
+  await login();
 });
 
 afterAll(async () => {
@@ -68,13 +70,37 @@ afterAll(async () => {
 
 describe("birth control api", () => {
   it("gets the month + year of the birth control pack", async () => {
-    const res = await agent.get(`/api/pill/${user.id}/"8"/"2026"`);
+    const res = await agent.get(`/api/pill/8/2026`);
 
     expect(res.status).toBe(200);
-    expect(res.status).toHaveProperty(monthOfPills);
+    expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it("posts birth control pill", async () => {});
+  it("posts birth control pill", async () => {
+    const res = await agent.post(`/api/track/pill`).send({
+      date: "2026-08-07",
+    });
 
-  it("deletes birth control pill", async () => {});
+    pill = res.body.id;
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("id");
+    expect(res.body).toHaveProperty("date");
+  });
+
+  it("does not post birth control pill if the date is greater than today's date", async () => {
+    const res = await agent.post(`/api/track/pill`).send({
+      date: "2027-08-07",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+  });
+
+  it("deletes birth control pill", async () => {
+    const res = await agent.delete(`/api/pill/${pill}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success");
+  });
 });

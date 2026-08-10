@@ -2,13 +2,12 @@ import prisma from "../prisma/client";
 
 async function getBCPillByMonthYear(req, res) {
   try {
-    const { userid, mo, yr } = req.params;
-    const userID = Number(userid);
-    const month = Number(mo);
-    const year = Number(yr);
+    const userID = Number(req.user.userID);
+    const monthNum = Number(req.params.month);
+    const yearNum = Number(req.params.year);
 
-    const startOfMonth = new Date(year, month - 1, 1);
-    const startOfNextMonth = new Date(year, month, 1);
+    const startOfMonth = new Date(yearNum, monthNum - 1, 1);
+    const startOfNextMonth = new Date(yearNum, monthNum, 1);
 
     const monthOfPills = await prisma.pillTracking.findMany({
       where: {
@@ -32,12 +31,22 @@ async function getBCPillByMonthYear(req, res) {
 
 async function takeBCPill(req, res) {
   try {
-    const { id, date } = req.body;
-    const userID = Number(id);
+    const userID = Number(req.user.userID);
+    const { date } = req.body;
+
+    const todaysDate = new Date();
+    const dateToTrack = new Date(date);
+
+    if (dateToTrack > todaysDate) {
+      return res
+        .status(400)
+        .json({ error: "Cannot track beyond today's date" });
+    }
+
     const today = await prisma.pillTracking.create({
       data: {
         userID,
-        date: new Date(date),
+        date: dateToTrack,
       },
     });
 
@@ -50,10 +59,8 @@ async function takeBCPill(req, res) {
 
 async function dltBCPIll(req, res) {
   try {
-    const { userid, pill } = req.params;
-
-    const userID = Number(userid);
-    const pillID = Number(pill);
+    const userID = Number(req.user.userID);
+    const pillID = Number(req.params.pillid);
 
     const deleted = await prisma.pillTracking.delete({
       where: {

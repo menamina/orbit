@@ -97,9 +97,9 @@ router.post("/api/logout", logout);
 router.post("/api/logoutEverywhere", logoutEverywhere);
 
 // ======== PILL ======== \\
-router.get("/api/pill/:userid/:month/:year", checkAuth, getBCPillByMonthYear);
+router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);
 router.post("/api/track/pill", checkAuth, takeBCPill);
-router.delete("/api/pill/delete/:userid/:pillID", checkAuth);
+router.delete("/api/pill/:pillID", checkAuth, dltBCPIll);
 
 // ======== CYCLEs ======== \\
 router.get("/api/cycle/:month/:year", checkAuth);
