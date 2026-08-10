@@ -43,17 +43,100 @@ async function trackCycle(req, res) {
         .json({ error: "Cannot track beyond today's date" });
     }
 
-    const today = await prisma.cycleTracking.create({
-      data: {
+    const monthNum = dateToTrack.getMonth(); // 0-11
+    const yearNum = dateToTrack.getFullYear();
+
+    const startOfMonth = new Date(yearNum, monthNum, 1);
+    const startOfNextMonth = new Date(yearNum, monthNum + 1, 1);
+
+    // Check if there are any existing markings for this month
+    const existingMarkingsThisMonth = await prisma.cycleTracking.findMany({
+      where: {
         userID,
-        date: new Date(date),
+        startDate: {
+          gte: startOfMonth,
+          lt: startOfNextMonth,
+        },
       },
     });
 
-    res.status(200).json(today);
+    const isFirstMarkingOfMonth = existingMarkingsThisMonth.length === 0;
+
+    // Create the cycle tracking entry
+    const today = await prisma.cycleTracking.create({
+      data: {
+        userID,
+        startDate: dateToTrack,
+      },
+    });
+
+    // If this is the first marking of the month, update predictions
+    if (isFirstMarkingOfMonth) {
+      await updatePredictions(userID, dateToTrack);
+    }
+
+    res.status(200).json({
+      ...today,
+      isFirstMarkingOfMonth,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
+// Helper function to update period end and ovulation predictions
+async function updatePredictions(userID, startDate) {
+  try {
+    const settings = await prisma.settings.findUnique({
+      where: { userID },
+    });
+
+    if (!settings || !settings.cycleLength || !settings.daysBetweenPeriod) {
+      console.log("Missing cycle settings for predictions");
+      return;
+    }
+
+    // Calculate when the period ends (startDate + cycleLength)
+    // cycleLength = how many days you bleed (e.g., 5 days)
+    // JavaScript Date automatically handles month boundaries
+    // Example: Jan 27 + 5 days = Feb 1
+    const predictedEndDate = new Date(startDate);
+    predictedEndDate.setDate(predictedEndDate.getDate() + settings.cycleLength);
+
+    // Calculate ovulation date (typically 14 days before next period)
+    // daysBetweenPeriod = total cycle length (e.g., 28-35 days)
+    // Next period starts at: startDate + daysBetweenPeriod
+    // So ovulation is: startDate + (daysBetweenPeriod - 14)
+    const predictedOvulationDate = new Date(startDate);
+    predictedOvulationDate.setDate(
+      predictedOvulationDate.getDate() + (settings.daysBetweenPeriod - 14),
+    );
+
+    // Calculate next cycle start date
+    const nextCycleDate = new Date(startDate);
+    nextCycleDate.setDate(nextCycleDate.getDate() + settings.daysBetweenPeriod);
+
+    // Store predictions as day offsets from period start
+    const ovulationPrediction = settings.daysBetweenPeriod - 14;
+    const nextCyclePrediction = settings.daysBetweenPeriod;
+
+    // Update the predictions in the database
+    await prisma.settings.update({
+      where: { userID },
+      data: {
+        ovulationPrediction,
+        nextCyclePrediction,
+      },
+    });
+
+    return {
+      predictedEndDate,
+      predictedOvulationDate,
+      nextCycleDate,
+    };
+  } catch (error) {
+    console.log("Error updating predictions:", error);
   }
 }
 
@@ -80,4 +163,5 @@ module.exports = {
   getCycleByMonthYear,
   trackCycle,
   dltCycle,
+  updatePredictions,
 };

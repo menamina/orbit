@@ -54,7 +54,8 @@ model Settings {
   saltedHash String?  // Optional - GitHub/OAuth users won't have password
   cycleLength Int?
   daysBetweenPeriod Int?
-  ovulation         Int?
+  ovulationPrediction         Int?
+  nextCyclePrediction Int?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
   @@index([userID])
@@ -70,6 +71,7 @@ model CycleTracking {
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
 
   @@index([userID, startDate])
+  @@index([userID])
 }
 
 model PillTracking {

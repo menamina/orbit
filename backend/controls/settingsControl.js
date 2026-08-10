@@ -54,7 +54,7 @@ async function changePassword(req, res) {
     const { oldPassword, password } = req.body;
 
     const user = await prisma.settings.findUnique({
-      where: { userId: userID },
+      where: { userID: userID },
     });
 
     const match = await checkPassword(oldPassword, user.saltedHash);
@@ -66,7 +66,7 @@ async function changePassword(req, res) {
     const newPassword = await passwordGenie(password);
 
     await prisma.settings.update({
-      where: { userId: userID },
+      where: { userID: userID },
       data: { saltedHash: newPassword },
     });
 
@@ -83,16 +83,17 @@ async function cycleInfo(req, res) {
     const cycleLength = Number(req.body.cyclelength);
     const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
 
-    const updatedSettings = await prisma.settings.create({
+    const updatedSettings = await prisma.settings.update({
       where: {
-        id: userID,
+        userID: userID,
       },
       data: {
         ...(cycleLength && { cycleLength }),
         ...(daysBetweenPeriod && { daysBetweenPeriod }),
       },
     });
-    // count from day one
+
+    return res.status(200).json(updatedSettings);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
@@ -107,13 +108,15 @@ async function updateCycleInfo(req, res) {
 
     const updatedSettings = await prisma.settings.update({
       where: {
-        id: userID,
+        userID: userID,
       },
       data: {
         ...(cycleLength && { cycleLength }),
         ...(daysBetweenPeriod && { daysBetweenPeriod }),
       },
     });
+
+    return res.status(200).json(updatedSettings);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
