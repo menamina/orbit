@@ -51,9 +51,10 @@ async function trackCycle(req, res) {
         .json({ error: "Cannot track beyond today's date" });
     }
 
-    const startOfDay = new Date(dateToTrack);
-    startOfDay.setHours(0, 0, 0, 0);
+    // Normalize to midnight ONCE
+    dateToTrack.setHours(0, 0, 0, 0);
 
+    // For duplicate checking, create end of day
     const endOfDay = new Date(dateToTrack);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -61,7 +62,7 @@ async function trackCycle(req, res) {
       where: {
         userID,
         startDate: {
-          gte: startOfDay,
+          gte: dateToTrack, // Already at midnight
           lte: endOfDay,
         },
       },
@@ -98,34 +99,41 @@ async function trackCycle(req, res) {
     });
 
     const settings = userData?.settings;
-    const isFirstMarkingOfMonth = userData.cycleTracking.length === 0;
+    const existingMarkingsThisMonth = userData?.cycleTracking || [];
+    const isFirstMarkingOfMonth = existingMarkingsThisMonth.length === 0;
 
-    // Calculate estimated end date if settings exist
-    let estEndDate = null;
-    if (settings && settings.cycleLength) {
-      // Use the original date string to avoid mutation issues
-      estEndDate = new Date(date);
-      estEndDate.setHours(0, 0, 0, 0);
-      estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
-    }
+    let today;
 
-    // Normalize the date to midnight before storing
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
-
-    const today = await prisma.cycleTracking.create({
-      data: {
-        userID,
-        startDate: normalizedDate,
-        endDate: estEndDate,
-      },
-    });
-
-    // If this is the first marking of the month, update initial predictions
     if (isFirstMarkingOfMonth) {
-      await updatePredictions(userID, new Date(date));
+      // First marking = new cycle, create with predicted end date
+      let estEndDate = null;
+      if (settings && settings.cycleLength) {
+        estEndDate = new Date(dateToTrack);
+        estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
+      }
+
+      today = await prisma.cycleTracking.create({
+        data: {
+          userID,
+          startDate: dateToTrack,
+          endDate: estEndDate,
+        },
+      });
+
+      // Update initial predictions
+      await updatePredictions(userID, dateToTrack);
     } else {
-      // Check if actual cycle differs from expected and update predictions
+      // Subsequent marking = update existing cycle's end date
+      const currentCycle = existingMarkingsThisMonth[0];
+
+      today = await prisma.cycleTracking.update({
+        where: { id: currentCycle.id },
+        data: {
+          endDate: dateToTrack, // Update end date to the latest marking
+        },
+      });
+
+      // Recalculate predictions based on actual cycle data
       await updatePredictionsBasedOnActualData(userID);
     }
 
