@@ -12,13 +12,13 @@ async function getCycleByMonthYear(req, res) {
     const cycleMonth = await prisma.cycleTracking.findMany({
       where: {
         userID: userID,
-        date: {
+        startDate: {
           gte: startOfMonth, // >= Aug 1
           lt: startOfNextMonth, // < Sep 1
         },
       },
       orderBy: {
-        date: "asc",
+        startDate: "asc",
       },
     });
 
@@ -34,13 +34,43 @@ async function trackCycle(req, res) {
     const userID = Number(req.user.userID);
     const { date } = req.body;
 
+    if (!date) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+
     const todaysDate = new Date();
     const dateToTrack = new Date(date);
+
+    if (isNaN(dateToTrack.getTime())) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
 
     if (dateToTrack > todaysDate) {
       return res
         .status(400)
         .json({ error: "Cannot track beyond today's date" });
+    }
+
+    const startOfDay = new Date(dateToTrack);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(dateToTrack);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const isDayAlreadyEntered = await prisma.cycleTracking.findFirst({
+      where: {
+        userID,
+        startDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
+
+    if (isDayAlreadyEntered) {
+      return res
+        .status(400)
+        .json({ error: "Cycle already tracked for this date" });
     }
 
     const monthNum = dateToTrack.getMonth(); // 0-11
@@ -49,30 +79,54 @@ async function trackCycle(req, res) {
     const startOfMonth = new Date(yearNum, monthNum, 1);
     const startOfNextMonth = new Date(yearNum, monthNum + 1, 1);
 
-    // Check if there are any existing markings for this month
-    const existingMarkingsThisMonth = await prisma.cycleTracking.findMany({
-      where: {
-        userID,
-        startDate: {
-          gte: startOfMonth,
-          lt: startOfNextMonth,
+    const userData = await prisma.user.findUnique({
+      where: { id: userID },
+      include: {
+        settings: true,
+        cycleTracking: {
+          where: {
+            startDate: {
+              gte: startOfMonth,
+              lt: startOfNextMonth,
+            },
+          },
+          orderBy: {
+            startDate: "asc",
+          },
         },
       },
     });
 
-    const isFirstMarkingOfMonth = existingMarkingsThisMonth.length === 0;
+    const settings = userData?.settings;
+    const isFirstMarkingOfMonth = userData.cycleTracking.length === 0;
 
-    // Create the cycle tracking entry
+    // Calculate estimated end date if settings exist
+    let estEndDate = null;
+    if (settings && settings.cycleLength) {
+      // Use the original date string to avoid mutation issues
+      estEndDate = new Date(date);
+      estEndDate.setHours(0, 0, 0, 0);
+      estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
+    }
+
+    // Normalize the date to midnight before storing
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+
     const today = await prisma.cycleTracking.create({
       data: {
         userID,
-        startDate: dateToTrack,
+        startDate: normalizedDate,
+        endDate: estEndDate,
       },
     });
 
-    // If this is the first marking of the month, update predictions
+    // If this is the first marking of the month, update initial predictions
     if (isFirstMarkingOfMonth) {
-      await updatePredictions(userID, dateToTrack);
+      await updatePredictions(userID, new Date(date));
+    } else {
+      // Check if actual cycle differs from expected and update predictions
+      await updatePredictionsBasedOnActualData(userID);
     }
 
     res.status(200).json({
@@ -85,7 +139,7 @@ async function trackCycle(req, res) {
   }
 }
 
-// Helper function to update period end and ovulation predictions
+// Helper function to update period end and ovulation predictions based on settings
 async function updatePredictions(userID, startDate) {
   try {
     const settings = await prisma.settings.findUnique({
@@ -140,17 +194,110 @@ async function updatePredictions(userID, startDate) {
   }
 }
 
+// Adaptive prediction: Update based on actual historical cycle data
+async function updatePredictionsBasedOnActualData(userID) {
+  try {
+    // Get the last 3 completed cycles to calculate averages
+    const recentCycles = await prisma.cycleTracking.findMany({
+      where: {
+        userID,
+        endDate: { not: null }, // Only completed cycles
+      },
+      orderBy: {
+        startDate: "desc",
+      },
+      take: 3,
+    });
+
+    if (recentCycles.length < 2) {
+      // Not enough data to calculate averages yet
+      return;
+    }
+
+    // Calculate actual cycle lengths (how many days bleeding lasted)
+    const periodLengths = recentCycles.map((cycle) => {
+      const start = new Date(cycle.startDate);
+      const end = new Date(cycle.endDate);
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    });
+
+    // Calculate average period length
+    const avgPeriodLength = Math.round(
+      periodLengths.reduce((sum, len) => sum + len, 0) / periodLengths.length,
+    );
+
+    // Calculate days between periods (cycle length)
+    const cycleGaps = [];
+    for (let i = 0; i < recentCycles.length - 1; i++) {
+      const currentStart = new Date(recentCycles[i].startDate);
+      const nextStart = new Date(recentCycles[i + 1].startDate);
+      const diffTime = Math.abs(currentStart - nextStart);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      cycleGaps.push(diffDays);
+    }
+
+    let avgDaysBetweenPeriod = null;
+    if (cycleGaps.length > 0) {
+      avgDaysBetweenPeriod = Math.round(
+        cycleGaps.reduce((sum, gap) => sum + gap, 0) / cycleGaps.length,
+      );
+    }
+
+    // Update settings with learned data
+    const updateData = {
+      cycleLength: avgPeriodLength,
+      ovulationPrediction: avgDaysBetweenPeriod
+        ? avgDaysBetweenPeriod - 14
+        : undefined,
+      nextCyclePrediction: avgDaysBetweenPeriod || undefined,
+    };
+
+    if (avgDaysBetweenPeriod) {
+      updateData.daysBetweenPeriod = avgDaysBetweenPeriod;
+    }
+
+    await prisma.settings.update({
+      where: { userID },
+      data: updateData,
+    });
+
+    console.log(
+      `Updated predictions for user ${userID}: avgPeriodLength=${avgPeriodLength}, avgCycle=${avgDaysBetweenPeriod}`,
+    );
+  } catch (error) {
+    console.log("Error updating predictions based on actual data:", error);
+  }
+}
+
 async function dltCycle(req, res) {
   try {
     const userID = Number(req.user.userID);
     const cycleID = Number(req.params.cycleID);
 
-    const deleted = await prisma.cycleTracking.delete({
-      where: {
-        id: cycleID,
-        userID,
-      },
+    // First verify the cycle belongs to this user
+    const cycle = await prisma.cycleTracking.findUnique({
+      where: { id: cycleID },
     });
+
+    if (!cycle) {
+      return res.status(404).json({ error: "Cycle record not found" });
+    }
+
+    if (cycle.userID !== userID) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this record" });
+    }
+
+    // Delete the cycle
+    await prisma.cycleTracking.delete({
+      where: { id: cycleID },
+    });
+
+    // Recalculate predictions based on remaining data
+    await updatePredictionsBasedOnActualData(userID);
 
     res.status(200).json({ success: true });
   } catch (error) {
@@ -164,4 +311,5 @@ module.exports = {
   trackCycle,
   dltCycle,
   updatePredictions,
+  updatePredictionsBasedOnActualData,
 };
