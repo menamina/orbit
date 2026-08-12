@@ -108,6 +108,7 @@ async function trackCycle(req, res) {
       // First marking = new cycle, create with predicted end date
       let estEndDate = null;
       if (settings && settings.cycleLength) {
+        // Create a COPY so we don't modify dateToTrack
         estEndDate = new Date(dateToTrack);
         estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
       }
