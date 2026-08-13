@@ -81,15 +81,7 @@ async function trackCycle(req, res) {
     });
   } catch (error) {
     console.log(error);
-    const message = error.message || "Server error";
-    const status = [
-      "Date is required",
-      "Invalid date format",
-      "Cannot track beyond today's date",
-    ].includes(error.message)
-      ? 400
-      : 500;
-    return res.status(status).json({ error: message });
+    return res.status(status).json({ serverError: "Server error" });
   }
 }
 
@@ -218,30 +210,24 @@ async function updatePredictions(userID, startDate) {
       predictedOvulationDate.getDate() + (settings.daysBetweenPeriod - 14),
     );
 
-    // Calculate next cycle start date
-    const nextCycleDate = new Date(startDate);
-    nextCycleDate.setDate(nextCycleDate.getDate() + settings.daysBetweenPeriod);
-
     // Store predictions as day offsets from period start
     const ovulationPrediction = settings.daysBetweenPeriod - 14;
-    const nextCyclePrediction = settings.daysBetweenPeriod;
 
     // Update the predictions in the database
     await prisma.settings.update({
       where: { userID },
       data: {
         ovulationPrediction,
-        nextCyclePrediction,
       },
     });
 
     return {
       predictedEndDate,
       predictedOvulationDate,
-      nextCycleDate,
     };
   } catch (error) {
-    console.log("Error updating predictions:", error);
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
   }
 }
 

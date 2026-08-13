@@ -55,7 +55,6 @@ model Settings {
   cycleLength Int?
   daysBetweenPeriod Int?
   ovulationPrediction         Int?
-  nextCyclePrediction Int?
 
   user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
   @@index([userID])
