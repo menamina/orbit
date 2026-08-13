@@ -71,7 +71,6 @@ async function trackCycle(req, res) {
       where: { userID },
       select: {
         ovulationPrediction: true,
-        nextCyclePrediction: true,
       },
     });
 
@@ -79,7 +78,6 @@ async function trackCycle(req, res) {
       ...cycle,
       isNewCycle,
       ovulationPrediction: updatedSettings?.ovulationPrediction,
-      nextCyclePrediction: updatedSettings?.nextCyclePrediction,
     });
   } catch (error) {
     console.log(error);
@@ -164,9 +162,28 @@ async function createNewCycle(userID, dateToTrack, settings) {
 }
 
 async function updateExistingCycle(cycleID, dateToTrack, userID) {
+  // Get the cycle and current settings to recalculate estimate
+  const cycle = await prisma.cycleTracking.findUnique({
+    where: { id: cycleID },
+  });
+
+  const settings = await prisma.settings.findUnique({
+    where: { userID },
+  });
+
+  // Recalculate estimate based on current settings
+  let estEndDate = null;
+  if (settings?.cycleLength && cycle?.startDate) {
+    estEndDate = new Date(cycle.startDate);
+    estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
+  }
+
   const updatedCycle = await prisma.cycleTracking.update({
     where: { id: cycleID },
-    data: { endDate: dateToTrack },
+    data: {
+      endDate: dateToTrack,
+      ...(estEndDate && { estimateEndDate: estEndDate }),
+    },
   });
 
   await updatePredictionsBasedOnActualData(userID);
