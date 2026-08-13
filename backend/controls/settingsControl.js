@@ -83,7 +83,7 @@ async function cycleInfo(req, res) {
     const cycleLength = Number(req.body.cyclelength);
     const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
 
-    const updatedSettings = await prisma.settings.update({
+    const cycleInfo = await prisma.settings.update({
       where: {
         userID: userID,
       },
@@ -93,7 +93,7 @@ async function cycleInfo(req, res) {
       },
     });
 
-    return res.status(200).json(updatedSettings);
+    return res.status(200).json(cycleInfo);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });

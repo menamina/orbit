@@ -34,10 +34,8 @@ async function trackCycle(req, res) {
     const userID = Number(req.user.userID);
     const { date } = req.body;
 
-    // Validate and normalize the date
     const dateToTrack = validateAndNormalizeDate(date);
 
-    // Check for duplicates
     const duplicate = await checkDuplicateCycle(userID, dateToTrack);
     if (duplicate) {
       return res
@@ -45,7 +43,6 @@ async function trackCycle(req, res) {
         .json({ error: "Cycle already tracked for this date" });
     }
 
-    // Get user data with settings and most recent cycle
     const userData = await prisma.user.findUnique({
       where: { id: userID },
       include: {
@@ -61,12 +58,10 @@ async function trackCycle(req, res) {
     const mostRecentCycle = userData?.cycleTracking?.[0];
     const isNewCycle = shouldCreateNewCycle(mostRecentCycle, dateToTrack);
 
-    // Create new cycle or update existing one
     const cycle = isNewCycle
       ? await createNewCycle(userID, dateToTrack, settings)
       : await updateExistingCycle(mostRecentCycle.id, dateToTrack, userID);
 
-    // Fetch updated predictions to return to client
     const updatedSettings = await prisma.settings.findUnique({
       where: { userID },
       select: {
@@ -85,7 +80,6 @@ async function trackCycle(req, res) {
   }
 }
 
-// Helper: Validate and normalize date
 function validateAndNormalizeDate(date) {
   if (!date) {
     throw new Error("Date is required");
@@ -107,7 +101,6 @@ function validateAndNormalizeDate(date) {
   return dateToTrack;
 }
 
-// Helper: Check for duplicate cycle on same date
 async function checkDuplicateCycle(userID, dateToTrack) {
   const endOfDay = new Date(dateToTrack);
   endOfDay.setHours(23, 59, 59, 999);
@@ -154,7 +147,6 @@ async function createNewCycle(userID, dateToTrack, settings) {
 }
 
 async function updateExistingCycle(cycleID, dateToTrack, userID) {
-  // Get the cycle and current settings to recalculate estimate
   const cycle = await prisma.cycleTracking.findUnique({
     where: { id: cycleID },
   });
@@ -182,7 +174,6 @@ async function updateExistingCycle(cycleID, dateToTrack, userID) {
   return updatedCycle;
 }
 
-// Helper function to update period end and ovulation predictions based on settings
 async function updatePredictions(userID, startDate) {
   try {
     const settings = await prisma.settings.findUnique({

@@ -67,3 +67,11 @@ afterAll(async () => {
   }
   await prisma.$disconnect();
 });
+
+describe("settingsUpdate", () => {});
+
+describe("changingPassword", () => {});
+
+describe("first inital set of cycle info", () => {});
+
+describe("updating cycle info", () => {});
