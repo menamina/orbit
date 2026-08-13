@@ -68,6 +68,8 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+describe("getting settings", () => {});
+
 describe("settingsUpdate", () => {});
 
 describe("changingPassword", () => {});

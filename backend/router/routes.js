@@ -113,11 +113,11 @@ router.post("/api/track/period", checkAuth, trackCycle);
 router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== SETTINGS ======== \\
-router.get("/api/settings", checkAuth);
+router.get("/api/settings", checkAuth, getSettings);
 router.patch("/api/update/icon", checkAuth);
+// dont rememebr what color is atm \\
 router.patch("/api/update/color", checkAuth);
-router.patch("/api/update/password", checkAuth);
-router.patch("/api/update/email", checkAuth);
+router.patch("/api/update/settings", checkAuth, settingsUpdate);
 
 // ======== DLT ACC ======== \\
 router.delete("/api/delete/account", checkAuth);

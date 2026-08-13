@@ -1,6 +1,31 @@
 import prisma from "../prisma/client";
 import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 
+async function getSettings(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const settings = await prisma.user.findUnique({
+      where: {
+        userID,
+      },
+      select: {
+        name: true,
+        username: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ noUser: "This user does not exist" });
+    }
+
+    return res.status(200).json(settings);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
 async function settingsUpdate(req, res) {
   try {
     const userID = Number(req.user.userID);
