@@ -34,118 +34,143 @@ async function trackCycle(req, res) {
     const userID = Number(req.user.userID);
     const { date } = req.body;
 
-    if (!date) {
-      return res.status(400).json({ error: "Date is required" });
-    }
+    // Validate and normalize the date
+    const dateToTrack = validateAndNormalizeDate(date);
 
-    const todaysDate = new Date();
-    const dateToTrack = new Date(date);
-
-    if (isNaN(dateToTrack.getTime())) {
-      return res.status(400).json({ error: "Invalid date format" });
-    }
-
-    if (dateToTrack > todaysDate) {
-      return res
-        .status(400)
-        .json({ error: "Cannot track beyond today's date" });
-    }
-
-    // Normalize to midnight ONCE
-    dateToTrack.setHours(0, 0, 0, 0);
-
-    // For duplicate checking, create end of day
-    const endOfDay = new Date(dateToTrack);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const isDayAlreadyEntered = await prisma.cycleTracking.findFirst({
-      where: {
-        userID,
-        startDate: {
-          gte: dateToTrack, // Already at midnight
-          lte: endOfDay,
-        },
-      },
-    });
-
-    if (isDayAlreadyEntered) {
+    // Check for duplicates
+    const duplicate = await checkDuplicateCycle(userID, dateToTrack);
+    if (duplicate) {
       return res
         .status(400)
         .json({ error: "Cycle already tracked for this date" });
     }
 
-    const monthNum = dateToTrack.getMonth(); // 0-11
-    const yearNum = dateToTrack.getFullYear();
-
-    const startOfMonth = new Date(yearNum, monthNum, 1);
-    const startOfNextMonth = new Date(yearNum, monthNum + 1, 1);
-
+    // Get user data with settings and most recent cycle
     const userData = await prisma.user.findUnique({
       where: { id: userID },
       include: {
         settings: true,
         cycleTracking: {
-          where: {
-            startDate: {
-              gte: startOfMonth,
-              lt: startOfNextMonth,
-            },
-          },
-          orderBy: {
-            startDate: "asc",
-          },
+          orderBy: { startDate: "desc" },
+          take: 1,
         },
       },
     });
 
     const settings = userData?.settings;
-    const existingMarkingsThisMonth = userData?.cycleTracking || [];
-    const isFirstMarkingOfMonth = existingMarkingsThisMonth.length === 0;
+    const mostRecentCycle = userData?.cycleTracking?.[0];
+    const isNewCycle = shouldCreateNewCycle(mostRecentCycle, dateToTrack);
 
-    let today;
+    // Create new cycle or update existing one
+    const cycle = isNewCycle
+      ? await createNewCycle(userID, dateToTrack, settings)
+      : await updateExistingCycle(mostRecentCycle.id, dateToTrack, userID);
 
-    if (isFirstMarkingOfMonth) {
-      // First marking = new cycle, create with predicted end date
-      let estEndDate = null;
-      if (settings && settings.cycleLength) {
-        // Create a COPY so we don't modify dateToTrack
-        estEndDate = new Date(dateToTrack);
-        estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
-      }
-
-      today = await prisma.cycleTracking.create({
-        data: {
-          userID,
-          startDate: dateToTrack,
-          endDate: estEndDate,
-        },
-      });
-
-      // Update initial predictions
-      await updatePredictions(userID, dateToTrack);
-    } else {
-      // Subsequent marking = update existing cycle's end date
-      const currentCycle = existingMarkingsThisMonth[0];
-
-      today = await prisma.cycleTracking.update({
-        where: { id: currentCycle.id },
-        data: {
-          endDate: dateToTrack, // Update end date to the latest marking
-        },
-      });
-
-      // Recalculate predictions based on actual cycle data
-      await updatePredictionsBasedOnActualData(userID);
-    }
+    // Fetch updated predictions to return to client
+    const updatedSettings = await prisma.settings.findUnique({
+      where: { userID },
+      select: {
+        ovulationPrediction: true,
+        nextCyclePrediction: true,
+      },
+    });
 
     res.status(200).json({
-      ...today,
-      isFirstMarkingOfMonth,
+      ...cycle,
+      isNewCycle,
+      ovulationPrediction: updatedSettings?.ovulationPrediction,
+      nextCyclePrediction: updatedSettings?.nextCyclePrediction,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    const message = error.message || "Server error";
+    const status = [
+      "Date is required",
+      "Invalid date format",
+      "Cannot track beyond today's date",
+    ].includes(error.message)
+      ? 400
+      : 500;
+    return res.status(status).json({ error: message });
   }
+}
+
+// Helper: Validate and normalize date
+function validateAndNormalizeDate(date) {
+  if (!date) {
+    throw new Error("Date is required");
+  }
+
+  const todaysDate = new Date();
+  const dateToTrack = new Date(date);
+
+  if (isNaN(dateToTrack.getTime())) {
+    throw new Error("Invalid date format");
+  }
+
+  if (dateToTrack > todaysDate) {
+    throw new Error("Cannot track beyond today's date");
+  }
+
+  // Normalize to midnight
+  dateToTrack.setHours(0, 0, 0, 0);
+  return dateToTrack;
+}
+
+// Helper: Check for duplicate cycle on same date
+async function checkDuplicateCycle(userID, dateToTrack) {
+  const endOfDay = new Date(dateToTrack);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  return await prisma.cycleTracking.findFirst({
+    where: {
+      userID,
+      startDate: {
+        gte: dateToTrack,
+        lte: endOfDay,
+      },
+    },
+  });
+}
+
+function shouldCreateNewCycle(mostRecentCycle, dateToTrack) {
+  if (!mostRecentCycle) return true;
+
+  const daysSinceLastStart = Math.ceil(
+    (dateToTrack - new Date(mostRecentCycle.startDate)) / (1000 * 60 * 60 * 24),
+  );
+
+  return daysSinceLastStart < 0 || daysSinceLastStart > 10;
+}
+
+async function createNewCycle(userID, dateToTrack, settings) {
+  let estEndDate = null;
+  if (settings?.cycleLength) {
+    estEndDate = new Date(dateToTrack);
+    estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
+  }
+
+  const newCycle = await prisma.cycleTracking.create({
+    data: {
+      userID,
+      startDate: dateToTrack,
+      estimateEndDate: estEndDate,
+      endDate: estEndDate,
+    },
+  });
+
+  await updatePredictions(userID, dateToTrack);
+  return newCycle;
+}
+
+async function updateExistingCycle(cycleID, dateToTrack, userID) {
+  const updatedCycle = await prisma.cycleTracking.update({
+    where: { id: cycleID },
+    data: { endDate: dateToTrack },
+  });
+
+  await updatePredictionsBasedOnActualData(userID);
+  return updatedCycle;
 }
 
 // Helper function to update period end and ovulation predictions based on settings
