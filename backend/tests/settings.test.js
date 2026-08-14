@@ -69,14 +69,14 @@ afterAll(async () => {
 });
 
 describe("getting settings", () => {
-  it("gets user settings", () => {
-    const res = agent.get("/api/settings");
+  it("gets user settings", async () => {
+    const res = await agent.get("/api/settings");
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("settings");
   });
 
-  it("does not user settings when not logged in", () => {
-    const res = request.get("/api/settings");
+  it("does not user settings when not logged in", async () => {
+    const res = await request.get("/api/settings");
     expect(res.status).not.toBe(200);
     expect(res.body).toHaveProperty("authenticated");
     expect(res.body.authenticated).toBe(false);
@@ -84,8 +84,8 @@ describe("getting settings", () => {
 });
 
 describe("updates settings", () => {
-  it("updates settings when username is not already in use", () => {
-    const res = agent.get("/api/updateSettings").send({
+  it("updates settings when username is not already in use", async () => {
+    const res = await agent.get("/api/updateSettings").send({
       name: "lalala",
       username: "applejacks",
     });
@@ -94,11 +94,11 @@ describe("updates settings", () => {
     expect(res.body.success).toBe(true);
   });
 
-  it("does not update settings when username already in use", () => {
+  it("does not update settings when username already in use", async () => {
     // create new user \\
-    createTestUser("apple", "apple@gmail.com", "appleappleapple");
+    await createTestUser("apple", "apple@gmail.com", "appleappleapple");
 
-    const res = agent.get("/api/updateSettings").send({
+    const res = await agent.get("/api/updateSettings").send({
       name: "lalala",
       username: "apple",
     });
@@ -107,8 +107,8 @@ describe("updates settings", () => {
     expect(res.body.error).toBe("Username already taken");
   });
 
-  it("updates settings when email is not already in use", () => {
-    const res = agent.get("/api/updateSettings").send({
+  it("updates settings when email is not already in use", async () => {
+    const res = await agent.get("/api/updateSettings").send({
       name: "lalala",
       email: "applejacks@applejacks.com",
     });
@@ -117,8 +117,8 @@ describe("updates settings", () => {
     expect(res.body.success).toBe(true);
   });
 
-  it("does not update settings when email already in use", () => {
-    const res = agent.get("/api/updateSettings").send({
+  it("does not update settings when email already in use", async () => {
+    const res = await agent.get("/api/updateSettings").send({
       name: "lalala",
       email: "apple@gmail.com",
     });
@@ -129,37 +129,83 @@ describe("updates settings", () => {
 });
 
 describe("cycle info", () => {
-  it("gets cycle info for first time user with no info", () => {
-    const res = agent.get("/api/updateSettings").send({
-      name: "lalala",
-      email: "apple@gmail.com",
-    });
-    expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("error");
-    expect(res.body.error).toBe("Email already taken");
+  it("gets cycle info for first time user with no info", async () => {
+    const res = await agent.get("/api/getCycleInfo");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("noInfo");
+    expect(res.body.error).toBe("Nothing is entered");
   });
 
-  it("gets cycle info for user with info", () => {
-    const res = agent.get("/api/updateSettings").send({
-      name: "lalala",
-      email: "apple@gmail.com",
+  it("updates cycle info", async () => {
+    const res = await agent.get("/api/updateCycleInfo").send({
+      cyclelength: "5",
+      daysbetweenperiod: "30",
     });
-    expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("error");
-    expect(res.body.error).toBe("Email already taken");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("updatedSettings");
   });
 
-  it("updates cycle info", () => {
-    const res = agent.get("/api/updateSettings").send({
-      name: "lalala",
-      email: "apple@gmail.com",
+  it("does not update cycle info with non numbers", async () => {
+    const res = await agent.get("/api/updateCycleInfo").send({
+      cyclelength: "none",
+      daysbetweenperiod: "none again",
     });
+
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("error");
-    expect(res.body.error).toBe("Email already taken");
+    expect(res.body).toHaveProperty("message");
+  });
+
+  it("gets cycle info for user with info", async () => {
+    const res = await agent.get("/api/getCycleInfo");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("cycleInfo");
   });
 });
 
-describe("updates password", () => {});
+describe("updates password", () => {
+  it("updates password when password passes validation and old password is the same", async () => {
+    const res = await agent.patch("/api/updatePassword").send({
+      password: "12345678",
+      confirmPassword: "12345678",
+      oldPassword: "777IMINHEAVEN",
+    });
 
-describe("deletes account", () => {});
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success");
+  });
+
+  it("does not update password when password passed validator but old password is not the same", async () => {
+    const res = await agent.patch("/api/updatePassword").send({
+      password: "12345678",
+      confirmPassword: "12345678",
+      oldPassword: "111",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Current password is incorrect");
+  });
+
+  it("does not update password when password is passed to validator but old password is the same", async () => {
+    const res = await agent.patch("/api/updatePassword").send({
+      password: "12345", // too short \\
+      confirmPassword: "12345678", // doesnt match \\
+      oldPassword: "777IMINHEAVEN",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("errors");
+  });
+});
+
+describe("deletes account", () => {
+  it("deletes the logged in users account", async () => {
+    const res = await agent.delete("/api/delete/account");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success");
+  });
+});

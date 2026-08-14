@@ -118,7 +118,7 @@ async function getCycleInfo(req, res) {
     });
 
     if (!cycleInfo) {
-      return res.status(400).json({ error: "Settings not found" });
+      return res.status(200).json({ noInfo: "Nothing is entered" });
     }
 
     return res.status(200).json(cycleInfo);
@@ -134,6 +134,12 @@ async function updateCycleInfo(req, res) {
     const cycleLength = Number(req.body.cyclelength);
     const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
 
+    if (isNaN(cycleLength) || isNaN(daysBetweenPeriod)) {
+      return res.status(400).json({
+        message:
+          "Cycle lengths and days between your period have to be numbers",
+      });
+    }
 
     const updatedSettings = await prisma.settings.update({
       where: {
@@ -152,11 +158,20 @@ async function updateCycleInfo(req, res) {
   }
 }
 
-async function dltAccount(req, res){
+async function dltAccount(req, res) {
   try {
-    const userID = Number(req.user.userID)
-  }
+    const userID = Number(req.user.userID);
+    await prisma.user.delete({
+      where: {
+        id: userID,
+      },
+    });
 
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
 }
 
 module.exports = {
@@ -165,5 +180,5 @@ module.exports = {
   changePassword,
   getCycleInfo,
   updateCycleInfo,
-  dltAccount
+  dltAccount,
 };
