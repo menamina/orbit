@@ -45,6 +45,13 @@ import {
   dltAccount,
 } from "../controls/settingsControl";
 
+import {
+  getNotes,
+  writeNote,
+  updateNote,
+  dltNote,
+} from "../controls/notesController";
+
 import passwordValidator from "../utils/validator";
 
 // ======== AUTH ======== \\
@@ -124,10 +131,10 @@ router.post("/api/track/period", checkAuth, trackCycle);
 router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== NOTES ======== \\
-router.get("/api/notes", checkAuth);
-router.post("/api/writeNote", checkAuth, trackCycle);
-router.delete("/api/updateNote", checkAuth, dltCycle);
-router.delete("/api/updateNote", checkAuth, dltCycle);
+router.get("/api/notes", checkAuth, getNotes);
+router.post("/api/writeNote", checkAuth, writeNote);
+router.patch("/api/updateNote", checkAuth, updateNote);
+router.delete("/api/deleteNote", checkAuth, dltNote);
 
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
