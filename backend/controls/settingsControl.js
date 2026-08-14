@@ -134,6 +134,7 @@ async function updateCycleInfo(req, res) {
     const cycleLength = Number(req.body.cyclelength);
     const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
 
+
     const updatedSettings = await prisma.settings.update({
       where: {
         userID: userID,

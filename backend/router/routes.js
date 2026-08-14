@@ -45,6 +45,8 @@ import {
   dltAccount,
 } from "../controls/settingsControl";
 
+import passwordValidator from "../utils/validator";
+
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth, (req, res) => {
@@ -127,7 +129,12 @@ router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
 router.patch("/api/updateIcon", checkAuth);
 router.patch("/api/updateAppColor", checkAuth);
 router.patch("/api/updateSettings", checkAuth, settingsUpdate);
-router.patch("/api/updatePassword", checkAuth, changePassword);
+router.patch(
+  "/api/updatePassword",
+  checkAuth,
+  passwordValidator,
+  changePassword,
+);
 router.patch("/api/updateCycleInfo", checkAuth, cycleInfo);
 
 // ======== DLT ACC ======== \\

@@ -128,8 +128,28 @@ describe("updates settings", () => {
   });
 });
 
-describe("sets cycle info", () => {
-  it("sets cycle info", () => {
+describe("cycle info", () => {
+  it("gets cycle info for first time user with no info", () => {
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      email: "apple@gmail.com",
+    });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Email already taken");
+  });
+
+  it("gets cycle info for user with info", () => {
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      email: "apple@gmail.com",
+    });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Email already taken");
+  });
+
+  it("updates cycle info", () => {
     const res = agent.get("/api/updateSettings").send({
       name: "lalala",
       email: "apple@gmail.com",
@@ -139,8 +159,6 @@ describe("sets cycle info", () => {
     expect(res.body.error).toBe("Email already taken");
   });
 });
-
-describe("updates cycle info", () => {});
 
 describe("updates password", () => {});
 
