@@ -36,6 +36,15 @@ import {
   dltCycle,
 } from "../controls/cycleControl";
 
+import {
+  getSettings,
+  settingsUpdate,
+  changePassword,
+  cycleInfo,
+  updateCycleInfo,
+  dltAccount,
+} from "../controls/settingsControl";
+
 // ======== AUTH ======== \\
 
 router.get("/", checkAuth, (req, res) => {
@@ -107,19 +116,21 @@ router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);
 router.post("/api/track/pill", checkAuth, takeBCPill);
 router.delete("/api/pill/:pillid", checkAuth, dltBCPIll);
 
-// ======== CYCLEs ======== \\
+// ======== CYCLE ======== \\
 router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);
 router.post("/api/track/period", checkAuth, trackCycle);
 router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
-router.patch("/api/update/icon", checkAuth);
-// dont rememebr what color is atm \\
-router.patch("/api/update/color", checkAuth);
-router.patch("/api/update/settings", checkAuth, settingsUpdate);
+router.patch("/api/updateIcon", checkAuth);
+router.patch("/api/updateAppColor", checkAuth);
+router.patch("/api/updateSettings", checkAuth, settingsUpdate);
+router.patch("/api/updatePassword", checkAuth, changePassword);
+router.post("/api/setCycleInfo", checkAuth, cycleInfo);
+router.patch("/api/updateCycleInfo", checkAuth, cycleInfo);
 
 // ======== DLT ACC ======== \\
-router.delete("/api/delete/account", checkAuth);
+router.delete("/api/delete/account", checkAuth, dltAccount);
 
 module.exports = router;

@@ -149,6 +149,7 @@ async function updateCycleInfo(req, res) {
 }
 
 module.exports = {
+  getSettings,
   settingsUpdate,
   changePassword,
   cycleInfo,
