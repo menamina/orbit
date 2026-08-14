@@ -68,12 +68,80 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-describe("getting settings", () => {});
+describe("getting settings", () => {
+  it("gets user settings", () => {
+    const res = agent.get("/api/settings");
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("settings");
+  });
 
-describe("settingsUpdate", () => {});
+  it("does not user settings when not logged in", () => {
+    const res = request.get("/api/settings");
+    expect(res.status).not.toBe(200);
+    expect(res.body).toHaveProperty("authenticated");
+    expect(res.body.authenticated).toBe(false);
+  });
+});
 
-describe("changingPassword", () => {});
+describe("updates settings", () => {
+  it("updates settings when username is not already in use", () => {
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      username: "applejacks",
+    });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success");
+    expect(res.body.success).toBe(true);
+  });
 
-describe("first inital set of cycle info", () => {});
+  it("does not update settings when username already in use", () => {
+    // create new user \\
+    createTestUser("apple", "apple@gmail.com", "appleappleapple");
 
-describe("updating cycle info", () => {});
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      username: "apple",
+    });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Username already taken");
+  });
+
+  it("updates settings when email is not already in use", () => {
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      email: "applejacks@applejacks.com",
+    });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success");
+    expect(res.body.success).toBe(true);
+  });
+
+  it("does not update settings when email already in use", () => {
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      email: "apple@gmail.com",
+    });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Email already taken");
+  });
+});
+
+describe("sets cycle info", () => {
+  it("sets cycle info", () => {
+    const res = agent.get("/api/updateSettings").send({
+      name: "lalala",
+      email: "apple@gmail.com",
+    });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Email already taken");
+  });
+});
+
+describe("updates cycle info", () => {});
+
+describe("updates password", () => {});
+
+describe("deletes account", () => {});

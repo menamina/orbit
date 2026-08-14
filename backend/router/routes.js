@@ -40,7 +40,7 @@ import {
   getSettings,
   settingsUpdate,
   changePassword,
-  cycleInfo,
+  getCycleInfo,
   updateCycleInfo,
   dltAccount,
 } from "../controls/settingsControl";
@@ -123,11 +123,11 @@ router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
+router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
 router.patch("/api/updateIcon", checkAuth);
 router.patch("/api/updateAppColor", checkAuth);
 router.patch("/api/updateSettings", checkAuth, settingsUpdate);
 router.patch("/api/updatePassword", checkAuth, changePassword);
-router.post("/api/setCycleInfo", checkAuth, cycleInfo);
 router.patch("/api/updateCycleInfo", checkAuth, cycleInfo);
 
 // ======== DLT ACC ======== \\

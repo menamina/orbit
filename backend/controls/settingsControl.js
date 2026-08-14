@@ -102,21 +102,24 @@ async function changePassword(req, res) {
   }
 }
 // ------- cycle info + algs  \\
-async function cycleInfo(req, res) {
+async function getCycleInfo(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const cycleLength = Number(req.body.cyclelength);
-    const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
 
-    const cycleInfo = await prisma.settings.update({
+    const cycleInfo = await prisma.settings.findUnique({
       where: {
         userID: userID,
       },
-      data: {
-        ...(cycleLength && { cycleLength }),
-        ...(daysBetweenPeriod && { daysBetweenPeriod }),
+      select: {
+        cycleLength: true,
+        daysBetweenPeriod: true,
+        ovulationPrediction: true,
       },
     });
+
+    if (!cycleInfo) {
+      return res.status(400).json({ error: "Settings not found" });
+    }
 
     return res.status(200).json(cycleInfo);
   } catch (error) {
@@ -148,10 +151,18 @@ async function updateCycleInfo(req, res) {
   }
 }
 
+async function dltAccount(req, res){
+  try {
+    const userID = Number(req.user.userID)
+  }
+
+}
+
 module.exports = {
   getSettings,
   settingsUpdate,
   changePassword,
-  cycleInfo,
+  getCycleInfo,
   updateCycleInfo,
+  dltAccount
 };

@@ -20,6 +20,8 @@ model User {
   refreshTokens RefreshToken[]
 
   @@index([id])
+  @@index([username])
+  @@index([email])
 }
 
 model Account {
