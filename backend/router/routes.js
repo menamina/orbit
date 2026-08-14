@@ -123,6 +123,12 @@ router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);
 router.post("/api/track/period", checkAuth, trackCycle);
 router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
+// ======== NOTES ======== \\
+router.get("/api/notes", checkAuth);
+router.post("/api/writeNote", checkAuth, trackCycle);
+router.delete("/api/updateNote", checkAuth, dltCycle);
+router.delete("/api/updateNote", checkAuth, dltCycle);
+
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
 router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
