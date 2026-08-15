@@ -118,10 +118,7 @@ async function getCycle() {
   });
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Cannot get cycle info, try again");
-    }
-    throw new Error(`Failed to get cycle info: ${res.status}`);
+    throw new Error("Cannot get cycle info, try again");
   }
 
   return await res.json();
@@ -141,19 +138,18 @@ async function updateCycle(
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 400) {
-      throw new Error(errorData.message || "Bad request");
+    if (res.status === 400 || res.status === 403) {
+      throw new Error(errorData.message);
     } else if (res.status === 500) {
       throw new Error("Cannot update cycle info, try again");
     }
-    throw new Error(`Failed to update cycle info: ${res.status}`);
   }
 
   return await res.json();
 }
 
 async function dltAccount(): Promise<{ success: boolean }> {
-  const res = await fetch(`http://localhost:5555/api/deleteAccount`, {
+  const res = await fetch(`http://localhost:5555/api/delete/account`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -162,7 +158,6 @@ async function dltAccount(): Promise<{ success: boolean }> {
     if (res.status === 500) {
       throw new Error("Cannot delete account, try again");
     }
-    throw new Error(`Failed to delete account: ${res.status}`);
   }
 
   return await res.json();

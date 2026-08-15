@@ -145,7 +145,7 @@ async function getCycleInfo(req, res) {
     });
 
     if (!cycleInfo) {
-      return res.status(200).json({ noInfo: "Nothing is entered" });
+      return res.status(200).json({ noInfo: "Nothing is entered yet" });
     }
 
     return res.status(200).json(cycleInfo);
@@ -161,8 +161,16 @@ async function updateCycleInfo(req, res) {
     const cycleLength = Number(req.body.cyclelength);
     const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
 
+    const settings = await prisma.settings.findUnique({
+      where: { userID: userID },
+    });
+
+    if (!settings) {
+      return res.status(400).json({ message: "User settings not found" });
+    }
+
     if (isNaN(cycleLength) || isNaN(daysBetweenPeriod)) {
-      return res.status(400).json({
+      return res.status(403).json({
         message:
           "Cycle lengths and days between your period have to be numbers",
       });
