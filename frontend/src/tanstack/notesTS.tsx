@@ -28,6 +28,12 @@ export const updateNoteMut = () => {
   });
 };
 
+export const dltNoteMut = () => {
+  return mutationOptions({
+    mutationFn: dltNote,
+  });
+};
+
 // --------- API CALLS --------- \\
 
 async function getNotesThisMonth(
@@ -57,4 +63,17 @@ async function getNotesThisMonth(
   return await res.json();
 }
 
-async function writeANote(noteData: WriteNoteType): Promise<NoteType> {}
+async function writeANote(
+  noteData: WriteNoteType,
+  accessToken: number,
+): Promise<NoteType> {}
+
+async function updateANote(
+  noteToUpdate: WriteNoteType,
+  accessToken: number,
+): Promise<NoteType> {}
+
+async function dltNote(
+  noteToDlt: number,
+  accessToken: number,
+): Promise<{ success: boolean }> {}

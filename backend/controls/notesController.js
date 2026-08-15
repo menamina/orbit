@@ -3,8 +3,8 @@ import prisma from "../prisma/client.js";
 async function getNotes(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const month = Number(req.params);
-    const year = Number(req.params);
+    const month = Number(req.params.month);
+    const year = Number(req.params.year);
 
     const startOfMonth = new Date(year, month - 1, 1);
     const startOfNextMonth = new Date(year, month, 1);
