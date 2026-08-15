@@ -21,10 +21,6 @@ async function getSettings(req, res) {
       },
     });
 
-    if (!user) {
-      return res.status(400).json({ noUser: "This user does not exist" });
-    }
-
     return res.status(200).json({
       name: user.name,
       username: user.username,
@@ -51,10 +47,6 @@ async function settingsUpdate(req, res) {
         settings: true,
       },
     });
-
-    if (!user) {
-      return res.status(400).json({ error: "User does not exist" });
-    }
 
     if (username && username !== user.username) {
       const existingUser = await prisma.user.findUnique({
