@@ -11,3 +11,13 @@ export type NoteType = {
 };
 
 export type MonthOfNotes = NoteType[];
+
+export type WriteNoteType = {
+  note: string;
+  date: string;
+};
+
+export type NoteToUpdate = {
+  noteID: number;
+  noteContent: string;
+};

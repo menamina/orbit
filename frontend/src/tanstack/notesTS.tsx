@@ -1,5 +1,10 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { ThisMonth, NoteType, MonthOfNotes } from "./notesTypes";
+import type {
+  ThisMonth,
+  NoteType,
+  MonthOfNotes,
+  WriteNoteType,
+} from "./notesTypes";
 
 export const getNotesByMonthQuery = (
   thisMonth: ThisMonth,
@@ -7,7 +12,19 @@ export const getNotesByMonthQuery = (
 ) => {
   return queryOptions({
     queryKey: ["userNotes", thisMonth],
-    queryFn: () => getNotesThisMonth(thisMonth),
+    queryFn: () => getNotesThisMonth(thisMonth, accessToken),
+  });
+};
+
+export const writeANoteMut = () => {
+  return mutationOptions({
+    mutationFn: writeANote,
+  });
+};
+
+export const updateNoteMut = () => {
+  return mutationOptions({
+    mutationFn: updateANote,
   });
 };
 
@@ -39,3 +56,5 @@ async function getNotesThisMonth(
 
   return await res.json();
 }
+
+async function writeANote(noteData: WriteNoteType): Promise<NoteType> {}
