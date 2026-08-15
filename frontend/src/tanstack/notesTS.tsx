@@ -53,27 +53,89 @@ async function getNotesThisMonth(
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 401) {
+    if (res.status === 500) {
+      throw new Error("Cannot delete note, try again");
+    } else {
       throw new Error(errorData.error);
-    } else if (res.status === 500) {
-      throw new Error("Cannot get settings, try again");
+    }
+  }
+  return await res.json();
+}
+
+async function writeANote(
+  params: WriteNoteType & { accessToken: string },
+): Promise<NoteType> {
+  const { accessToken, ...data } = params;
+  const res = await fetch(`http://localhost:5555/api/writeNote`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    if (res.status === 500) {
+      throw new Error("Cannot delete note, try again");
+    } else {
+      throw new Error(errorData.error);
     }
   }
 
   return await res.json();
 }
 
-async function writeANote(
-  noteData: WriteNoteType,
-  accessToken: number,
-): Promise<NoteType> {}
-
 async function updateANote(
-  noteToUpdate: WriteNoteType,
-  accessToken: number,
-): Promise<NoteType> {}
+  params: { noteID: number; note: string; accessToken: string },
+): Promise<NoteType> {
+  const { accessToken, ...data } = params;
+  const res = await fetch(`http://localhost:5555/api/updateNote`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    if (res.status === 500) {
+      throw new Error("Cannot delete note, try again");
+    } else {
+      throw new Error(errorData.error);
+    }
+  }
+
+  return await res.json();
+}
 
 async function dltNote(
-  noteToDlt: number,
-  accessToken: number,
-): Promise<{ success: boolean }> {}
+  params: { noteID: number; accessToken: string },
+): Promise<{ success: boolean }> {
+  const { accessToken, noteID } = params;
+  const res = await fetch(`http://localhost:5555/api/deleteNote`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({ noteID }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    if (res.status === 500) {
+      throw new Error("Cannot delete note, try again");
+    } else {
+      throw new Error(errorData.error);
+    }
+  }
+
+  return await res.json();
+}

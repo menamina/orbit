@@ -50,6 +50,18 @@ export const loginMut = () => {
   });
 };
 
+export const logoutMut = () => {
+  return mutationOptions({
+    mutationFn: logout,
+  });
+};
+
+export const logoutEverywhereMut = () => {
+  return mutationOptions({
+    mutationFn: logoutEverywhere,
+  });
+};
+
 // --------- API CALLS --------- \\
 
 async function checkAuth(accessToken: string): Promise<AuthCheckResponse> {
@@ -168,3 +180,7 @@ async function login(data: LoginData): Promise<LoginResponse> {
 
   return responseData;
 }
+
+async function logout() {}
+
+async function logoutEverywhere() {}

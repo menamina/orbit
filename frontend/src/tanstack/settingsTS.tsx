@@ -66,16 +66,17 @@ async function getSettings(accessToken: string) {
 }
 
 async function updateSettings(
-  params: { data: SettingsType; accessToken: string }
+  params: SettingsType & { accessToken: string },
 ): Promise<{ success: boolean }> {
+  const { accessToken, ...data } = params;
   const res = await fetch(`http://localhost:5555/api/updateSettings`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${params.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(params.data),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {
@@ -94,16 +95,17 @@ async function updateSettings(
 }
 
 async function updatePassword(
-  params: { data: PasswordUpdateType; accessToken: string }
+  params: PasswordUpdateType & { accessToken: string },
 ): Promise<{ success: boolean }> {
+  const { accessToken, ...data } = params;
   const res = await fetch(`http://localhost:5555/api/updatePassword`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${params.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(params.data),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {
@@ -134,16 +136,17 @@ async function getCycle(accessToken: string) {
 }
 
 async function updateCycle(
-  params: { data: UpdateCycleType; accessToken: string }
+  params: UpdateCycleType & { accessToken: string },
 ): Promise<{ success: boolean }> {
+  const { accessToken, ...data } = params;
   const res = await fetch(`http://localhost:5555/api/updateCycleInfo`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${params.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(params.data),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {
@@ -158,7 +161,8 @@ async function updateCycle(
   return await res.json();
 }
 
-async function dltAccount(accessToken: string): Promise<{ success: boolean }> {
+async function dltAccount(params: { accessToken: string }): Promise<{ success: boolean }> {
+  const { accessToken } = params;
   const res = await fetch(`http://localhost:5555/api/delete/account`, {
     method: "DELETE",
     headers: {

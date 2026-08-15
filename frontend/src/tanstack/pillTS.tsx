@@ -55,14 +55,15 @@ async function getBlisterThisMonth(
 }
 
 async function takePill(params: { date: number; accessToken: string }): Promise<PillTracking> {
+  const { date, accessToken } = params;
   const res = await fetch(`http://localhost:5555/api/track/pill`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${params.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(params.date),
+    body: JSON.stringify({ date }),
   });
 
   if (!res.ok) {
@@ -78,10 +79,11 @@ async function takePill(params: { date: number; accessToken: string }): Promise<
 }
 
 async function dltPill(params: { pillID: number; accessToken: string }): Promise<{ success: boolean }> {
-  const res = await fetch(`http://localhost:5555/api/dltPill/${params.pillID}`, {
+  const { pillID, accessToken } = params;
+  const res = await fetch(`http://localhost:5555/api/dltPill/${pillID}`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${params.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
     credentials: "include",
   });
