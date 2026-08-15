@@ -181,6 +181,36 @@ async function login(data: LoginData): Promise<LoginResponse> {
   return responseData;
 }
 
-async function logout() {}
+async function logout(): Promise<{ success: boolean }> {
+  const res = await fetch(`http://localhost:5555/api/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
 
-async function logoutEverywhere() {}
+  if (!res.ok) {
+    if (res.status === 500) {
+      throw new Error("Oops something went wrong - there's a server error");
+    }
+  }
+
+  return await res.json();
+}
+
+async function logoutEverywhere(params: { accessToken: string }): Promise<{ success: boolean }> {
+  const { accessToken } = params;
+  const res = await fetch(`http://localhost:5555/api/logoutEverywhere`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    if (res.status === 500) {
+      throw new Error("Oops something went wrong - there's a server error");
+    }
+  }
+
+  return await res.json();
+}

@@ -117,7 +117,7 @@ router.get(
 );
 
 router.post("/api/logout", logout);
-router.post("/api/logoutEverywhere", logoutEverywhere);
+router.post("/api/logoutEverywhere", checkAuth, logoutEverywhere);
 
 // ======== PILL ======== \\
 router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);

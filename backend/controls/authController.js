@@ -131,24 +131,6 @@ async function signup(req, res) {
   }
 }
 
-async function logout(req, res) {
-  const { refreshToken } = req.cookies;
-
-  if (refreshToken) {
-    await deleteRefreshToken(refreshToken);
-  }
-
-  res.clearCookie("refreshToken");
-  return res.json({ message: "Logged out successfully" });
-}
-
-async function logoutEverywhere(req, res) {
-  const userID = Number(req.user.userID);
-  await deleteAllRefreshTokens(userID);
-  res.clearCookie("refreshToken");
-  return res.json({ message: "Logged out from all devices" });
-}
-
 async function refreshToken(req, res) {
   try {
     const { refreshToken } = req.cookies;
@@ -180,6 +162,34 @@ async function refreshToken(req, res) {
     );
 
     return res.status(200).json({ newAccessToken });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
+async function logout(req, res) {
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (refreshToken) {
+      await deleteRefreshToken(refreshToken);
+    }
+
+    res.clearCookie("refreshToken");
+    return res.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
+async function logoutEverywhere(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    await deleteAllRefreshTokens(userID);
+    res.clearCookie("refreshToken");
+    return res.json({ success: true });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
