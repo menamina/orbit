@@ -1,14 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  TextField,
-  Button,
-  Box,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+import { useNavigate, Link } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { TextField, Button, Box, Paper } from "@mui/material";
+
+import { logoutMut } from "../tanstack/authTS";
 
 import Open from "../imgs/openArrow.svg";
 import Close from "../imgs/closeArrow.svg";
@@ -18,6 +13,13 @@ const appNavOptions = ["pill", "cycle", "account", "logout"];
 function Nav() {
   const [menuToggle, setMenuToggle] = useState(false);
   const nav = useNavigate();
+
+  const { mutate: logout } = useMutation({
+    ...logoutMut(),
+    onSuccess: () => {
+      nav("/login");
+    },
+  });
 
   return (
     <>
@@ -29,22 +31,27 @@ function Nav() {
         <Box onClick={() => setMenuToggle((prev) => !prev)}>
           <img
             src={menuToggle ? Close : Open}
-            alt={menuToggle ? "close menu" : "open menu"}
+            alt={menuToggle ? "close nav" : "open nav"}
           />
         </Box>
 
         {menuToggle && (
-          <Box>
-            <List>
-              {appNavOptions.map((item) => (
-                <ListItem
-                  key={item}
-                  onClick={() => (item === "logout" ? null : nav(`/${item}`))}
-                >
-                  <ListItemText primary={item.toUpperCase()} />
-                </ListItem>
-              ))}
-            </List>
+          <Box component="nav">
+            {appNavOptions.map((item) => {
+              if (item === "logout") {
+                return (
+                  <Box key={item} onClick={() => logout()}>
+                    {item.toUpperCase()}
+                  </Box>
+                );
+              }
+
+              return (
+                <Link key={item} to={`/${item}`}>
+                  {item.toUpperCase()}
+                </Link>
+              );
+            })}
           </Box>
         )}
       </Box>
