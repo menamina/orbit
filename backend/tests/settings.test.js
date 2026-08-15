@@ -1,9 +1,9 @@
-import app from "../../server";
+import app from "../server.js";
 import supertest from "supertest";
 const request = supertest(app);
 const agent = supertest.agent(app);
-import prisma from "../../prisma/client";
-import { passwordGenie } from "../../utils/password";
+import prisma from "../prisma/client.js";
+import { passwordGenie } from "../utils/passwordUtil.js";
 
 jest.setTimeout(5500);
 

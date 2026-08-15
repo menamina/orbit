@@ -1,7 +1,7 @@
-require("dotenv").config();
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const routes = require("./router/routes");
+import "dotenv/config";
+import express from "express";
+import cookieParser from "cookie-parser";
+import routes from "./router/routes.js";
 
 const server = express();
 const port = process.env.PORT;
@@ -20,4 +20,4 @@ server.use("/", routes);
 
 server.listen(port, handleError);
 
-module.exports = server;
+export default server;

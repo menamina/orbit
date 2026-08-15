@@ -1,10 +1,10 @@
-import app from "../../server";
+import app from "../server.js";
 import supertest from "supertest";
 const request = supertest(app);
 const agent = supertest.agent(app);
-import prisma from "../../prisma/client";
-import { passwordGenie } from "../../utils/password";
-import { generateAccessToken } from "../auth/jwt";
+import prisma from "../prisma/client.js";
+import { passwordGenie } from "../utils/passwordUtil.js";
+import { generateAccessToken } from "../auth/jwt.js";
 
 // supertest is for api / https endpoint calls without starting a real server \\
 // agent is for peristing cookies + sessions across multiple tests \\
