@@ -42,6 +42,7 @@ export const dltAccountMut = () => {
     mutationFn: dltAccount,
   });
 };
+
 // --------- API CALLS --------- \\
 
 async function getSettings() {

@@ -158,8 +158,8 @@ async function getCycleInfo(req, res) {
 async function updateCycleInfo(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const cycleLength = Number(req.body.cyclelength);
-    const daysBetweenPeriod = Number(req.body.daysbetweenperiod);
+    const cycleLength = Number(req.body.cycleLength);
+    const daysBetweenPeriod = Number(req.body.daysBetweenPeriod);
 
     const settings = await prisma.settings.findUnique({
       where: { userID: userID },
