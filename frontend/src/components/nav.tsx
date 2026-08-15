@@ -2,13 +2,24 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
-
-import { logoutMut } from "../tanstack/authTS";
+import { keyframes } from "@mui/system";
 
 import Open from "../imgs/openArrow.svg";
 import Close from "../imgs/closeArrow.svg";
 
 const appNavOptions = ["pill", "cycle", "account", "logout"];
+
+const rolling = keyframes`
+  from {
+    transform: translateX(-100%);
+  }
+    to {
+    traansform: translateX(100%)
+    }
+
+`;
+
+import { logoutMut } from "../tanstack/authTS";
 
 function Nav() {
   const [menuToggle, setMenuToggle] = useState(false);
@@ -24,11 +35,19 @@ function Nav() {
   return (
     <>
       <Box
+        component="nav"
         sx={{
           display: "flex",
+          width: "100%",
         }}
       >
-        <Box onClick={() => setMenuToggle((prev) => !prev)}>
+        <Box
+          onClick={() => setMenuToggle((prev) => !prev)}
+          sx={{
+            justifySelf: "flex-start",
+            width: "30%",
+          }}
+        >
           <img
             src={menuToggle ? Close : Open}
             alt={menuToggle ? "close nav" : "open nav"}
@@ -36,7 +55,14 @@ function Nav() {
         </Box>
 
         {menuToggle && (
-          <Box component="nav">
+          <Box
+            sx={{
+              animation: `${rolling} 2s ease`,
+              display: "flex",
+              gap: "20px",
+              width: "70%",
+            }}
+          >
             {appNavOptions.map((item) => {
               if (item === "logout") {
                 return (
