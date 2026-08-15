@@ -6,15 +6,15 @@ async function getNotes(req, res) {
     const month = Number(req.body.month);
     const year = Number(req.body.year);
 
-    const startOfMonth = new Date(yearNum, monthNum - 1, 1);
-    const startOfNextMonth = new Date(yearNum, monthNum, 1);
+    const startOfMonth = new Date(year, month - 1, 1);
+    const startOfNextMonth = new Date(year, month, 1);
 
     const usersNotes = await prisma.notes.findMany({
       where: {
         userID,
         date: {
           gte: startOfMonth,
-          lt: startOfMonth,
+          lt: startOfNextMonth,
         },
       },
       orderBy: {
@@ -32,14 +32,13 @@ async function getNotes(req, res) {
 async function writeNote(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const note = req.body.note;
+    const { note, date } = req.body;
 
     const newNote = await prisma.notes.create({
-      where: {
-        userID,
-      },
       data: {
+        userID,
         note,
+        ...(date && { date: new Date(date) }),
       },
     });
 
@@ -54,17 +53,26 @@ async function updateNote(req, res) {
   try {
     const userID = Number(req.user.userID);
     const noteID = Number(req.body.noteID);
-    const note = req.body.note;
+    const noteContent = req.body.note;
 
-    const updatedNote = await prisma.note.update({
-      where: {
-        noteID,
-      },
+    const existingNote = await prisma.notes.findUnique({
+      where: { id: noteID },
     });
 
-    if (note.userID !== userID) {
+    if (!existingNote) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+
+    if (existingNote.userID !== userID) {
       return res.status(403).json({ error: "Not authorized" });
     }
+
+    const updatedNote = await prisma.notes.update({
+      where: { id: noteID },
+      data: {
+        note: noteContent,
+      },
+    });
 
     return res.status(200).json(updatedNote);
   } catch (error) {
@@ -77,17 +85,23 @@ async function dltNote(req, res) {
   try {
     const userID = Number(req.user.userID);
     const noteID = Number(req.body.noteID);
-    const note = req.body.note;
 
-    const noteToDelete = await prisma.note.update({
-      where: {
-        noteID,
-      },
+    const existingNote = await prisma.notes.findUnique({
+      where: { id: noteID },
     });
 
-    if (note.userID !== userID) {
+    if (!existingNote) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+
+    if (existingNote.userID !== userID) {
       return res.status(403).json({ error: "Not authorized" });
     }
+
+    await prisma.notes.delete({
+      where: { id: noteID },
+    });
+
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);

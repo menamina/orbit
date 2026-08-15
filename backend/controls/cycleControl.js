@@ -151,11 +151,18 @@ async function updateExistingCycle(cycleID, dateToTrack, userID) {
     where: { id: cycleID },
   });
 
+  if (!cycle) {
+    throw new Error("Cycle record not found");
+  }
+
+  if (cycle.userID !== userID) {
+    throw new Error("Not authorized to update this cycle");
+  }
+
   const settings = await prisma.settings.findUnique({
     where: { userID },
   });
 
-  // Recalculate estimate based on current settings
   let estEndDate = null;
   if (settings?.cycleLength && cycle?.startDate) {
     estEndDate = new Date(cycle.startDate);
@@ -273,7 +280,6 @@ async function updatePredictionsBasedOnActualData(userID) {
       );
     }
 
-    // Update settings with learned data
     const updateData = {
       cycleLength: avgPeriodLength,
       ovulationPrediction: avgDaysBetweenPeriod
@@ -290,10 +296,6 @@ async function updatePredictionsBasedOnActualData(userID) {
       where: { userID },
       data: updateData,
     });
-
-    console.log(
-      `Updated predictions for user ${userID}: avgPeriodLength=${avgPeriodLength}, avgCycle=${avgDaysBetweenPeriod}`,
-    );
   } catch (error) {
     console.log("Error updating predictions based on actual data:", error);
   }
@@ -304,7 +306,6 @@ async function dltCycle(req, res) {
     const userID = Number(req.user.userID);
     const cycleID = Number(req.params.cycleID);
 
-    // First verify the cycle belongs to this user
     const cycle = await prisma.cycleTracking.findUnique({
       where: { id: cycleID },
     });
@@ -319,7 +320,6 @@ async function dltCycle(req, res) {
         .json({ error: "Not authorized to delete this record" });
     }
 
-    // Delete the cycle
     await prisma.cycleTracking.delete({
       where: { id: cycleID },
     });
