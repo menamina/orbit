@@ -79,7 +79,7 @@ async function updateSettings(
       throw new Error("User does not exist");
     }
     if (res.status === 403) {
-      throw new Error(errorData);
+      throw new Error(errorData.error);
     }
     if (res.status === 500) {
       throw new Error("Cannot update settings, try again");
@@ -103,7 +103,7 @@ async function updatePassword(
   if (!res.ok) {
     const errorData = await res.json();
     if (res.status === 400) {
-      throw new Error(errorData);
+      throw new Error(errorData.error);
     } else if (res.status === 500) {
       throw new Error("Cannot update password, try again");
     }

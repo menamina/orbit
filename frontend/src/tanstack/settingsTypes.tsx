@@ -7,12 +7,12 @@ export type SettingsType = {
 };
 
 export type PasswordUpdateType = {
-  oldpassword: string;
+  oldPassword: string;
   password: string;
   confirmPassword: string;
 };
 
 export type UpdateCycleType = {
   cycleLength: number;
-  daysBetwenPeriod: number;
+  daysBetweenPeriod: number;
 };
