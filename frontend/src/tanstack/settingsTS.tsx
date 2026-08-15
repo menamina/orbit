@@ -12,15 +12,17 @@ export const getSettingsQuery = () => {
   });
 };
 
-export const updateSettingsMut = () => {};
+export const updateSettingsMut = () => {
+  return mutationOptions({
+    mutationFn: updateSettings,
+  });
+};
 
-export const updateCycleMut = () => {};
-
-export const updatePasswordMut = {};
-
-export const updateIconMut = {};
-
-export const updateAppColorMut = {};
+export const updatePasswordMut = () => {
+  return mutationOptions({
+    mutationFn: updatePassword,
+  });
+};
 
 export const getCycleQuery = () => {
   return queryOptions({
@@ -29,12 +31,18 @@ export const getCycleQuery = () => {
   });
 };
 
+export const updateCycleMut = () => {};
+
+// --------- API CALLS --------- \\
+
 async function getSettings() {
   const res = await fetch(`http://localhost:5555//api/settings`, {
     method: "GET",
     credentials: "include",
   });
 }
+
+async function updateSettings() {}
 
 async function getCycle() {
   const res = await fetch(`http://localhost:5555//api/getCycleInfo`, {

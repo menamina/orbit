@@ -7,17 +7,17 @@ datasource db {
 }
 
 model User {
-  id            Int             @id @default(autoincrement())
-  name          String
-  username      String          @unique
-  email         String          @unique
-  settings      Settings?
-  cycleTracking CycleTracking[]
-  pillTracking  PillTracking[]
-  notes         Notes[]
+  id                      Int                @id @default(autoincrement())
+  name                    String
+  username                String             @unique
+  email                   String             @unique
+  settings                Settings?
+  cycleTracking           CycleTracking[]
+  pillTracking            PillTracking[]
+  notes                   Notes[]
 
-  accounts      Account[]       // Multiple OAuth providers support
-  refreshTokens RefreshToken[]
+  accounts                Account[]          // Multiple OAuth providers support
+  refreshTokens           RefreshToken[]
 
   @@index([id])
   @@index([username])
@@ -25,75 +25,77 @@ model User {
 }
 
 model Account {
-  id         Int    @id @default(autoincrement())
-  userID     Int
-  provider   String // "github", "google", "local", etc.
-  providerId String // OAuth provider's user ID (or email for local auth)
-  createdAt  DateTime @default(now())
+  id                      Int                @id @default(autoincrement())
+  userID                  Int
+  provider                String             // "github", "google", "local", etc.
+  providerId              String             // OAuth provider's user ID (or email for local auth)
+  createdAt               DateTime           @default(now())
 
-  user       User   @relation(fields: [userID], references: [id], onDelete: Cascade)
+  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
   @@index([userID])
 }
 
 model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  token     String   @unique
-  userID    Int
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id                      Int                @id @default(autoincrement())
+  token                   String             @unique
+  userID                  Int
+  expiresAt               DateTime
+  createdAt               DateTime           @default(now())
 
-  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([userID])
 }
 
 model Settings {
-  id        Int      @id @default(autoincrement())
-  userID    Int      @unique
-  saltedHash String?  // Optional - GitHub/OAuth users won't have password
-  cycleLength Int?
-  daysBetweenPeriod Int?
-  ovulationPrediction         Int?
+  id                      Int                @id @default(autoincrement())
+  userID                  Int                @unique
+  icon                    String
+  appColor                String
+  saltedHash              String?            // Optional - GitHub/OAuth users won't have password
+  cycleLength             Int?
+  daysBetweenPeriod       Int?
+  ovulationPrediction     Int?
 
-  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
   @@index([userID])
 }
 
 
 model CycleTracking {
-  id        Int      @id @default(autoincrement())
-  userID    Int
-  startDate      DateTime
-  estimateEndDate     DateTime?
-  endDate        DateTime?
+  id                      Int                @id @default(autoincrement())
+  userID                  Int
+  startDate               DateTime
+  estimateEndDate         DateTime?
+  endDate                 DateTime?
 
-  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
 
   @@index([userID, startDate])
   @@index([userID])
 }
 
 model PillTracking {
-  id        Int      @id @default(autoincrement())
-  userID    Int
-  date      DateTime
+  id                      Int                @id @default(autoincrement())
+  userID                  Int
+  date                    DateTime
 
 
-  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
-  @@index([userID, date]) 
-  @@index([userID, id]) 
+  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
+  @@index([userID, date])
+  @@index([userID, id])
 }
 
 model Notes {
-  id        Int      @id @default(autoincrement())
-  userID    Int
-  date DateTime @default(now())
-  note String
+  id                      Int                @id @default(autoincrement())
+  userID                  Int
+  date                    DateTime           @default(now())
+  note                    String
 
-  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
-  @@index([userID, date]) 
+  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
+  @@index([userID, date])
 }
 

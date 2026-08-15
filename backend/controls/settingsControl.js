@@ -12,6 +12,8 @@ async function getSettings(req, res) {
         name: true,
         username: true,
         email: true,
+        icon: true,
+        appColor: true,
       },
     });
 
@@ -29,12 +31,9 @@ async function getSettings(req, res) {
 async function settingsUpdate(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { name, username, email } = req.body;
+    const { name, username, email, appColor } = req.body;
 
-    if (name === "" && username === "" && email === "") {
-      return res.status(400).json({ error: "Cannot update with empty values" });
-    }
-
+    // multer icon \\
     const user = await prisma.user.findUnique({
       where: {
         id: userID,
@@ -63,6 +62,7 @@ async function settingsUpdate(req, res) {
         ...(name && { name }),
         ...(username && { username }),
         ...(email && { email }),
+        ...(appColor && { appColor }),
       },
     });
 

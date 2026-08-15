@@ -139,8 +139,6 @@ router.delete("/api/deleteNote", checkAuth, dltNote);
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
 router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
-router.patch("/api/updateIcon", checkAuth);
-router.patch("/api/updateAppColor", checkAuth);
 router.patch("/api/updateSettings", checkAuth, settingsUpdate);
 router.patch(
   "/api/updatePassword",
