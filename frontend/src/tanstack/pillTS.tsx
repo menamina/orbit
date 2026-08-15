@@ -6,10 +6,10 @@ import type {
   PillTracking,
 } from "./pillTypes";
 
-export const getBlisterQuery = (thisMonth: BlisterMonthYear) => {
+export const getBlisterQuery = (thisMonth: BlisterMonthYear, accessToken: string) => {
   return queryOptions({
     queryKey: ["blisterMonth", thisMonth],
-    queryFn: () => getBlisterThisMonth(thisMonth),
+    queryFn: () => getBlisterThisMonth(thisMonth, accessToken),
   });
 };
 
@@ -29,9 +29,8 @@ export const dltPillMut = () => {
 
 async function getBlisterThisMonth(
   thisMonth: BlisterMonthYear,
+  accessToken: string,
 ): Promise<MonthOfPills> {
-  const accessToken = localStorage.getItem("accessToken");
-
   const res = await fetch(
     `http://localhost:5555/api/pill/${thisMonth.month}/${thisMonth.year}`,
     {
@@ -55,17 +54,15 @@ async function getBlisterThisMonth(
   return await res.json();
 }
 
-async function takePill(date: number): Promise<PillTracking> {
-  const accessToken = localStorage.getItem("accessToken");
-
+async function takePill(params: { date: number; accessToken: string }): Promise<PillTracking> {
   const res = await fetch(`http://localhost:5555/api/track/pill`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${params.accessToken}`,
     },
-    body: JSON.stringify(date),
+    body: JSON.stringify(params.date),
   });
 
   if (!res.ok) {
@@ -80,13 +77,11 @@ async function takePill(date: number): Promise<PillTracking> {
   return await res.json();
 }
 
-async function dltPill(pillID: number): Promise<{ success: boolean }> {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const res = await fetch(`http://localhost:5555/api/dltPill/${pillID}`, {
+async function dltPill(params: { pillID: number; accessToken: string }): Promise<{ success: boolean }> {
+  const res = await fetch(`http://localhost:5555/api/dltPill/${params.pillID}`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${params.accessToken}`,
     },
     credentials: "include",
   });

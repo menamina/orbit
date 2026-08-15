@@ -3,8 +3,8 @@ import prisma from "../prisma/client.js";
 async function getNotes(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const month = Number(req.body.month);
-    const year = Number(req.body.year);
+    const month = Number(req.params);
+    const year = Number(req.params);
 
     const startOfMonth = new Date(year, month - 1, 1);
     const startOfNextMonth = new Date(year, month, 1);
@@ -109,9 +109,4 @@ async function dltNote(req, res) {
   }
 }
 
-export {
-  getNotes,
-  writeNote,
-  updateNote,
-  dltNote,
-};
+export { getNotes, writeNote, updateNote, dltNote };

@@ -130,7 +130,7 @@ router.post("/api/track/period", checkAuth, trackCycle);
 router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== NOTES ======== \\
-router.get("/api/notes", checkAuth, getNotes);
+router.get("/api/notes/:month/:year", checkAuth, getNotes);
 router.post("/api/writeNote", checkAuth, writeNote);
 router.patch("/api/updateNote", checkAuth, updateNote);
 router.delete("/api/deleteNote", checkAuth, dltNote);

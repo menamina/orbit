@@ -5,10 +5,10 @@ import type {
   UpdateCycleType,
 } from "./settingsTypes";
 
-export const getSettingsQuery = () => {
+export const getSettingsQuery = (accessToken: string) => {
   return queryOptions({
     queryKey: ["usersSettings"],
-    queryFn: () => getSettings(),
+    queryFn: () => getSettings(accessToken),
   });
 };
 
@@ -24,10 +24,10 @@ export const updatePasswordMut = () => {
   });
 };
 
-export const getCycleQuery = () => {
+export const getCycleQuery = (accessToken: string) => {
   return queryOptions({
     queryKey: ["usersCycle"],
-    queryFn: () => getCycle(),
+    queryFn: () => getCycle(accessToken),
   });
 };
 
@@ -45,9 +45,7 @@ export const dltAccountMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function getSettings() {
-  const accessToken = localStorage.getItem("accessToken");
-
+async function getSettings(accessToken: string) {
   const res = await fetch(`http://localhost:5555/api/settings`, {
     method: "GET",
     headers: {
@@ -68,18 +66,16 @@ async function getSettings() {
 }
 
 async function updateSettings(
-  updatedSettingsData: SettingsType,
+  params: { data: SettingsType; accessToken: string }
 ): Promise<{ success: boolean }> {
-  const accessToken = localStorage.getItem("accessToken");
-
   const res = await fetch(`http://localhost:5555/api/updateSettings`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${params.accessToken}`,
     },
-    body: JSON.stringify(updatedSettingsData),
+    body: JSON.stringify(params.data),
   });
 
   if (!res.ok) {
@@ -98,18 +94,16 @@ async function updateSettings(
 }
 
 async function updatePassword(
-  passwordUpdateData: PasswordUpdateType,
+  params: { data: PasswordUpdateType; accessToken: string }
 ): Promise<{ success: boolean }> {
-  const accessToken = localStorage.getItem("accessToken");
-
   const res = await fetch(`http://localhost:5555/api/updatePassword`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${params.accessToken}`,
     },
-    body: JSON.stringify(passwordUpdateData),
+    body: JSON.stringify(params.data),
   });
 
   if (!res.ok) {
@@ -123,9 +117,7 @@ async function updatePassword(
   return await res.json();
 }
 
-async function getCycle() {
-  const accessToken = localStorage.getItem("accessToken");
-
+async function getCycle(accessToken: string) {
   const res = await fetch(`http://localhost:5555/api/getCycleInfo`, {
     method: "GET",
     headers: {
@@ -142,18 +134,16 @@ async function getCycle() {
 }
 
 async function updateCycle(
-  cycleData: UpdateCycleType,
+  params: { data: UpdateCycleType; accessToken: string }
 ): Promise<{ success: boolean }> {
-  const accessToken = localStorage.getItem("accessToken");
-
   const res = await fetch(`http://localhost:5555/api/updateCycleInfo`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${params.accessToken}`,
     },
-    body: JSON.stringify(cycleData),
+    body: JSON.stringify(params.data),
   });
 
   if (!res.ok) {
@@ -168,9 +158,7 @@ async function updateCycle(
   return await res.json();
 }
 
-async function dltAccount(): Promise<{ success: boolean }> {
-  const accessToken = localStorage.getItem("accessToken");
-
+async function dltAccount(accessToken: string): Promise<{ success: boolean }> {
   const res = await fetch(`http://localhost:5555/api/delete/account`, {
     method: "DELETE",
     headers: {
