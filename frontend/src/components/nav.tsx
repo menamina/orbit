@@ -1,13 +1,23 @@
 import { useState, useEffect } from "react";
-import { TextField, Button, Box, Paper, List, ListItem } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import {
+  TextField,
+  Button,
+  Box,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 
 import Open from "../imgs/openArrow.svg";
 import Close from "../imgs/closeArrow.svg";
 
-const appNavOptions = ["PILL", "CYCLE", "ACCOUNT", "LOGOUT"];
+const appNavOptions = ["pill", "cycle", "account", "logout"];
 
 function Nav() {
   const [menuToggle, setMenuToggle] = useState(false);
+  const nav = useNavigate();
 
   return (
     <>
@@ -25,7 +35,16 @@ function Nav() {
 
         {menuToggle && (
           <Box>
-            <List>{appNavOptions.map((item) => {})}</List>
+            <List>
+              {appNavOptions.map((item) => (
+                <ListItem
+                  key={item}
+                  onClick={() => (item === "logout" ? null : nav(`/${item}`))}
+                >
+                  <ListItemText primary={item.toUpperCase()} />
+                </ListItem>
+              ))}
+            </List>
           </Box>
         )}
       </Box>
