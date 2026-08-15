@@ -1,5 +1,10 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { SignupData, LoginData, LoginResponse, AuthCheckResponse } from "./authTypes";
+import type {
+  SignupData,
+  LoginData,
+  LoginResponse,
+  AuthCheckResponse,
+} from "./authTypes";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -47,9 +52,7 @@ export const loginMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function checkAuth(
-  accessToken: string,
-): Promise<AuthCheckResponse> {
+async function checkAuth(accessToken: string): Promise<AuthCheckResponse> {
   const res = await fetch(`http://localhost:5555/`, {
     method: "GET",
     headers: {
@@ -64,10 +67,13 @@ async function checkAuth(
       throw new Error("Must login");
     } else if (res.status === 403) {
       // if it is 403 the token is expired must check refresh \\
-      const refreshRes = await fetch(`http://localhost:5555/api/checkRefreshToken`, {
-        method: "post",
-        credentials: "include",
-      });
+      const refreshRes = await fetch(
+        `http://localhost:5555/api/checkRefreshToken`,
+        {
+          method: "post",
+          credentials: "include",
+        },
+      );
 
       if (!refreshRes.ok) {
         if (refreshRes.status === 401 || refreshRes.status === 403) {
@@ -142,9 +148,7 @@ async function signup(data: SignupData): Promise<{ success: boolean }> {
   return responseData;
 }
 
-async function login(
-  data: LoginData,
-): Promise<LoginResponse> {
+async function login(data: LoginData): Promise<LoginResponse> {
   const res = await fetch(`http://localhost:5555/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -4,16 +4,20 @@ import { passwordGenie, checkPassword } from "../utils/passwordUtil";
 async function getSettings(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const settings = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
-        userID,
+        id: userID,
       },
       select: {
         name: true,
         username: true,
         email: true,
-        icon: true,
-        appColor: true,
+        settings: {
+          select: {
+            icon: true,
+            appColor: true,
+          },
+        },
       },
     });
 
@@ -21,7 +25,13 @@ async function getSettings(req, res) {
       return res.status(400).json({ noUser: "This user does not exist" });
     }
 
-    return res.status(200).json(settings);
+    return res.status(200).json({
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      icon: user.settings?.icon,
+      appColor: user.settings?.appColor,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
@@ -31,38 +41,51 @@ async function getSettings(req, res) {
 async function settingsUpdate(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { name, username, email, appColor } = req.body;
+    const { name, username, email, icon, appColor } = req.body;
 
-    // multer icon \\
     const user = await prisma.user.findUnique({
       where: {
         id: userID,
       },
+      include: {
+        settings: true,
+      },
     });
+
+    if (!user) {
+      return res.status(400).json({ error: "User does not exist" });
+    }
 
     if (username && username !== user.username) {
       const existingUser = await prisma.user.findUnique({
         where: { username },
       });
       if (existingUser) {
-        return res.status(400).json({ error: "Username already taken" });
+        return res.status(403).json({ error: "Username already taken" });
       }
     }
 
     if (email && email !== user.email) {
       const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
-        return res.status(400).json({ error: "Email already taken" });
+        return res.status(403).json({ error: "Email already taken" });
       }
     }
 
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userID },
       data: {
         ...(name && { name }),
         ...(username && { username }),
         ...(email && { email }),
-        ...(appColor && { appColor }),
+        ...((icon || appColor) && {
+          settings: {
+            update: {
+              ...(icon && { icon }),
+              ...(appColor && { appColor }),
+            },
+          },
+        }),
       },
     });
 
@@ -81,6 +104,10 @@ async function changePassword(req, res) {
     const user = await prisma.settings.findUnique({
       where: { userID: userID },
     });
+
+    if (!user) {
+      return res.status(400).json({ error: "User does not exist" });
+    }
 
     const match = await checkPassword(oldPassword, user.saltedHash);
 

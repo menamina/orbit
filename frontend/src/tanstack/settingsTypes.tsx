@@ -1,7 +1,9 @@
-export type SettingsUpdateType = {
+export type SettingsType = {
   name: string;
   username: string;
   email: string;
+  icon: string;
+  appColor: string;
 };
 
 export type PasswordUpdateType = {

@@ -138,7 +138,6 @@ router.delete("/api/deleteNote", checkAuth, dltNote);
 
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
-router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
 router.patch("/api/updateSettings", checkAuth, settingsUpdate);
 router.patch(
   "/api/updatePassword",
@@ -146,6 +145,8 @@ router.patch(
   passwordValidator,
   changePassword,
 );
+// need multer for img \\
+router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
 router.patch("/api/updateCycleInfo", checkAuth, cycleInfo);
 
 // ======== DLT ACC ======== \\
