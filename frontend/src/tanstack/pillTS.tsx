@@ -1,10 +1,15 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
 
-import type { BlisterMonthYear } from "./pillTypes";
+import type {
+  BlisterMonthYear,
+  MonthOfPills,
+  PillTracking,
+  DeletePillResponse,
+} from "./pillTypes";
 
 export const getBlisterQuery = (thisMonth: BlisterMonthYear) => {
   return queryOptions({
-    queryFn: ["blisterMonth", thisMonth],
+    queryKey: ["blisterMonth", thisMonth],
     queryFn: () => getBlisterThisMonth(thisMonth),
   });
 };
@@ -23,7 +28,9 @@ export const dltPillMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function getBlisterThisMonth(thisMonth: BlisterMonthYear) {
+async function getBlisterThisMonth(
+  thisMonth: BlisterMonthYear,
+): Promise<MonthOfPills> {
   const res = await fetch(
     `http://localhost:5555/api/pill/${thisMonth.month}/${thisMonth.year}`,
     {
@@ -44,7 +51,7 @@ async function getBlisterThisMonth(thisMonth: BlisterMonthYear) {
   return await res.json();
 }
 
-async function takePill(date: number) {
+async function takePill(date: number): Promise<PillTracking> {
   const res = await fetch(`http://localhost:5555/api/track/pill`, {
     method: "POST",
     credentials: "include",
@@ -66,7 +73,7 @@ async function takePill(date: number) {
   return await res.json();
 }
 
-async function dltPill(pillID: number) {
+async function dltPill(pillID: number): Promise<{ success: boolean }> {
   const res = await fetch(`http://localhost:5555/api/dltPill/${pillID}`, {
     method: "DELETE",
     credentials: "include",
