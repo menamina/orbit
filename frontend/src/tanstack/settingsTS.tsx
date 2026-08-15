@@ -46,8 +46,13 @@ export const dltAccountMut = () => {
 // --------- API CALLS --------- \\
 
 async function getSettings() {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/settings`, {
     method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
     credentials: "include",
   });
 
@@ -65,11 +70,14 @@ async function getSettings() {
 async function updateSettings(
   updatedSettingsData: SettingsType,
 ): Promise<{ success: boolean }> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/updateSettings`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(updatedSettingsData),
   });
@@ -92,11 +100,14 @@ async function updateSettings(
 async function updatePassword(
   passwordUpdateData: PasswordUpdateType,
 ): Promise<{ success: boolean }> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/updatePassword`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(passwordUpdateData),
   });
@@ -113,8 +124,13 @@ async function updatePassword(
 }
 
 async function getCycle() {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/getCycleInfo`, {
     method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
     credentials: "include",
   });
 
@@ -128,11 +144,14 @@ async function getCycle() {
 async function updateCycle(
   cycleData: UpdateCycleType,
 ): Promise<{ success: boolean }> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/updateCycleInfo`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(cycleData),
   });
@@ -150,8 +169,13 @@ async function updateCycle(
 }
 
 async function dltAccount(): Promise<{ success: boolean }> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/delete/account`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
     credentials: "include",
   });
 

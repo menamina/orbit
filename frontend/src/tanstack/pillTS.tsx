@@ -4,7 +4,6 @@ import type {
   BlisterMonthYear,
   MonthOfPills,
   PillTracking,
-  DeletePillResponse,
 } from "./pillTypes";
 
 export const getBlisterQuery = (thisMonth: BlisterMonthYear) => {
@@ -31,10 +30,15 @@ export const dltPillMut = () => {
 async function getBlisterThisMonth(
   thisMonth: BlisterMonthYear,
 ): Promise<MonthOfPills> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(
     `http://localhost:5555/api/pill/${thisMonth.month}/${thisMonth.year}`,
     {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       credentials: "include",
     },
   );
@@ -52,11 +56,14 @@ async function getBlisterThisMonth(
 }
 
 async function takePill(date: number): Promise<PillTracking> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/track/pill`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(date),
   });
@@ -74,8 +81,13 @@ async function takePill(date: number): Promise<PillTracking> {
 }
 
 async function dltPill(pillID: number): Promise<{ success: boolean }> {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch(`http://localhost:5555/api/dltPill/${pillID}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
     credentials: "include",
   });
 
