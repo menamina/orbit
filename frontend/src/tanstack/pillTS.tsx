@@ -31,8 +31,55 @@ async function getBlisterThisMonth(thisMonth: BlisterMonthYear) {
       credentials: "include",
     },
   );
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    if (res.status === 401) {
+      throw new Error(errorData.error);
+    } else if (res.status === 500) {
+      throw new Error("Cannot get settings, try again");
+    }
+  }
+
+  return await res.json();
 }
 
-async function takePill(date: number) {}
+async function takePill(date: number) {
+  const res = await fetch(`http://localhost:5555/api/track/pill`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(date),
+  });
 
-async function dltPillMut(pillID: number) {}
+  if (!res.ok) {
+    const errorData = await res.json();
+    if (res.status === 401) {
+      throw new Error(errorData.error);
+    } else if (res.status === 500) {
+      throw new Error("Cannot get settings, try again");
+    }
+  }
+
+  return await res.json();
+}
+
+async function dltPill(pillID: number) {
+  const res = await fetch(`http://localhost:5555/api/dltPill/${pillID}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    if (res.status === 401) {
+      throw new Error(errorData.error);
+    } else if (res.status === 500) {
+      throw new Error("Cannot get settings, try again");
+    }
+  }
+
+  return await res.json();
+}

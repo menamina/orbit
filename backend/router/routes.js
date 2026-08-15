@@ -123,7 +123,7 @@ router.post("/api/logoutEverywhere", logoutEverywhere);
 // ======== PILL ======== \\
 router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);
 router.post("/api/track/pill", checkAuth, takeBCPill);
-router.delete("/api/pill/:pillid", checkAuth, dltBCPIll);
+router.delete("/api/dltPill/:pillid", checkAuth, dltBCPIll);
 
 // ======== CYCLE ======== \\
 router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);
