@@ -1,4 +1,4 @@
-import prisma from "../prisma/client";
+import prisma from "../prisma/client.js";
 
 async function getBCPillByMonthYear(req, res) {
   try {
@@ -115,7 +115,7 @@ async function dltBCPIll(req, res) {
   }
 }
 
-module.exports = {
+export {
   getBCPillByMonthYear,
   takeBCPill,
   dltBCPIll,

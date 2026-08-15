@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
-require("dotenv").config();
+import "dotenv/config";
 
 const accessTokenSec = process.env.ACCESS_SECRET;
 const accessExpiry = process.env.ACCESS_EXPIRES_IN;

@@ -1,4 +1,4 @@
-import prisma from "../prisma/client";
+import prisma from "../prisma/client.js";
 
 import {
   generateAccessToken,
@@ -7,9 +7,9 @@ import {
   verifyRefreshToken,
   deleteAllRefreshTokens,
   deleteRefreshToken,
-} from "../auth/jwt";
+} from "../auth/jwt.js";
 
-import { passwordGenie, checkPassword } from "../utils/passwordUtil";
+import { passwordGenie, checkPassword } from "../utils/passwordUtil.js";
 
 async function login(req, res) {
   const { email, password } = req.body;
@@ -184,7 +184,7 @@ async function refreshToken(req, res) {
   }
 }
 
-module.exports = {
+export {
   login,
   usernameInUse,
   emailInUse,

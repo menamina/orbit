@@ -1,4 +1,4 @@
-import prisma from "../prisma/client";
+import prisma from "../prisma/client.js";
 
 async function getCycleByMonthYear(req, res) {
   try {
@@ -334,7 +334,7 @@ async function dltCycle(req, res) {
   }
 }
 
-module.exports = {
+export {
   getCycleByMonthYear,
   trackCycle,
   dltCycle,

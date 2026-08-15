@@ -1,5 +1,5 @@
-import prisma from "../prisma/client";
-import { passwordGenie, checkPassword } from "../utils/passwordUtil";
+import prisma from "../prisma/client.js";
+import { passwordGenie, checkPassword } from "../utils/passwordUtil.js";
 
 async function getSettings(req, res) {
   try {
@@ -201,7 +201,7 @@ async function dltAccount(req, res) {
   }
 }
 
-module.exports = {
+export {
   getSettings,
   settingsUpdate,
   changePassword,

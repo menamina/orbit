@@ -1,18 +1,19 @@
 import express from "express";
 const router = express.Router();
 
-import { checkAuth } from "../auth/checkToken";
+import { checkAuth } from "../auth/checkToken.js";
 
 import {
   generateAccessToken,
   generateRefreshToken,
   storeRefreshToken,
   verifyRefreshToken,
-} from "../auth/jwt";
+} from "../auth/jwt.js";
 
-import passport from "../auth/passport";
+import passport from "../auth/passport.js";
 
-import validator from "../utils/validator";
+import { validateSignup } from "../utils/validator.js";
+import { passwordValidator } from "../utils/passwordValidation.js";
 
 import {
   login,
@@ -22,19 +23,19 @@ import {
   refreshToken,
   logout,
   logoutEverywhere,
-} from "../controls/authController";
+} from "../controls/authController.js";
 
 import {
   getBCPillByMonthYear,
   takeBCPill,
   dltBCPIll,
-} from "../controls/bcPillControl";
+} from "../controls/bcPillControl.js";
 
 import {
   getCycleByMonthYear,
   trackCycle,
   dltCycle,
-} from "../controls/cycleControl";
+} from "../controls/cycleControl.js";
 
 import {
   getSettings,
@@ -43,16 +44,14 @@ import {
   getCycleInfo,
   updateCycleInfo,
   dltAccount,
-} from "../controls/settingsControl";
+} from "../controls/settingsControl.js";
 
 import {
   getNotes,
   writeNote,
   updateNote,
   dltNote,
-} from "../controls/notesController";
-
-import passwordValidator from "../utils/validator";
+} from "../controls/notesController.js";
 
 // ======== AUTH ======== \\
 
@@ -72,7 +71,7 @@ router.post("/api/checkRefreshToken", refreshToken);
 
 router.get("/api/signup/username", usernameInUse);
 router.get("/api/signup/email", emailInUse);
-router.post("/api/signup", validator, signup);
+router.post("/api/signup", validateSignup, signup);
 
 router.post("/api/login", login);
 
@@ -147,9 +146,9 @@ router.patch(
   changePassword,
 );
 router.get("/api/getCycleInfo", checkAuth, getCycleInfo);
-router.patch("/api/updateCycleInfo", checkAuth, cycleInfo);
+router.patch("/api/updateCycleInfo", checkAuth, updateCycleInfo);
 
 // ======== DLT ACC ======== \\
 router.delete("/api/delete/account", checkAuth, dltAccount);
 
-module.exports = router;
+export default router;

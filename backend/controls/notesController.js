@@ -1,4 +1,4 @@
-import prisma from "../../prisma/client";
+import prisma from "../prisma/client.js";
 
 async function getNotes(req, res) {
   try {
@@ -109,7 +109,7 @@ async function dltNote(req, res) {
   }
 }
 
-module.exports = {
+export {
   getNotes,
   writeNote,
   updateNote,
