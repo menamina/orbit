@@ -4,7 +4,7 @@ import type {
   PasswordUpdateType,
   UpdateCycleType,
 } from "./settingsTypes";
-import { apiFetch } from "../utils/api";
+import { apiFetch, type AuthParams } from "../utils/api";
 
 export const getSettingsQuery = (
   accessToken: string,
@@ -12,7 +12,7 @@ export const getSettingsQuery = (
 ) => {
   return queryOptions({
     queryKey: ["usersSettings"],
-    queryFn: () => getSettings(accessToken, onTokenRefresh),
+    queryFn: () => getSettings({ accessToken, onTokenRefresh }),
   });
 };
 
@@ -34,7 +34,7 @@ export const getCycleQuery = (
 ) => {
   return queryOptions({
     queryKey: ["usersCycle"],
-    queryFn: () => getCycle(accessToken, onTokenRefresh),
+    queryFn: () => getCycle({ accessToken, onTokenRefresh }),
   });
 };
 
@@ -52,10 +52,10 @@ export const dltAccountMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function getSettings(
-  accessToken: string,
-  onTokenRefresh?: (token: string) => void
-) {
+async function getSettings({
+  accessToken,
+  onTokenRefresh,
+}: AuthParams) {
   const res = await apiFetch(`http://localhost:5555/api/settings`, {
     accessToken,
     onTokenRefresh,
@@ -73,7 +73,7 @@ async function updateSettings({
   accessToken,
   onTokenRefresh,
   ...data
-}: SettingsType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+}: SettingsType & AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/updateSettings`, {
     method: "PATCH",
     accessToken,
@@ -95,7 +95,7 @@ async function updatePassword({
   accessToken,
   onTokenRefresh,
   ...data
-}: PasswordUpdateType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+}: PasswordUpdateType & AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/updatePassword`, {
     method: "PATCH",
     accessToken,
@@ -113,10 +113,10 @@ async function updatePassword({
   return await res.json();
 }
 
-async function getCycle(
-  accessToken: string,
-  onTokenRefresh?: (token: string) => void
-) {
+async function getCycle({
+  accessToken,
+  onTokenRefresh,
+}: AuthParams) {
   const res = await apiFetch(`http://localhost:5555/api/getCycleInfo`, {
     accessToken,
     onTokenRefresh,
@@ -134,7 +134,7 @@ async function updateCycle({
   accessToken,
   onTokenRefresh,
   ...data
-}: UpdateCycleType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+}: UpdateCycleType & AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/updateCycleInfo`, {
     method: "PATCH",
     accessToken,
@@ -156,10 +156,7 @@ async function updateCycle({
 async function dltAccount({
   accessToken,
   onTokenRefresh,
-}: {
-  accessToken: string;
-  onTokenRefresh?: (token: string) => void;
-}): Promise<{ success: boolean }> {
+}: AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/delete/account`, {
     method: "DELETE",
     accessToken,

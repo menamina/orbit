@@ -5,7 +5,7 @@ import type {
   MonthOfPills,
   PillTracking,
 } from "./pillTypes";
-import { apiFetch } from "../utils/api";
+import { apiFetch, type AuthParams } from "../utils/api";
 
 export const getBlisterQuery = (
   thisMonth: BlisterMonthYear,
@@ -14,7 +14,7 @@ export const getBlisterQuery = (
 ) => {
   return queryOptions({
     queryKey: ["blisterMonth", thisMonth],
-    queryFn: () => getBlisterThisMonth(thisMonth, accessToken, onTokenRefresh),
+    queryFn: () => getBlisterThisMonth(thisMonth, { accessToken, onTokenRefresh }),
   });
 };
 
@@ -34,8 +34,7 @@ export const dltPillMut = () => {
 
 async function getBlisterThisMonth(
   thisMonth: BlisterMonthYear,
-  accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  { accessToken, onTokenRefresh }: AuthParams
 ): Promise<MonthOfPills> {
   const res = await apiFetch(
     `http://localhost:5555/api/pill/${thisMonth.month}/${thisMonth.year}`,
@@ -57,11 +56,7 @@ async function takePill({
   date,
   accessToken,
   onTokenRefresh,
-}: {
-  date: number;
-  accessToken: string;
-  onTokenRefresh?: (token: string) => void;
-}): Promise<PillTracking> {
+}: { date: number } & AuthParams): Promise<PillTracking> {
   const res = await apiFetch(`http://localhost:5555/api/track/pill`, {
     method: "POST",
     accessToken,
@@ -84,11 +79,7 @@ async function dltPill({
   pillID,
   accessToken,
   onTokenRefresh,
-}: {
-  pillID: number;
-  accessToken: string;
-  onTokenRefresh?: (token: string) => void;
-}): Promise<{ success: boolean }> {
+}: { pillID: number } & AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/dltPill/${pillID}`, {
     method: "DELETE",
     accessToken,

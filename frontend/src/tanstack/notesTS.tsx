@@ -4,17 +4,19 @@ import type {
   NoteType,
   MonthOfNotes,
   WriteNoteType,
+  NoteToUpdate,
 } from "./notesTypes";
-import { apiFetch } from "../utils/api";
+import { apiFetch, type AuthParams } from "../utils/api";
 
 export const getNotesByMonthQuery = (
   thisMonth: ThisMonth,
   accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
     queryKey: ["userNotes", thisMonth],
-    queryFn: () => getNotesThisMonth(thisMonth, accessToken, onTokenRefresh),
+    queryFn: () =>
+      getNotesThisMonth(thisMonth, { accessToken, onTokenRefresh }),
   });
 };
 
@@ -40,15 +42,14 @@ export const dltNoteMut = () => {
 
 async function getNotesThisMonth(
   thisMonth: ThisMonth,
-  accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  { accessToken, onTokenRefresh }: AuthParams,
 ): Promise<MonthOfNotes> {
   const res = await apiFetch(
     `http://localhost:5555/api/notes/${thisMonth.month}/${thisMonth.year}`,
     {
       accessToken,
       onTokenRefresh,
-    }
+    },
   );
 
   if (!res.ok) {
@@ -62,7 +63,7 @@ async function writeANote({
   accessToken,
   onTokenRefresh,
   ...data
-}: WriteNoteType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<NoteType> {
+}: WriteNoteType & AuthParams): Promise<NoteType> {
   const res = await apiFetch(`http://localhost:5555/api/writeNote`, {
     method: "POST",
     accessToken,
@@ -85,7 +86,7 @@ async function updateANote({
   accessToken,
   onTokenRefresh,
   ...data
-}: { noteID: number; note: string; accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<NoteType> {
+}: NoteToUpdate & AuthParams): Promise<NoteType> {
   const res = await apiFetch(`http://localhost:5555/api/updateNote`, {
     method: "PATCH",
     accessToken,
@@ -108,7 +109,7 @@ async function dltNote({
   noteID,
   accessToken,
   onTokenRefresh,
-}: { noteID: number; accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+}: { noteID: number } & AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/deleteNote`, {
     method: "DELETE",
     accessToken,

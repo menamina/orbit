@@ -5,7 +5,7 @@ import type {
   LoginResponse,
   AuthCheckResponse,
 } from "./authTypes";
-import { apiFetch } from "../utils/api";
+import { apiFetch, type AuthParams } from "../utils/api";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -180,10 +180,7 @@ async function logout(): Promise<{ success: boolean }> {
 async function logoutEverywhere({
   accessToken,
   onTokenRefresh,
-}: {
-  accessToken: string;
-  onTokenRefresh?: (token: string) => void;
-}): Promise<{ success: boolean }> {
+}: AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/logoutEverywhere`, {
     method: "POST",
     accessToken,

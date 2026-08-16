@@ -3,6 +3,11 @@ interface FetchOptions extends RequestInit {
   onTokenRefresh?: (newToken: string) => void;
 }
 
+export type AuthParams = {
+  accessToken: string;
+  onTokenRefresh?: (token: string) => void;
+};
+
 export async function apiFetch(
   url: string,
   options: FetchOptions = {},
