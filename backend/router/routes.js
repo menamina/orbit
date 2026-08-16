@@ -26,8 +26,11 @@ import {
 } from "../controls/authController.js";
 
 import {
-  getBCPillByMonthYear,
-  takeBCPill,
+  getCurrentPack,
+  getAllPacks,
+  getPackByNumber,
+  startNewPack,
+  trackPillInPack,
   dltBCPIll,
 } from "../controls/bcPillControl.js";
 
@@ -119,17 +122,14 @@ router.get(
 router.post("/api/logout", logout);
 router.post("/api/logoutEverywhere", logoutEverywhere);
 
-// ======== PILL ======== \\
-router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);
-router.post("/api/track/pill", checkAuth, takeBCPill);
-router.delete("/api/dltPill/:pillid", checkAuth, dltBCPIll);
-
 // ======== PILL PACKS ======== \\
-router.get("/api/blister-packs/current", checkAuth, getCurrentPack);
+router.get("/api/pill-packs/current", checkAuth, getCurrentPack);
 router.get("/api/all-packs", checkAuth, getAllPacks);
-router.get("/api/blister-packs/:packNumber", checkAuth, getPackByNumber);
+router.get("/api/pill-pack/:packID/:packNumber", checkAuth, getPackByNumber);
 router.post("/api/blister-packs", checkAuth, startNewPack);
-router.post("/api/blister-packs/:packID/pills", checkAuth, trackPillInPack);
+router.post("/api/track-pill/:packID", checkAuth, trackPillInPack);
+router.delete("/api/dltPill/:pillID", checkAuth, dltBCPIll);
+router.delete("/api/dltPack/:packID", checkAuth, dltPack);
 
 // ======== CYCLE ======== \\
 router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);

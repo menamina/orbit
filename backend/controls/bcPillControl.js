@@ -1,85 +1,120 @@
 import prisma from "../prisma/client.js";
 
-async function getBCPillByMonthYear(req, res) {
+async function getCurrentPack(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const monthNum = Number(req.params.month);
-    const yearNum = Number(req.params.year);
-
-    const startOfMonth = new Date(yearNum, monthNum - 1, 1);
-    const startOfNextMonth = new Date(yearNum, monthNum, 1);
-
-    const monthOfPills = await prisma.pillTracking.findMany({
+    const currentPack = await prisma.pillPack.findFirst({
       where: {
-        userID: userID,
-        date: {
-          gte: startOfMonth, // >= Aug 1
-          lt: startOfNextMonth, // < Sep 1
+        userID,
+        isComplete: false,
+      },
+      include: {
+        pills: {
+          orderBy: {
+            dayNumber: "asc",
+          },
         },
       },
       orderBy: {
-        date: "asc",
+        startDate: "desc",
       },
     });
 
-    return res.status(200).json(monthOfPills);
+    return res.status(200).json(currentPack);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
   }
 }
 
-async function takeBCPill(req, res) {
+async function getAllPacks(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { date } = req.body;
+    const cursor = parseInt(req.query.cursor);
+    const thisMany = PAGINATION_LIMIT;
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
 
-    if (!date) {
-      return res.status(400).json({ error: "Date is required" });
-    }
+async function getPackByNumber(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const packID = Number(req.params.packID);
+    const packNumber = Number(req.params.packNumber);
 
-    const todaysDate = new Date();
-    const dateToTrack = new Date(date);
-
-    if (isNaN(dateToTrack.getTime())) {
-      return res.status(400).json({ error: "Invalid date format" });
-    }
-
-    if (dateToTrack > todaysDate) {
-      return res
-        .status(400)
-        .json({ error: "Cannot track beyond today's date" });
-    }
-
-    // Normalize to start of day for duplicate checking
-    const startOfDay = new Date(dateToTrack.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(dateToTrack.setHours(23, 59, 59, 999));
-
-    const isDayAlreadyEntered = await prisma.pillTracking.findFirst({
+    const foundPack = await prisma.pillPack.findFirst({
       where: {
+        id: packID,
         userID,
-        date: {
-          gte: startOfDay,
-          lte: endOfDay,
+        packNumber,
+      },
+      include: {
+        pills: {
+          orderBy: {
+            dayNumber: "asc",
+          },
         },
       },
     });
 
-    if (isDayAlreadyEntered) {
-      return res
-        .status(400)
-        .json({ error: "Pill already tracked for this date" });
+    if (!foundPack) {
+      return res.status(200).json({ nothingFound: "No pill pack was found" });
     }
 
-    const today = await prisma.pillTracking.create({
+    return res.status(200).json(foundPack);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
+async function startNewPack(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const lastPackNumber = await prisma.pillPack.findFirst({
+      where: {
+        userID,
+      },
+      orderBy: {
+        packNumber: "desc",
+      },
+    });
+
+    const newPackNumber = lastPackNumber ? lastPackNumber.packNumber + 1 : 1;
+
+    const newPackStarted = await prisma.pillPack.create({
       data: {
         userID,
+        packNumber: newPackNumber,
+        startDate: new Date(),
+      },
+    });
+
+    return res.status(200).json(newPackStarted);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
+async function trackPillInPack(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const dayNumber = Number(req.body.dayNumber);
+    const date = Number(req.body.date);
+
+    const trackedPill = await prisma.pillTracking.create({
+      data: {
+        pillPackID,
+        dayNumber,
         date: new Date(date),
       },
     });
 
-    res.status(200).json(today);
-  } catch (error) {
+    return res.status(200).json(trackedPill);
+  } catch {
     console.log(error);
     return res.status(500).json({ serverError: "Server error" });
   }
@@ -88,7 +123,7 @@ async function takeBCPill(req, res) {
 async function dltBCPIll(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const pillID = Number(req.params.pillid);
+    const pillID = Number(req.params.pillID);
 
     const pill = await prisma.pillTracking.findUnique({
       where: { id: pillID },
@@ -115,8 +150,41 @@ async function dltBCPIll(req, res) {
   }
 }
 
+async function dltPack(req, res) {
+  try {
+    const userID = Number(req.user.userID);
+    const packID = Number(req.params.packID);
+
+    const pack = await prisma.pillPack.findUnique({
+      where: { id: packID },
+    });
+
+    if (!pack) {
+      return res.status(404).json({ error: "Pack record not found" });
+    }
+
+    if (pack.userID !== userID) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this record" });
+    }
+
+    await prisma.pillPack.delete({
+      where: { id: packID },
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ serverError: "Server error" });
+  }
+}
+
 export {
-  getBCPillByMonthYear,
-  takeBCPill,
-  dltBCPIll,
+  getCurrentPack,
+  getAllPacks,
+  getPackByNumber,
+  startNewPack,
+  trackPillInPack,
+  dltPack,
 };

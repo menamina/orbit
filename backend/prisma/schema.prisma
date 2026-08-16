@@ -89,21 +89,21 @@ model PillPack {
   pills             PillTracking[]   // Pills in this pack
   user              User             @relation(fields: [userID], references: [id])
   
-  @@unique([userID, packNumber])     
+  @@unique([userID, id, packNumber])     
   @@index([userID, startDate])
 }
 
 model PillTracking {
   id                Int              @id @default(autoincrement())
-  blisterPackID     Int
+  pillPackID        Int
   dayNumber         Int
   date              DateTime         // When they actually took it
 
-  blisterPack       BlisterPack      @relation(fields: [blisterPackID], references: [id], onDelete: Cascade)
+  blisterPack       PillPack      @relation(fields: [pillPackID], references: [id], onDelete: Cascade)
 
-  @@unique([blisterPackID, dayNumber])
-  @@index([blisterPackID, date])
-  @@index([blisterPackID])
+  @@unique([pillPackID, dayNumber])
+  @@index([pillPackID, date])
+  @@index([pillPackID])
 }
 
 model Notes {
