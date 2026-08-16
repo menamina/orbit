@@ -21,6 +21,10 @@ async function getSettings(req, res) {
       },
     });
 
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     return res.status(200).json({
       name: user.name,
       username: user.username,
@@ -47,6 +51,10 @@ async function settingsUpdate(req, res) {
         settings: true,
       },
     });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found - please login" });
+    }
 
     if (username && username !== user.username) {
       const existingUser = await prisma.user.findUnique({
@@ -94,11 +102,13 @@ async function changePassword(req, res) {
     const { oldPassword, password } = req.body;
 
     const user = await prisma.settings.findUnique({
-      where: { userID: userID },
+      where: { userID },
     });
 
     if (!user) {
-      return res.status(400).json({ error: "User does not exist" });
+      return res
+        .status(400)
+        .json({ error: "User does not exist - please login" });
     }
 
     const match = await checkPassword(oldPassword, user.saltedHash);
