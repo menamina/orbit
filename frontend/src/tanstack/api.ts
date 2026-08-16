@@ -48,7 +48,9 @@ export async function apiFetch(
 
       if (!refreshRes.ok) {
         const refreshErrorData = await refreshRes.json();
-        throw new Error(refreshErrorData.error || "Session expired - please login again");
+        throw new Error(
+          refreshErrorData.error || "Session expired - please login again",
+        );
       }
 
       const { newAccessToken } = await refreshRes.json();
@@ -68,8 +70,10 @@ export async function apiFetch(
       }
 
       return retryRes;
+      // return data from control
     }
   }
 
   return res;
+  // return data from control
 }
