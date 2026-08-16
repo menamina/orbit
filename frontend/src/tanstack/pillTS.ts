@@ -31,27 +31,39 @@ export const getAllPillPacksQuery = (
 };
 
 export const getSpecificPillPackQuery = (
-  packID,
-  packNumber,
+  packID: number,
+  packNumber: number,
   accessToken: string,
   onTokenRefresh: (token: string) => void,
 ) => {
   return queryOptions({
-    queryKey: ["currentPack"],
+    queryKey: ["specificPack", packID, packNumber],
     queryFn: () =>
-      getCurrentPack({ packID, packNumber, accessToken, onTokenRefresh }),
+      getSpecificPillPack({ packID, packNumber, accessToken, onTokenRefresh }),
   });
 };
 
-export const takePillMut = () => {
+export const startNewPackMut = () => {
   return mutationOptions({
-    mutationFn: takePill,
+    mutationFn: startNewPack,
+  });
+};
+
+export const trackPillInPackMut = () => {
+  return mutationOptions({
+    mutationFn: trackPillInPack,
   });
 };
 
 export const dltPillMut = () => {
   return mutationOptions({
     mutationFn: dltPill,
+  });
+};
+
+export const dltPackMut = () => {
+  return mutationOptions({
+    mutationFn: dltPack,
   });
 };
 
@@ -119,20 +131,47 @@ async function getSpecificPillPack({
   return await res.json();
 }
 
-async function takePill({
-  date,
+async function startNewPack({
   accessToken,
   onTokenRefresh,
-}: { date: number } & AuthParams): Promise<Pill> {
-  const res = await apiFetch(`http://localhost:5555/api/track/pill`, {
+}: AuthParams): Promise<PillPack> {
+  const res = await apiFetch(`http://localhost:5555/api/blister-packs`, {
     method: "POST",
     accessToken,
     onTokenRefresh,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ date }),
   });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error);
+  }
+
+  return await res.json();
+}
+
+async function trackPillInPack({
+  packID,
+  dayNumber,
+  date,
+  accessToken,
+  onTokenRefresh,
+}: {
+  packID: number;
+  dayNumber: number;
+  date: number;
+} & AuthParams): Promise<Pill> {
+  const res = await apiFetch(
+    `http://localhost:5555/api/track-pill/${packID}`,
+    {
+      method: "POST",
+      accessToken,
+      onTokenRefresh,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ dayNumber, date }),
+    },
+  );
 
   if (!res.ok) {
     const errorData = await res.json();
@@ -148,6 +187,25 @@ async function dltPill({
   onTokenRefresh,
 }: { pillID: number } & AuthParams): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/dltPill/${pillID}`, {
+    method: "DELETE",
+    accessToken,
+    onTokenRefresh,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error);
+  }
+
+  return await res.json();
+}
+
+async function dltPack({
+  packID,
+  accessToken,
+  onTokenRefresh,
+}: { packID: number } & AuthParams): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/dltPack/${packID}`, {
     method: "DELETE",
     accessToken,
     onTokenRefresh,
