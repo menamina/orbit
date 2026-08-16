@@ -50,7 +50,7 @@ async function getAllPacks(req, res) {
         startDate: "desc",
       },
       skip: cursor,
-      take: limit + 1, // Fetch one extra to check if there's a next page
+      take: limit + 1,
     });
 
     const hasNextPage = packs.length > limit;
@@ -72,6 +72,14 @@ async function getPackByNumber(req, res) {
     const userID = Number(req.user.userID);
     const packID = Number(req.params.packID);
     const packNumber = Number(req.params.packNumber);
+
+    if (isNaN(packID) || packID <= 0) {
+      return res.status(400).json({ error: "Invalid pack ID" });
+    }
+
+    if (isNaN(packNumber) || packNumber <= 0) {
+      return res.status(400).json({ error: "Invalid pack number" });
+    }
 
     const foundPack = await prisma.pillPack.findFirst({
       where: {
@@ -131,21 +139,73 @@ async function startNewPack(req, res) {
 async function trackPillInPack(req, res) {
   try {
     const userID = Number(req.user.userID);
+    const pillPackID = Number(req.params.packID);
     const dayNumber = Number(req.body.dayNumber);
     const date = Number(req.body.date);
+
+    if (isNaN(pillPackID) || pillPackID <= 0) {
+      return res.status(400).json({ error: "Invalid pack ID" });
+    }
+
+    if (!req.body.dayNumber || isNaN(dayNumber) || dayNumber <= 0) {
+      return res.status(400).json({ error: "Invalid day number" });
+    }
+
+    if (!req.body.date) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+
+    const dateToTrack = new Date(date);
+    if (isNaN(dateToTrack.getTime())) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
+
+    const todaysDate = new Date();
+    if (dateToTrack > todaysDate) {
+      return res
+        .status(400)
+        .json({ error: "Cannot track beyond today's date" });
+    }
+
+    const pack = await prisma.pillPack.findUnique({
+      where: { id: pillPackID },
+    });
+
+    if (!pack) {
+      return res.status(404).json({ error: "Pack not found" });
+    }
+
+    if (pack.userID !== userID) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to track pills in this pack" });
+    }
+
+    const duplicate = await prisma.pillTracking.findFirst({
+      where: {
+        pillPackID,
+        dayNumber,
+      },
+    });
+
+    if (duplicate) {
+      return res
+        .status(400)
+        .json({ error: "Pill already tracked for this day number" });
+    }
 
     const trackedPill = await prisma.pillTracking.create({
       data: {
         pillPackID,
         dayNumber,
-        date: new Date(date),
+        date: dateToTrack,
       },
     });
 
     return res.status(200).json(trackedPill);
-  } catch {
+  } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -153,6 +213,10 @@ async function dltBCPIll(req, res) {
   try {
     const userID = Number(req.user.userID);
     const pillID = Number(req.params.pillID);
+
+    if (isNaN(pillID) || pillID <= 0) {
+      return res.status(400).json({ error: "Invalid pill ID" });
+    }
 
     const pill = await prisma.pillTracking.findUnique({
       where: { id: pillID },
@@ -183,6 +247,10 @@ async function dltPack(req, res) {
   try {
     const userID = Number(req.user.userID);
     const packID = Number(req.params.packID);
+
+    if (isNaN(packID) || packID <= 0) {
+      return res.status(400).json({ error: "Invalid pack ID" });
+    }
 
     const pack = await prisma.pillPack.findUnique({
       where: { id: packID },
