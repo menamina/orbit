@@ -21,12 +21,25 @@ export const getAllPillPacksQuery = (
   accessToken: string,
   onTokenRefresh: (token: string) => void,
 ) => {
-  return queryOptions({
+  return infiniteQueryOptions({
     queryKey: ["allPacks"],
     queryFn: ({ pageParam }) =>
       getAllPillPacks({ pageParam, accessToken, onTokenRefresh }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+  });
+};
+
+export const getSpecificPillPackQuery = (
+  packID,
+  packNumber,
+  accessToken: string,
+  onTokenRefresh: (token: string) => void,
+) => {
+  return queryOptions({
+    queryKey: ["currentPack"],
+    queryFn: () =>
+      getCurrentPack({ packID, packNumber, accessToken, onTokenRefresh }),
   });
 };
 
@@ -48,7 +61,7 @@ async function getCurrentPack({
   accessToken,
   onTokenRefresh,
 }: AuthParams): Promise<PillPack> {
-  const res = await apiFetch(`/api/pill-packs/current`, {
+  const res = await apiFetch(`/api/pill-pack/current`, {
     accessToken,
     onTokenRefresh,
   });
@@ -65,8 +78,35 @@ async function getAllPillPacks({
   pageParam,
   accessToken,
   onTokenRefresh,
-}: { pageParam: number } & AuthParams): Promise<PillPack[]> {
-  const res = await apiFetch(`http://localhost:5555/api/all-packs`, {
+}: { pageParam: number } & AuthParams): Promise<{
+  packs: PillPack[];
+  nextCursor?: number;
+}> {
+  const res = await apiFetch(
+    `http://localhost:5555/api/all-packs?cursor=${pageParam}`,
+    {
+      accessToken,
+      onTokenRefresh,
+    },
+  );
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error);
+  }
+
+  return await res.json();
+}
+
+async function getSpecificPillPack({
+  packID,
+  packNumber,
+  accessToken,
+  onTokenRefresh,
+}: { packID: number } & {
+  packNumber: number;
+} & AuthParams): Promise<PillPack> {
+  const res = await apiFetch(`/api/pill-pack/${packID}/${packNumber}`, {
     accessToken,
     onTokenRefresh,
   });

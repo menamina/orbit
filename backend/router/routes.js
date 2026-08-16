@@ -124,7 +124,7 @@ router.post("/api/logout", logout);
 router.post("/api/logoutEverywhere", logoutEverywhere);
 
 // ======== PILL PACKS ======== \\
-router.get("/api/pill-packs/current", checkAuth, getCurrentPack);
+router.get("/api/pill-pack/current", checkAuth, getCurrentPack);
 router.get("/api/all-packs", checkAuth, getAllPacks);
 router.get("/api/pill-pack/:packID/:packNumber", checkAuth, getPackByNumber);
 router.post("/api/blister-packs", checkAuth, startNewPack);

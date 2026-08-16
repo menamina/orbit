@@ -1,5 +1,7 @@
 import prisma from "../prisma/client.js";
 
+const PAGINATION_LIMIT = 10;
+
 async function getCurrentPack(req, res) {
   try {
     const userID = Number(req.user.userID);
@@ -30,11 +32,38 @@ async function getCurrentPack(req, res) {
 async function getAllPacks(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const cursor = parseInt(req.query.cursor);
-    const thisMany = PAGINATION_LIMIT;
+    const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
+    const limit = PAGINATION_LIMIT;
+
+    const packs = await prisma.pillPack.findMany({
+      where: {
+        userID,
+      },
+      include: {
+        pills: {
+          orderBy: {
+            dayNumber: "asc",
+          },
+        },
+      },
+      orderBy: {
+        startDate: "desc",
+      },
+      skip: cursor,
+      take: limit + 1, // Fetch one extra to check if there's a next page
+    });
+
+    const hasNextPage = packs.length > limit;
+    const packsToReturn = hasNextPage ? packs.slice(0, limit) : packs;
+    const nextCursor = hasNextPage ? cursor + limit : undefined;
+
+    return res.status(200).json({
+      packs: packsToReturn,
+      nextCursor,
+    });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
