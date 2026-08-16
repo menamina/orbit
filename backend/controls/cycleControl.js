@@ -6,6 +6,14 @@ async function getCycleByMonthYear(req, res) {
     const monthNum = Number(req.params.month);
     const yearNum = Number(req.params.year);
 
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      return res.status(400).json({ error: "Invalid month" });
+    }
+
+    if (isNaN(yearNum) || yearNum < 2000 || yearNum > 2100) {
+      return res.status(400).json({ error: "Invalid year" });
+    }
+
     const startOfMonth = new Date(yearNum, monthNum - 1, 1);
     const startOfNextMonth = new Date(yearNum, monthNum, 1);
 
@@ -13,8 +21,8 @@ async function getCycleByMonthYear(req, res) {
       where: {
         userID: userID,
         startDate: {
-          gte: startOfMonth, // >= Aug 1
-          lt: startOfNextMonth, // < Sep 1
+          gte: startOfMonth, // >= Aug 1 as ex
+          lt: startOfNextMonth, // < Sep 1 as ex
         },
       },
       orderBy: {
@@ -305,6 +313,10 @@ async function dltCycle(req, res) {
   try {
     const userID = Number(req.user.userID);
     const cycleID = Number(req.params.cycleID);
+
+    if (isNaN(cycleID) || cycleID <= 0) {
+      return res.status(400).json({ error: "Invalid cycle ID" });
+    }
 
     const cycle = await prisma.cycleTracking.findUnique({
       where: { id: cycleID },

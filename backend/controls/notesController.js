@@ -6,6 +6,14 @@ async function getNotes(req, res) {
     const month = Number(req.params.month);
     const year = Number(req.params.year);
 
+    if (isNaN(month) || month < 1 || month > 12) {
+      return res.status(400).json({ error: "Invalid month" });
+    }
+
+    if (isNaN(year) || year < 2000 || year > 2100) {
+      return res.status(400).json({ error: "Invalid year" });
+    }
+
     const startOfMonth = new Date(year, month - 1, 1);
     const startOfNextMonth = new Date(year, month, 1);
 
@@ -34,6 +42,10 @@ async function writeNote(req, res) {
     const userID = Number(req.user.userID);
     const { note, date } = req.body;
 
+    if (!note || note.trim().length === 0) {
+      return res.status(400).json({ error: "Note content is required" });
+    }
+
     const newNote = await prisma.notes.create({
       data: {
         userID,
@@ -54,6 +66,14 @@ async function updateNote(req, res) {
     const userID = Number(req.user.userID);
     const noteID = Number(req.body.noteID);
     const noteContent = req.body.note;
+
+    if (isNaN(noteID) || noteID <= 0) {
+      return res.status(400).json({ error: "Invalid note ID" });
+    }
+
+    if (!noteContent || noteContent.trim().length === 0) {
+      return res.status(400).json({ error: "Note content is required" });
+    }
 
     const existingNote = await prisma.notes.findUnique({
       where: { id: noteID },
@@ -85,6 +105,10 @@ async function dltNote(req, res) {
   try {
     const userID = Number(req.user.userID);
     const noteID = Number(req.body.noteID);
+
+    if (isNaN(noteID) || noteID <= 0) {
+      return res.status(400).json({ error: "Invalid note ID" });
+    }
 
     const existingNote = await prisma.notes.findUnique({
       where: { id: noteID },

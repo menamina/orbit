@@ -140,19 +140,19 @@ async function trackPillInPack(req, res) {
   try {
     const userID = Number(req.user.userID);
     const pillPackID = Number(req.params.packID);
-    const dayNumber = Number(req.body.dayNumber);
-    const date = Number(req.body.date);
 
     if (isNaN(pillPackID) || pillPackID <= 0) {
       return res.status(400).json({ error: "Invalid pack ID" });
     }
 
-    if (!req.body.dayNumber || isNaN(dayNumber) || dayNumber <= 0) {
-      return res.status(400).json({ error: "Invalid day number" });
+    const dayNumber = Number(req.body.dayNumber);
+    if (isNaN(dayNumber) || dayNumber <= 0) {
+      return res.status(400).json({ error: "Invalid number" });
     }
 
-    if (!req.body.date) {
-      return res.status(400).json({ error: "Date is required" });
+    const date = Number(req.body.date);
+    if (isNaN(date)) {
+      return res.status(400).json({ error: "Invalid date format" });
     }
 
     const dateToTrack = new Date(date);
