@@ -4,11 +4,11 @@ import type {
   PasswordUpdateType,
   UpdateCycleType,
 } from "./settingsTypes";
-import { apiFetch, type AuthParams } from "../utils/api";
+import { apiFetch, type AuthParams } from "./api";
 
 export const getSettingsQuery = (
   accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
     queryKey: ["usersSettings"],
@@ -30,7 +30,7 @@ export const updatePasswordMut = () => {
 
 export const getCycleQuery = (
   accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
     queryKey: ["usersCycle"],
@@ -52,10 +52,7 @@ export const dltAccountMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function getSettings({
-  accessToken,
-  onTokenRefresh,
-}: AuthParams) {
+async function getSettings({ accessToken, onTokenRefresh }: AuthParams) {
   const res = await apiFetch(`http://localhost:5555/api/settings`, {
     accessToken,
     onTokenRefresh,
@@ -113,10 +110,7 @@ async function updatePassword({
   return await res.json();
 }
 
-async function getCycle({
-  accessToken,
-  onTokenRefresh,
-}: AuthParams) {
+async function getCycle({ accessToken, onTokenRefresh }: AuthParams) {
   const res = await apiFetch(`http://localhost:5555/api/getCycleInfo`, {
     accessToken,
     onTokenRefresh,
@@ -147,7 +141,11 @@ async function updateCycle({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || "Cannot update cycle info, try again");
+    throw new Error(
+      errorData.error ||
+        errorData.message ||
+        "Cannot update cycle info, try again",
+    );
   }
 
   return await res.json();

@@ -6,7 +6,7 @@ import type {
   WriteNoteType,
   NoteToUpdate,
 } from "./notesTypes";
-import { apiFetch, type AuthParams } from "../utils/api";
+import { apiFetch, type AuthParams } from "./api";
 
 export const getNotesByMonthQuery = (
   thisMonth: ThisMonth,

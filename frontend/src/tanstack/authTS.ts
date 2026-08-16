@@ -5,7 +5,7 @@ import type {
   LoginResponse,
   AuthCheckResponse,
 } from "./authTypes";
-import { apiFetch, type AuthParams } from "../utils/api";
+import { apiFetch, type AuthParams } from "./api";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -13,7 +13,7 @@ import { apiFetch, type AuthParams } from "../utils/api";
 
 export const authenticateQuery = (
   accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
     queryKey: ["auth", accessToken],
@@ -70,7 +70,7 @@ export const logoutEverywhereMut = () => {
 
 async function checkAuth(
   accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  onTokenRefresh?: (token: string) => void,
 ): Promise<AuthCheckResponse> {
   const res = await apiFetch(`http://localhost:5555/`, {
     accessToken,
@@ -189,7 +189,9 @@ async function logoutEverywhere({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Oops something went wrong - there's a server error");
+    throw new Error(
+      errorData.error || "Oops something went wrong - there's a server error",
+    );
   }
 
   return await res.json();

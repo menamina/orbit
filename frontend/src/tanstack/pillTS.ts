@@ -1,20 +1,17 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
 
-import type {
-  BlisterMonthYear,
-  MonthOfPills,
-  PillTracking,
-} from "./pillTypes";
-import { apiFetch, type AuthParams } from "../utils/api";
+import type { BlisterMonthYear, MonthOfPills, PillTracking } from "./pillTypes";
+import { apiFetch, type AuthParams } from "./api";
 
 export const getBlisterQuery = (
   thisMonth: BlisterMonthYear,
   accessToken: string,
-  onTokenRefresh?: (token: string) => void
+  onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
     queryKey: ["blisterMonth", thisMonth],
-    queryFn: () => getBlisterThisMonth(thisMonth, { accessToken, onTokenRefresh }),
+    queryFn: () =>
+      getBlisterThisMonth(thisMonth, { accessToken, onTokenRefresh }),
   });
 };
 
@@ -34,14 +31,14 @@ export const dltPillMut = () => {
 
 async function getBlisterThisMonth(
   thisMonth: BlisterMonthYear,
-  { accessToken, onTokenRefresh }: AuthParams
+  { accessToken, onTokenRefresh }: AuthParams,
 ): Promise<MonthOfPills> {
   const res = await apiFetch(
     `http://localhost:5555/api/pill/${thisMonth.month}/${thisMonth.year}`,
     {
       accessToken,
       onTokenRefresh,
-    }
+    },
   );
 
   if (!res.ok) {
