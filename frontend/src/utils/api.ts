@@ -1,16 +1,13 @@
-/**
- * Enhanced fetch wrapper that handles token refresh automatically
- */
-
 interface FetchOptions extends RequestInit {
   accessToken?: string;
+  onTokenRefresh?: (newToken: string) => void;
 }
 
 export async function apiFetch(
   url: string,
   options: FetchOptions = {},
 ): Promise<Response> {
-  const { accessToken, ...fetchOptions } = options;
+  const { accessToken, onTokenRefresh, ...fetchOptions } = options;
 
   // Add authorization header if access token provided
   const headers = new Headers(fetchOptions.headers);
@@ -54,9 +51,9 @@ export async function apiFetch(
       });
 
       // Return the retry response along with the new token
-      // Store the new token for future requests
-      if (retryRes.ok) {
-        localStorage.setItem("accessToken", newAccessToken);
+      // Update the token in context state
+      if (retryRes.ok && onTokenRefresh) {
+        onTokenRefresh(newAccessToken);
       }
 
       return retryRes;

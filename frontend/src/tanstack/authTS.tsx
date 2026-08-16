@@ -5,6 +5,7 @@ import type {
   LoginResponse,
   AuthCheckResponse,
 } from "./authTypes";
+import { apiFetch } from "../utils/api";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
