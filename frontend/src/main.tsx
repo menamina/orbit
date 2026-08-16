@@ -7,7 +7,11 @@ import Index from "./index";
 
 import Login from "../components/login";
 import OAuthToken from "../components/oauthToken";
+import Home from "../components/homePage";
 import Pill from "../components/pillTracking";
+import Cycle from "../components/cycleTracking";
+import Notes from "../components/notes";
+import Settings from "../components/settings";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +22,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Pill />,
+        element: <Home />,
       },
       {
         path: "login",
@@ -27,6 +31,22 @@ const router = createBrowserRouter([
       {
         path: "auth/callback",
         element: <OAuthToken />,
+      },
+      {
+        path: "pill",
+        element: <Pill />,
+      },
+      {
+        path: "cycle",
+        element: <Cycle />,
+      },
+      {
+        path: "notes",
+        element: <Cycle />,
+      },
+      {
+        path: "settings",
+        element: <Cycle />,
       },
     ],
   },
