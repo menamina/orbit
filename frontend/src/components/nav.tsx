@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { TextField, Button, Box, Paper } from "@mui/material";
+import { Box } from "@mui/material";
 import { keyframes } from "@mui/system";
 
 import Open from "../imgs/openArrow.svg";

@@ -6,7 +6,6 @@ export default {
     '/node_modules/',
     '/tests/cycleTracking.test.js',
     '/tests/notes.test.js',
-    '/tests/unit.test.js',
   ],
   collectCoverageFrom: [
     '**/*.js',

@@ -340,4 +340,6 @@ export {
   dltCycle,
   updatePredictions,
   updatePredictionsBasedOnActualData,
+  validateAndNormalizeDate,
+  shouldCreateNewCycle,
 };
