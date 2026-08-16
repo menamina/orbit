@@ -124,6 +124,13 @@ router.get("/api/pill/:month/:year", checkAuth, getBCPillByMonthYear);
 router.post("/api/track/pill", checkAuth, takeBCPill);
 router.delete("/api/dltPill/:pillid", checkAuth, dltBCPIll);
 
+// ======== PILL PACKS ======== \\
+router.get("/api/blister-packs/current", checkAuth, getCurrentPack);
+router.get("/api/all-packs", checkAuth, getAllPacks);
+router.get("/api/blister-packs/:packNumber", checkAuth, getPackByNumber);
+router.post("/api/blister-packs", checkAuth, startNewPack);
+router.post("/api/blister-packs/:packID/pills", checkAuth, trackPillInPack);
+
 // ======== CYCLE ======== \\
 router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);
 router.post("/api/track/period", checkAuth, trackCycle);
