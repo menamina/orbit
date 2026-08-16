@@ -27,7 +27,12 @@ export async function apiFetch(
     credentials: "include",
   });
 
-  // If access token expired, try to refresh
+  // Handle 401 (no token or user not found) - don't try to refresh
+  if (res.status === 401) {
+    return res;
+  }
+
+  // If access token expired (403), try to refresh
   if (res.status === 403) {
     const errorData = await res.json();
 
@@ -42,7 +47,8 @@ export async function apiFetch(
       );
 
       if (!refreshRes.ok) {
-        throw new Error("Session expired - please login again");
+        const refreshErrorData = await refreshRes.json();
+        throw new Error(refreshErrorData.error || "Session expired - please login again");
       }
 
       const { newAccessToken } = await refreshRes.json();
