@@ -1,14 +1,20 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 
-import { useAuth } from "./authContext";
+import Nav from "./nav";
 
 function Home() {
-  const { accessToken, setAccessToken, setUser } = useAuth();
-  const nav = useNavigate();
-
-  return <Box></Box>;
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Nav />
+      <Outlet />
+    </Box>
+  );
 }
 
 export default Home;

@@ -13,7 +13,7 @@ model User {
   email                   String             @unique
   settings                Settings?
   cycleTracking           CycleTracking[]
-  pillTracking            PillTracking[]
+  blisters                BlisterPack[]
   notes                   Notes[]
 
   accounts                Account[]          // Multiple OAuth providers support
@@ -78,15 +78,34 @@ model CycleTracking {
   @@index([userID])
 }
 
-model PillTracking {
+model BlisterPack {
   id                      Int                @id @default(autoincrement())
   userID                  Int
-  date                    DateTime
+  packNumber        Int              // 1st pack, 2nd pack, etc.  
+  startDate         DateTime         // When user started this pack
+  endDate           DateTime?        // When completed (null if ongoing)
+  isComplete        Boolean          @default(false)
+  
+  pills             PillTracking[]   // Pills in this pack
+  user              User             @relation(fields: [userID], references: [id])
+  
+  @@unique([userID, packNumber])     
+  @@index([userID, startDate])
+}
 
-
-  user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
+model PillTracking {
+  id                Int              @id @default(autoincrement())
+  userID            Int
+  blisterPackID     Int              
+  dayNumber         Int              
+  date              DateTime         // When they actually took it
+  
+  blisterPack       BlisterPack      @relation(fields: [blisterPackID], references: [id], onDelete: Cascade)
+  user              User             @relation(fields: [userID], references: [id])
+  
+  @@unique([blisterPackID, dayNumber])
   @@index([userID, date])
-  @@index([userID, id])
+  @@index([blisterPackID])
 }
 
 model Notes {

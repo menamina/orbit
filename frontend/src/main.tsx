@@ -5,13 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./authContext";
 import Index from "./index";
 
-import Login from "../components/login";
-import OAuthToken from "../components/oauthToken";
-import Home from "../components/homePage";
-import Pill from "../components/pillTracking";
-import Cycle from "../components/cycleTracking";
-import Notes from "../components/notes";
-import Settings from "../components/settings";
+import Login from "./components/login";
+import OAuthToken from "./components/oauthToken";
+import Home from "./components/homePage";
+import Pill from "./components/pillTracking";
+import Cycle from "./components/cycleTracking";
+import Notes from "./components/notes";
+import Settings from "./components/settings";
 
 const queryClient = new QueryClient();
 
