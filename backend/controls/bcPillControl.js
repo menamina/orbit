@@ -186,5 +186,6 @@ export {
   getPackByNumber,
   startNewPack,
   trackPillInPack,
+  dltBCPIll,
   dltPack,
 };

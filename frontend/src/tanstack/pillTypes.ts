@@ -1,12 +1,16 @@
-export type BlisterMonthYear = {
-  month: number;
-  year: number;
-};
-
-export type MonthOfPills = PillTracking[];
-
-export type PillTracking = {
+export type PillPack = {
   id: number;
   userID: number;
+  packNumber: number;
+  startDate: string;
+  endDate?: string;
+  isComplete: boolean;
+  pills: Pill[];
+};
+
+export type Pill = {
+  id: number;
+  pillPackID: number;
+  dayNumber: number;
   date: string;
 };
