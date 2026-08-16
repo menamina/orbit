@@ -11,10 +11,13 @@ import { apiFetch } from "../utils/api";
 
 // tokens \\
 
-export const authenticateQuery = (accessToken: string) => {
+export const authenticateQuery = (
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+) => {
   return queryOptions({
     queryKey: ["auth", accessToken],
-    queryFn: () => checkAuth(accessToken),
+    queryFn: () => checkAuth(accessToken, onTokenRefresh),
     enabled: !!accessToken,
   });
 };
@@ -65,40 +68,17 @@ export const logoutEverywhereMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function checkAuth(accessToken: string): Promise<AuthCheckResponse> {
-  const res = await fetch(`http://localhost:5555/`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include",
+async function checkAuth(
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+): Promise<AuthCheckResponse> {
+  const res = await apiFetch(`http://localhost:5555/`, {
+    accessToken,
+    onTokenRefresh,
   });
 
   if (!res.ok) {
-    if (res.status === 401) {
-      // if 401 - there is no token sent period \\
-      throw new Error("Must login");
-    } else if (res.status === 403) {
-      // if it is 403 the token is expired must check refresh \\
-      const refreshRes = await fetch(
-        `http://localhost:5555/api/checkRefreshToken`,
-        {
-          method: "post",
-          credentials: "include",
-        },
-      );
-
-      if (!refreshRes.ok) {
-        if (refreshRes.status === 401 || refreshRes.status === 403) {
-          // 401 or 403 means refresh token is expired or deleted \\
-          throw new Error("Must login");
-        } else if (refreshRes.status === 500) {
-          throw new Error("Oops something went wrong - there's a server error");
-        }
-      }
-      const newToken = await refreshRes.json();
-      return newToken;
-    }
+    throw new Error("Must login");
   }
 
   const data = await res.json();
@@ -197,20 +177,22 @@ async function logout(): Promise<{ success: boolean }> {
   return await res.json();
 }
 
-async function logoutEverywhere(params: { accessToken: string }): Promise<{ success: boolean }> {
-  const { accessToken } = params;
-  const res = await fetch(`http://localhost:5555/api/logoutEverywhere`, {
+async function logoutEverywhere({
+  accessToken,
+  onTokenRefresh,
+}: {
+  accessToken: string;
+  onTokenRefresh?: (token: string) => void;
+}): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/logoutEverywhere`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
   });
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Oops something went wrong - there's a server error");
-    }
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Oops something went wrong - there's a server error");
   }
 
   return await res.json();

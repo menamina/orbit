@@ -4,11 +4,15 @@ import type {
   PasswordUpdateType,
   UpdateCycleType,
 } from "./settingsTypes";
+import { apiFetch } from "../utils/api";
 
-export const getSettingsQuery = (accessToken: string) => {
+export const getSettingsQuery = (
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+) => {
   return queryOptions({
     queryKey: ["usersSettings"],
-    queryFn: () => getSettings(accessToken),
+    queryFn: () => getSettings(accessToken, onTokenRefresh),
   });
 };
 
@@ -24,10 +28,13 @@ export const updatePasswordMut = () => {
   });
 };
 
-export const getCycleQuery = (accessToken: string) => {
+export const getCycleQuery = (
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+) => {
   return queryOptions({
     queryKey: ["usersCycle"],
-    queryFn: () => getCycle(accessToken),
+    queryFn: () => getCycle(accessToken, onTokenRefresh),
   });
 };
 
@@ -45,136 +52,123 @@ export const dltAccountMut = () => {
 
 // --------- API CALLS --------- \\
 
-async function getSettings(accessToken: string) {
-  const res = await fetch(`http://localhost:5555/api/settings`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include",
+async function getSettings(
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+) {
+  const res = await apiFetch(`http://localhost:5555/api/settings`, {
+    accessToken,
+    onTokenRefresh,
   });
 
   if (!res.ok) {
-    if (res.status === 400) {
-      throw new Error("User does not exist");
-    } else if (res.status === 500) {
-      throw new Error("Cannot get settings, try again");
-    }
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Cannot get settings, try again");
   }
 
   return await res.json();
 }
 
-async function updateSettings(
-  params: SettingsType & { accessToken: string },
-): Promise<{ success: boolean }> {
-  const { accessToken, ...data } = params;
-  const res = await fetch(`http://localhost:5555/api/updateSettings`, {
+async function updateSettings({
+  accessToken,
+  onTokenRefresh,
+  ...data
+}: SettingsType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/updateSettings`, {
     method: "PATCH",
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 400) {
-      throw new Error("User does not exist");
-    }
-    if (res.status === 403) {
-      throw new Error(errorData.error);
-    }
-    if (res.status === 500) {
-      throw new Error("Cannot update settings, try again");
-    }
+    throw new Error(errorData.error || "Cannot update settings, try again");
   }
   return await res.json();
 }
 
-async function updatePassword(
-  params: PasswordUpdateType & { accessToken: string },
-): Promise<{ success: boolean }> {
-  const { accessToken, ...data } = params;
-  const res = await fetch(`http://localhost:5555/api/updatePassword`, {
+async function updatePassword({
+  accessToken,
+  onTokenRefresh,
+  ...data
+}: PasswordUpdateType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/updatePassword`, {
     method: "PATCH",
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 400) {
-      throw new Error(errorData.error);
-    } else if (res.status === 500) {
-      throw new Error("Cannot update password, try again");
-    }
+    throw new Error(errorData.error || "Cannot update password, try again");
   }
   return await res.json();
 }
 
-async function getCycle(accessToken: string) {
-  const res = await fetch(`http://localhost:5555/api/getCycleInfo`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include",
+async function getCycle(
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+) {
+  const res = await apiFetch(`http://localhost:5555/api/getCycleInfo`, {
+    accessToken,
+    onTokenRefresh,
   });
 
   if (!res.ok) {
-    throw new Error("Cannot get cycle info, try again");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Cannot get cycle info, try again");
   }
 
   return await res.json();
 }
 
-async function updateCycle(
-  params: UpdateCycleType & { accessToken: string },
-): Promise<{ success: boolean }> {
-  const { accessToken, ...data } = params;
-  const res = await fetch(`http://localhost:5555/api/updateCycleInfo`, {
+async function updateCycle({
+  accessToken,
+  onTokenRefresh,
+  ...data
+}: UpdateCycleType & { accessToken: string; onTokenRefresh?: (token: string) => void }): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/updateCycleInfo`, {
     method: "PATCH",
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 400 || res.status === 403) {
-      throw new Error(errorData.message);
-    } else if (res.status === 500) {
-      throw new Error("Cannot update cycle info, try again");
-    }
+    throw new Error(errorData.error || errorData.message || "Cannot update cycle info, try again");
   }
 
   return await res.json();
 }
 
-async function dltAccount(params: { accessToken: string }): Promise<{ success: boolean }> {
-  const { accessToken } = params;
-  const res = await fetch(`http://localhost:5555/api/delete/account`, {
+async function dltAccount({
+  accessToken,
+  onTokenRefresh,
+}: {
+  accessToken: string;
+  onTokenRefresh?: (token: string) => void;
+}): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/delete/account`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
   });
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Cannot delete account, try again");
-    }
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Cannot delete account, try again");
   }
 
   return await res.json();

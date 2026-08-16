@@ -5,11 +5,16 @@ import type {
   MonthOfPills,
   PillTracking,
 } from "./pillTypes";
+import { apiFetch } from "../utils/api";
 
-export const getBlisterQuery = (thisMonth: BlisterMonthYear, accessToken: string) => {
+export const getBlisterQuery = (
+  thisMonth: BlisterMonthYear,
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void
+) => {
   return queryOptions({
     queryKey: ["blisterMonth", thisMonth],
-    queryFn: () => getBlisterThisMonth(thisMonth, accessToken),
+    queryFn: () => getBlisterThisMonth(thisMonth, accessToken, onTokenRefresh),
   });
 };
 
@@ -30,71 +35,69 @@ export const dltPillMut = () => {
 async function getBlisterThisMonth(
   thisMonth: BlisterMonthYear,
   accessToken: string,
+  onTokenRefresh?: (token: string) => void
 ): Promise<MonthOfPills> {
-  const res = await fetch(
+  const res = await apiFetch(
     `http://localhost:5555/api/pill/${thisMonth.month}/${thisMonth.year}`,
     {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      credentials: "include",
-    },
+      accessToken,
+      onTokenRefresh,
+    }
   );
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 401) {
-      throw new Error(errorData.error);
-    } else if (res.status === 500) {
-      throw new Error("Cannot get settings, try again");
-    }
+    throw new Error(errorData.error || "Cannot get pills, try again");
   }
 
   return await res.json();
 }
 
-async function takePill(params: { date: number; accessToken: string }): Promise<PillTracking> {
-  const { date, accessToken } = params;
-  const res = await fetch(`http://localhost:5555/api/track/pill`, {
+async function takePill({
+  date,
+  accessToken,
+  onTokenRefresh,
+}: {
+  date: number;
+  accessToken: string;
+  onTokenRefresh?: (token: string) => void;
+}): Promise<PillTracking> {
+  const res = await apiFetch(`http://localhost:5555/api/track/pill`, {
     method: "POST",
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ date }),
   });
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 401) {
-      throw new Error(errorData.error);
-    } else if (res.status === 500) {
-      throw new Error("Cannot get settings, try again");
-    }
+    throw new Error(errorData.error || "Cannot track pill, try again");
   }
 
   return await res.json();
 }
 
-async function dltPill(params: { pillID: number; accessToken: string }): Promise<{ success: boolean }> {
-  const { pillID, accessToken } = params;
-  const res = await fetch(`http://localhost:5555/api/dltPill/${pillID}`, {
+async function dltPill({
+  pillID,
+  accessToken,
+  onTokenRefresh,
+}: {
+  pillID: number;
+  accessToken: string;
+  onTokenRefresh?: (token: string) => void;
+}): Promise<{ success: boolean }> {
+  const res = await apiFetch(`http://localhost:5555/api/dltPill/${pillID}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include",
+    accessToken,
+    onTokenRefresh,
   });
 
   if (!res.ok) {
     const errorData = await res.json();
-    if (res.status === 401) {
-      throw new Error(errorData.error);
-    } else if (res.status === 500) {
-      throw new Error("Cannot get settings, try again");
-    }
+    throw new Error(errorData.error || "Cannot delete pill, try again");
   }
 
   return await res.json();
