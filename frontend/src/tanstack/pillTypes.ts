@@ -5,6 +5,7 @@ export type PillPack = {
   startDate: string;
   endDate?: string;
   isComplete: boolean;
+  startDayOfWeek: string;
   pills: Pill[];
 };
 

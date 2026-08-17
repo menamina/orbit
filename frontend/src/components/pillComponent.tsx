@@ -1,16 +1,17 @@
 import { useState } from "react";
 
 import { useAuth } from "../authContext";
-import { useQuery } from "@tanstack/react-query";
-import { getCurrentPackQuery } from "../tanstack/pillTS";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getCurrentPackQuery, startNewPackMut } from "../tanstack/pillTS";
 
 import PillPack from "./pillPack";
 
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, Button } from "@mui/material";
 
 function PillComponent() {
   const { accessToken, setAccessToken } = useAuth();
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
+  const queryClient = useQueryClient();
 
   const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
 
@@ -18,9 +19,26 @@ function PillComponent() {
     ...getCurrentPackQuery(accessToken, setAccessToken),
   });
 
+  const startPackMutation = useMutation({
+    ...startNewPackMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentPack"] });
+    },
+  });
+
+  const handleStartNewPack = () => {
+    startPackMutation.mutate({
+      startDayOfWeek: dayOfTheWeekToStart,
+      accessToken,
+      onTokenRefresh: setAccessToken,
+    });
+  };
+
+  const effectiveDayOfWeek = currentPack?.startDayOfWeek || dayOfTheWeekToStart;
+
   return (
     <>
-      {currentPack?.pills?.length === 0 ? (
+      {!currentPack || currentPack?.pills?.length === 0 ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <Paper sx={{ padding: "20px", textAlign: "center" }}>
             Pick a day to start your new pack
@@ -52,6 +70,19 @@ function PillComponent() {
               </Paper>
             ))}
           </Box>
+          <Button
+            variant="contained"
+            onClick={handleStartNewPack}
+            disabled={startPackMutation.isPending}
+            sx={{
+              bgcolor: "#1b1a61",
+              "&:hover": {
+                bgcolor: "#151349",
+              },
+            }}
+          >
+            {startPackMutation.isPending ? "Starting..." : "Start Pack"}
+          </Button>
           <PillPack
             currentPack={currentPack}
             dayOfTheWeekToStart={dayOfTheWeekToStart}
@@ -60,7 +91,7 @@ function PillComponent() {
       ) : (
         <PillPack
           currentPack={currentPack}
-          dayOfTheWeekToStart={dayOfTheWeekToStart}
+          dayOfTheWeekToStart={effectiveDayOfWeek}
         />
       )}
     </>

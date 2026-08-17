@@ -132,13 +132,18 @@ async function getSpecificPillPack({
 }
 
 async function startNewPack({
+  startDayOfWeek,
   accessToken,
   onTokenRefresh,
-}: AuthParams): Promise<PillPack> {
+}: { startDayOfWeek: string } & AuthParams): Promise<PillPack> {
   const res = await apiFetch(`http://localhost:5555/api/blister-packs`, {
     method: "POST",
     accessToken,
     onTokenRefresh,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ startDayOfWeek }),
   });
 
   if (!res.ok) {

@@ -110,6 +110,13 @@ async function getPackByNumber(req, res) {
 async function startNewPack(req, res) {
   try {
     const userID = Number(req.user.userID);
+    const { startDayOfWeek } = req.body;
+
+    const validDays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
+    if (startDayOfWeek && !validDays.includes(startDayOfWeek)) {
+      return res.status(400).json({ error: "Invalid start day of week" });
+    }
+
     const lastPackNumber = await prisma.pillPack.findFirst({
       where: {
         userID,
@@ -126,6 +133,7 @@ async function startNewPack(req, res) {
         userID,
         packNumber: newPackNumber,
         startDate: new Date(),
+        startDayOfWeek: startDayOfWeek || "sun",
       },
     });
 
