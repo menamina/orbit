@@ -8,7 +8,7 @@ import Index from "./index";
 import Login from "./components/login";
 import OAuthToken from "./components/oauthToken";
 import Home from "./components/homePage";
-import Pill from "./components/pillTracking";
+import Pill from "./components/pillPack";
 import Cycle from "./components/cycleTracking";
 import Notes from "./components/notes";
 import Settings from "./components/settings";

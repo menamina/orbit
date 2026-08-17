@@ -11,7 +11,7 @@ import { type AuthParams } from "./api";
 
 import { TextField, Button, Box, Paper } from "@mui/material";
 
-function Pill() {
+function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack) {
   const { user, accessToken, setAccessToken } = useAuth();
 
   const days = [];
@@ -19,7 +19,9 @@ function Pill() {
     days.push(x + 1);
   }
 
-  const weekdays = ["sun", "MON", "tues", "wed", "thur", "fri", "sat"];
+  const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
+
+  const today = new Date();
 
   const { data: currentPack } = useQuery({
     ...getCurrentPackQuery(accessToken, setAccessToken),
@@ -35,7 +37,7 @@ function Pill() {
           sx={{
             display: "grid",
             gridTemplateColumns: "repeat(7, 1fr)",
-            gap: 2,
+            gap: "5px",
           }}
         >
           {weekdays.map((weekday) => (
@@ -46,24 +48,24 @@ function Pill() {
           sx={{
             display: "grid",
             gridTemplateColumns: "repeat(7, 1fr)",
-            gap: 2,
+            gap: "5px",
           }}
         >
           {days.map((day) => (
             <Paper
+              id={}
               key={day}
               sx={{
-                p: 2,
                 textAlign: "center",
+                border: "1px solid gray",
+                borderRadius: "100%",
                 bgcolor: currentPack?.pills?.some(
                   (pill) => pill.dayNumber === day,
                 )
-                  ? "#8b85C1"
-                  : "grey.300",
+                  ? "#1b1a61"
+                  : "white",
               }}
-            >
-              {day}
-            </Paper>
+            ></Paper>
           ))}
         </Box>
       </Box>
@@ -71,4 +73,4 @@ function Pill() {
   );
 }
 
-export default Pill;
+export default PillPack;
