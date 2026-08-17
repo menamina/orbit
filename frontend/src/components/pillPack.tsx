@@ -1,17 +1,13 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { useAuth } from "../authContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { getCurrentPackQuery } from "../tanstack/pillTS";
+import { useState } from "react";
 
 import type { PillPack, Pill } from "./pillTypes";
-import { type AuthParams } from "./api";
 
-import { TextField, Button, Box, Paper } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 
-function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack: PillPack) {
+function PillPack(currentPack: PillPack) {
+  const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun")
+
+
   const days = [];
   for (let x = 0; x < 28; x++) {
     days.push(x + 1);
@@ -39,9 +35,37 @@ function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack: PillPack) {
             gap: "5px",
           }}
         >
-          {startPackThisDay.map((day) => (
-            <Paper key={day}>{day}</Paper>
-          ))}
+          {currentPack?.pills?.length === 0 ? (
+            <>
+              <Paper sx={{ gridColumn: "1 / -1", textAlign: "center" }}>
+                Pick a day to start your pack
+              </Paper>
+              {weekdays.map((day) => (
+                <Paper
+                  key={day}
+                  onClick={() => setDayOfTheWeekToStart(day)}
+                  sx={{
+                    cursor: "pointer",
+                    textAlign: "center",
+                    bgcolor: dayOfTheWeekToStart === day ? "#1b1a61" : "white",
+                    color: dayOfTheWeekToStart === day ? "white" : "black",
+                    "&:hover": {
+                      bgcolor:
+                        dayOfTheWeekToStart === day ? "#1b1a61" : "#f0f0f0",
+                    },
+                  }}
+                >
+                  {day}
+                </Paper>
+              ))}
+            </>
+          ) : (
+            startPackThisDay.map((day) => (
+              <Paper key={day} sx={{ textAlign: "center" }}>
+                {day}
+              </Paper>
+            ))
+          )}
         </Box>
         <Box
           sx={{
@@ -52,14 +76,13 @@ function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack: PillPack) {
         >
           {days.map((day) => (
             <Paper
-              id={}
               key={day}
               sx={{
                 textAlign: "center",
                 border: "1px solid gray",
                 borderRadius: "100%",
                 bgcolor: currentPack?.pills?.some(
-                  (pill) => pill.dayNumber === day,
+                  (pill: Pill) => pill.dayNumber === day,
                 )
                   ? "#1b1a61"
                   : "white",

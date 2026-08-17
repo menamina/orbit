@@ -1,23 +1,18 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 import { useAuth } from "../authContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getCurrentPackQuery } from "../tanstack/pillTS";
 
 import PillPack from "./pillPack";
 
-import { TextField, Button, Box, Paper } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 
 function PillComponent() {
-  const { user, accessToken, setAccessToken } = useAuth();
-  const [newPack, setNewPack] = useState(false);
+  const { accessToken, setAccessToken } = useAuth();
+  const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
 
-  const days = [];
-  for (let x = 0; x < 28; x++) {
-    days.push(x + 1);
-  }
-  const today = new Date();
+  const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
 
   const { data: currentPack } = useQuery({
     ...getCurrentPackQuery(accessToken, setAccessToken),
@@ -25,11 +20,48 @@ function PillComponent() {
 
   return (
     <>
-      {currentPack?.pills.length === 0 && (
-        <Box>
-          <Paper>Start tracking now?</Paper>
-          <PillPack dayOfTheWeekToStart={"sun"} />
+      {currentPack?.pills?.length === 0 ? (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <Paper sx={{ padding: "20px", textAlign: "center" }}>
+            Pick a day to start your new pack
+          </Paper>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(7, 1fr)",
+              gap: "5px",
+            }}
+          >
+            {weekdays.map((day) => (
+              <Paper
+                key={day}
+                onClick={() => setDayOfTheWeekToStart(day)}
+                sx={{
+                  cursor: "pointer",
+                  textAlign: "center",
+                  padding: "10px",
+                  bgcolor: dayOfTheWeekToStart === day ? "#1b1a61" : "white",
+                  color: dayOfTheWeekToStart === day ? "white" : "black",
+                  "&:hover": {
+                    bgcolor:
+                      dayOfTheWeekToStart === day ? "#1b1a61" : "#f0f0f0",
+                  },
+                }}
+              >
+                {day}
+              </Paper>
+            ))}
+          </Box>
+          <PillPack
+            currentPack={currentPack}
+            dayOfTheWeekToStart={dayOfTheWeekToStart}
+          />
         </Box>
+      ) : (
+        <PillPack
+          currentPack={currentPack}
+          dayOfTheWeekToStart={dayOfTheWeekToStart}
+        />
       )}
     </>
   );
