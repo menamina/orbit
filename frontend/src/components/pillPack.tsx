@@ -27,7 +27,10 @@ function Pill() {
 
   return (
     <>
-      <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", bgColor: "#E3DFFF" }}
+        // or "#c6c0ec" for this box and other color for main app?
+      >
         <Box
           sx={{
             display: "grid",
@@ -52,11 +55,11 @@ function Pill() {
               sx={{
                 p: 2,
                 textAlign: "center",
-                bgcolor: "grey.300",
-                cursor: "pointer",
-                "&:hover": {
-                  bgcolor: "grey.400",
-                },
+                bgcolor: currentPack?.pills?.some(
+                  (pill) => pill.dayNumber === day,
+                )
+                  ? "#8b85C1"
+                  : "grey.300",
               }}
             >
               {day}
