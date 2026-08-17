@@ -33,7 +33,7 @@ async function getNotes(req, res) {
     return res.status(200).json(usersNotes);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -57,7 +57,7 @@ async function writeNote(req, res) {
     return res.status(200).json(newNote);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -97,7 +97,7 @@ async function updateNote(req, res) {
     return res.status(200).json(updatedNote);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -129,7 +129,7 @@ async function dltNote(req, res) {
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 

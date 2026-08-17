@@ -39,7 +39,7 @@ async function login(req, res) {
     );
 
     if (!validPassword) {
-      return res.status(400).json({ invalidPassword: "Invalid password" });
+      return res.status(400).json({ error: "Invalid password" });
     }
 
     const userINFO = {
@@ -65,7 +65,7 @@ async function login(req, res) {
     return res.status(200).json({ accessToken, userINFO });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -78,10 +78,10 @@ async function usernameInUse(req, res) {
     if (!inUse) {
       return res.status(200).json({ success: true });
     }
-    return res.status(400).json({ message: "Username in use" });
+    return res.status(400).json({ error: "Username in use" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -92,10 +92,10 @@ async function emailInUse(req, res) {
     if (!inUse) {
       return res.status(200).json({ success: true });
     }
-    return res.status(400).json({ message: "Email in use" });
+    return res.status(400).json({ error: "Email in use" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -127,7 +127,7 @@ async function signup(req, res) {
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -164,7 +164,7 @@ async function refreshToken(req, res) {
     return res.status(200).json({ newAccessToken });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -180,7 +180,7 @@ async function logout(req, res) {
     return res.json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -192,7 +192,7 @@ async function logoutEverywhere(req, res) {
     return res.json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 

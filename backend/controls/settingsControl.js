@@ -34,7 +34,7 @@ async function getSettings(req, res) {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -92,7 +92,7 @@ async function settingsUpdate(req, res) {
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -127,7 +127,7 @@ async function changePassword(req, res) {
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 // ------- cycle info + algs  \\
@@ -153,7 +153,7 @@ async function getCycleInfo(req, res) {
     return res.status(200).json(cycleInfo);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -168,7 +168,7 @@ async function updateCycleInfo(req, res) {
     });
 
     if (!settings) {
-      return res.status(400).json({ message: "User settings not found" });
+      return res.status(400).json({ error: "User settings not found" });
     }
 
     if (isNaN(cycleLength) || isNaN(daysBetweenPeriod)) {
@@ -191,7 +191,7 @@ async function updateCycleInfo(req, res) {
     return res.status(200).json(updatedSettings);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -207,7 +207,7 @@ async function dltAccount(req, res) {
     return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ serverError: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 

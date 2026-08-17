@@ -99,7 +99,8 @@ async function updateANote({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot update note, try again");
+    throw new Error(errorData.error);
+    // ^ if res is 401 login \\
   }
 
   return await res.json();

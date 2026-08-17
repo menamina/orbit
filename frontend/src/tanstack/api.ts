@@ -72,5 +72,5 @@ export async function apiFetch(
   }
 
   return res;
-  // return data from control, this is a fresh and active access tokem ^
+  // return data from control, this is a fresh and active access tokem
 }
