@@ -11,21 +11,20 @@ import { type AuthParams } from "./api";
 
 import { TextField, Button, Box, Paper } from "@mui/material";
 
-function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack) {
-  const { user, accessToken, setAccessToken } = useAuth();
-
+function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack: PillPack) {
   const days = [];
   for (let x = 0; x < 28; x++) {
     days.push(x + 1);
   }
 
   const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
+  const startDayIndex = weekdays.indexOf(dayOfTheWeekToStart);
+  const startPackThisDay = [
+    ...weekdays.slice(startDayIndex),
+    ...weekdays.slice(0, startDayIndex),
+  ];
 
   const today = new Date();
-
-  const { data: currentPack } = useQuery({
-    ...getCurrentPackQuery(accessToken, setAccessToken),
-  });
 
   return (
     <>
@@ -40,8 +39,8 @@ function PillPack({ dayOfTheWeekToStart = "sun" }, currentPack) {
             gap: "5px",
           }}
         >
-          {weekdays.map((weekday) => (
-            <Paper key={weekday}>{weekday}</Paper>
+          {startPackThisDay.map((day) => (
+            <Paper key={day}>{day}</Paper>
           ))}
         </Box>
         <Box
