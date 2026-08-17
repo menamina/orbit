@@ -1,10 +1,10 @@
 interface FetchOptions extends RequestInit {
-  accessToken?: string;
+  accessToken?: string | null;
   onTokenRefresh?: (newToken: string) => void;
 }
 
 export type AuthParams = {
-  accessToken: string;
+  accessToken: string | null;
   onTokenRefresh?: (token: string) => void;
 };
 

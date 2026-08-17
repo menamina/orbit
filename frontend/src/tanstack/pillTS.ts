@@ -8,7 +8,7 @@ import type { PillPack, Pill } from "./pillTypes";
 import { apiFetch, type AuthParams } from "./api";
 
 export const getCurrentPackQuery = (
-  accessToken: string,
+  accessToken: string | null,
   onTokenRefresh: (token: string) => void,
 ) => {
   return queryOptions({
@@ -18,7 +18,7 @@ export const getCurrentPackQuery = (
 };
 
 export const getAllPillPacksQuery = (
-  accessToken: string,
+  accessToken: string | null,
   onTokenRefresh: (token: string) => void,
 ) => {
   return infiniteQueryOptions({
@@ -33,7 +33,7 @@ export const getAllPillPacksQuery = (
 export const getSpecificPillPackQuery = (
   packID: number,
   packNumber: number,
-  accessToken: string,
+  accessToken: string | null,
   onTokenRefresh: (token: string) => void,
 ) => {
   return queryOptions({
@@ -160,18 +160,15 @@ async function trackPillInPack({
   dayNumber: number;
   date: number;
 } & AuthParams): Promise<Pill> {
-  const res = await apiFetch(
-    `http://localhost:5555/api/track-pill/${packID}`,
-    {
-      method: "POST",
-      accessToken,
-      onTokenRefresh,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ dayNumber, date }),
+  const res = await apiFetch(`http://localhost:5555/api/track-pill/${packID}`, {
+    method: "POST",
+    accessToken,
+    onTokenRefresh,
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({ dayNumber, date }),
+  });
 
   if (!res.ok) {
     const errorData = await res.json();
