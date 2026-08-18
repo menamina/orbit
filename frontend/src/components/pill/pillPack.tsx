@@ -2,7 +2,7 @@ import { useAuth } from "../../authContext";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PillPack as PillPackType, Pill } from "../../tanstack/pillTypes";
-import { dltPillMut, trackPillInPackMut } from "../../tanstack/pillTS";
+import { trackPillInPackMut, dltPillMut } from "../../tanstack/pillTS";
 
 import { Box, Paper } from "@mui/material";
 

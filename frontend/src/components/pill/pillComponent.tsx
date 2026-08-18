@@ -2,7 +2,11 @@ import { useState } from "react";
 
 import { useAuth } from "../../authContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCurrentPackQuery, startNewPackMut } from "../../tanstack/pillTS";
+import {
+  getCurrentPackQuery,
+  startNewPackMut,
+  dltPackMut,
+} from "../../tanstack/pillTS";
 
 import PillPack from "./pillPack";
 
@@ -22,9 +26,20 @@ function PillComponent() {
   const {
     mutate: startPackMutation,
     error: startingPackError,
-    isPending,
+    isPending: newPackPending,
   } = useMutation({
     ...startNewPackMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentPack"] });
+    },
+  });
+
+  const {
+    mutate: dltPack,
+    error: dltingPackError,
+    isPending: dltingPackPending,
+  } = useMutation({
+    ...dltPackMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
     },
@@ -75,7 +90,7 @@ function PillComponent() {
                 onTokenRefresh: setAccessToken,
               })
             }
-            disabled={isPending}
+            disabled={newPackPending}
             sx={{
               bgcolor: "#1b1a61",
               "&:hover": {
@@ -83,7 +98,7 @@ function PillComponent() {
               },
             }}
           >
-            {isPending ? "Starting..." : "Start Pack"}
+            {newPackPending ? "Starting..." : "Start Pack"}
           </Button>
           <PillPack
             currentPack={currentPack}
