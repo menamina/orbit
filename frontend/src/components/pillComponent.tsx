@@ -13,8 +13,6 @@ function PillComponent() {
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
   const queryClient = useQueryClient();
 
-  const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
-
   const { data: currentPack } = useQuery({
     ...getCurrentPackQuery(accessToken, setAccessToken),
   });

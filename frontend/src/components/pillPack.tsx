@@ -16,10 +16,16 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
   const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
 
   const startDayIndex = weekdays.indexOf(dayOfTheWeekToStart);
+
   const startPackThisDay = [
     ...weekdays.slice(startDayIndex),
     ...weekdays.slice(0, startDayIndex),
   ];
+
+  const nextDayHalo =
+    currentPack?.pills && currentPack.pills.length > 0
+      ? Math.max(...currentPack.pills.map((pill) => pill.dayNumber)) + 1
+      : 1;
 
   return (
     <>
@@ -52,8 +58,11 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
               key={day}
               sx={{
                 textAlign: "center",
-                border: "1px solid gray",
+                // idk how i want halo yet but for now this is it
+                border:
+                  day === nextDayHalo ? "1px solid blue" : "1px solid gray",
                 borderRadius: "100%",
+
                 bgcolor: currentPack?.pills?.some(
                   (pill: Pill) => pill.dayNumber === day,
                 )
