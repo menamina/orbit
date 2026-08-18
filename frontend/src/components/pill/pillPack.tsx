@@ -107,12 +107,39 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
               </button>
             )}
             {clickedCircle && allNumbersInPack.includes(clickedCircle) && (
-              <button>delete</button>
+              <button
+                onClick={() => {
+                  const pillToDelete = currentPack?.pills?.find(
+                    (pill) => pill.dayNumber === clickedCircle,
+                  );
+                  if (pillToDelete) {
+                    dltPill({
+                      pillID: pillToDelete.id,
+                      accessToken: accessToken,
+                      onTokenRefresh: setAccessToken,
+                    });
+                  }
+                }}
+              >
+                delete
+              </button>
             )}
             {clickedCircle &&
               clickedCircle !== nextDayHalo &&
               !allNumbersInPack.includes(clickedCircle) && (
-                <button>take missed pill</button>
+                <button
+                  onClick={() =>
+                    takePill({
+                      packNumber: currentPack!.packNumber,
+                      dayNumber: clickedCircle,
+                      date: Date.now(),
+                      accessToken: accessToken,
+                      onTokenRefresh: setAccessToken,
+                    })
+                  }
+                >
+                  take missed pill
+                </button>
               )}
           </Box>
         </Box>
