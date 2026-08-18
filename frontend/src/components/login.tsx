@@ -2,20 +2,20 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
-import { useAuth } from "../src/main";
+import { useAuth } from "../main";
 
 import {
   checkIfUsernameIsInUse,
   checkIfEmailIsInUse,
   loginMut,
   signupMut,
-} from "../src/tanstack/authTS";
+} from "../tanstack/authTS";
 
 import type {
   LoginData,
   SignupData,
   LoginResponse,
-} from "../src/tanstack/authTypes";
+} from "../tanstack/authTypes";
 
 import GitHubBlack from "./imgs/GitHub_Invertocat_Black_Clearspace.png";
 
@@ -23,7 +23,7 @@ function Login() {
   const nav = useNavigate();
   const queryClient = useQueryClient();
 
-  const { setAccessToken } = useAuth();
+  const { setAccessToken, setUser } = useAuth();
   const [toggle, setToggle] = useState("login");
   const [searchParams] = useSearchParams();
   const urlError = searchParams.get("error");
@@ -55,15 +55,9 @@ function Login() {
   const { mutate: login, error: loginError } = useMutation({
     ...loginMut(),
     onSuccess: (data: LoginResponse) => {
-      // Update access token state FIRST
+      // Update access token and user info
       setAccessToken(data.accessToken);
-
-      // Then invalidate auth query
-      queryClient.invalidateQueries({
-        queryKey: ["auth", data.accessToken],
-      });
-
-      
+      setUser(data.userINFO);
 
       nav("/home");
     },
@@ -202,9 +196,9 @@ function Login() {
           <Box>
             {usernameInUse && <Paper>{loginError.message}</Paper>}
             {emailInUse && <Paper>{emailError.message}</Paper>}
-            {signupError.map((error) => {
-              <Paper>{error}</Paper>;
-            })}
+            {signupError.map((error: string, index: number) => (
+              <Paper key={index}>{error}</Paper>
+            ))}
           </Box>
 
           {(Object.keys(signupInfo) as Array<keyof SignupData>).map((field) => (
