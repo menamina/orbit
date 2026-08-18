@@ -16,7 +16,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
 
   return (
-    <AuthContext.Provider value={{ accessToken, setAccessToken, user, setUser }}>
+    <AuthContext.Provider
+      value={{ accessToken, setAccessToken, user, setUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
