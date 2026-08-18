@@ -155,25 +155,28 @@ async function startNewPack({
 }
 
 async function trackPillInPack({
-  packID,
+  packNumber,
   dayNumber,
   date,
   accessToken,
   onTokenRefresh,
 }: {
-  packID: number;
+  packNumber: number;
   dayNumber: number;
   date: number;
 } & AuthParams): Promise<Pill> {
-  const res = await apiFetch(`http://localhost:5555/api/track-pill/${packID}`, {
-    method: "POST",
-    accessToken,
-    onTokenRefresh,
-    headers: {
-      "Content-Type": "application/json",
+  const res = await apiFetch(
+    `http://localhost:5555/api/track-pill/${packNumber}`,
+    {
+      method: "POST",
+      accessToken,
+      onTokenRefresh,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ dayNumber, date }),
     },
-    body: JSON.stringify({ dayNumber, date }),
-  });
+  );
 
   if (!res.ok) {
     const errorData = await res.json();

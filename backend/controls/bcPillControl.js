@@ -147,10 +147,10 @@ async function startNewPack(req, res) {
 async function trackPillInPack(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const pillPackID = Number(req.params.packID);
+    const pillPackNumber = Number(req.params.packNumber);
 
-    if (isNaN(pillPackID) || pillPackID <= 0) {
-      return res.status(400).json({ error: "Invalid pack ID" });
+    if (isNaN(pillPackNumber) || pillPackNumber <= 0) {
+      return res.status(400).json({ error: "Invalid pack number" });
     }
 
     const dayNumber = Number(req.body.dayNumber);
@@ -175,8 +175,8 @@ async function trackPillInPack(req, res) {
         .json({ error: "Cannot track beyond today's date" });
     }
 
-    const pack = await prisma.pillPack.findUnique({
-      where: { id: pillPackID },
+    const pack = await prisma.pillPack.findFirst({
+      where: { packNumber: pillPackNumber, userID: userID },
     });
 
     if (!pack) {
@@ -191,7 +191,7 @@ async function trackPillInPack(req, res) {
 
     const duplicate = await prisma.pillTracking.findFirst({
       where: {
-        pillPackID,
+        pillPackID: pack.id,
         dayNumber,
       },
     });
@@ -204,7 +204,7 @@ async function trackPillInPack(req, res) {
 
     const trackedPill = await prisma.pillTracking.create({
       data: {
-        pillPackID,
+        pillPackID: pack.id,
         dayNumber,
         date: dateToTrack,
       },

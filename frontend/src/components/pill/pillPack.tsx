@@ -1,4 +1,8 @@
+import { useAuth } from "../../authContext";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { PillPack as PillPackType, Pill } from "../../tanstack/pillTypes";
+import { dltPillMut, trackPillInPackMut } from "../../tanstack/pillTS";
 
 import { Box, Paper } from "@mui/material";
 
@@ -8,6 +12,9 @@ interface PillPackProps {
 }
 
 function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
+  const { accessToken, setAccessToken } = useAuth();
+  const [clickedCircle, setClickedCircle] = useState<number | null>(null);
+
   const days = [];
   for (let x = 0; x < 28; x++) {
     days.push(x + 1);
@@ -26,6 +33,14 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
     currentPack?.pills && currentPack.pills.length > 0
       ? Math.max(...currentPack.pills.map((pill) => pill.dayNumber)) + 1
       : 1;
+
+  const allNumbersInPack =
+    currentPack?.pills && currentPack.pills.length > 0
+      ? currentPack?.pills.map((pill) => pill.dayNumber)
+      : [0];
+
+  const { mutate: takePill } = useMutation({ ...trackPillInPackMut() });
+  const { mutate: dltPill } = useMutation({ ...dltPillMut() });
 
   return (
     <>
@@ -55,6 +70,9 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
         >
           {days.map((day) => (
             <Paper
+              onClick={() =>
+                setClickedCircle((prev) => (prev !== day ? day : prev))
+              }
               key={day}
               sx={{
                 textAlign: "center",
@@ -71,6 +89,32 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
               }}
             ></Paper>
           ))}
+
+          <Box>
+            {clickedCircle === nextDayHalo && (
+              <button
+                onClick={() =>
+                  takePill({
+                    packNumber: currentPack!.packNumber,
+                    dayNumber: nextDayHalo,
+                    date: Date.now(),
+                    accessToken: accessToken,
+                    onTokenRefresh: setAccessToken,
+                  })
+                }
+              >
+                take today's pill
+              </button>
+            )}
+            {clickedCircle && allNumbersInPack.includes(clickedCircle) && (
+              <button>delete</button>
+            )}
+            {clickedCircle &&
+              clickedCircle !== nextDayHalo &&
+              !allNumbersInPack.includes(clickedCircle) && (
+                <button>take missed pill</button>
+              )}
+          </Box>
         </Box>
       </Box>
     </>
