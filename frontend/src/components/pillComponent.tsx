@@ -19,20 +19,12 @@ function PillComponent() {
     ...getCurrentPackQuery(accessToken, setAccessToken),
   });
 
-  const startPackMutation = useMutation({
+  const { mutate: startPackMutation, isPending } = useMutation({
     ...startNewPackMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
     },
   });
-
-  const handleStartNewPack = () => {
-    startPackMutation.mutate({
-      startDayOfWeek: dayOfTheWeekToStart,
-      accessToken,
-      onTokenRefresh: setAccessToken,
-    });
-  };
 
   const effectiveDayOfWeek = currentPack?.startDayOfWeek || dayOfTheWeekToStart;
 
@@ -72,8 +64,14 @@ function PillComponent() {
           </Box>
           <Button
             variant="contained"
-            onClick={handleStartNewPack}
-            disabled={startPackMutation.isPending}
+            onClick={() =>
+              startPackMutation({
+                startDayOfWeek: dayOfTheWeekToStart,
+                accessToken,
+                onTokenRefresh: setAccessToken,
+              })
+            }
+            disabled={isPending}
             sx={{
               bgcolor: "#1b1a61",
               "&:hover": {
@@ -81,7 +79,7 @@ function PillComponent() {
               },
             }}
           >
-            {startPackMutation.isPending ? "Starting..." : "Start Pack"}
+            {isPending ? "Starting..." : "Start Pack"}
           </Button>
           <PillPack
             currentPack={currentPack}

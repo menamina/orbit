@@ -136,7 +136,7 @@ async function startNewPack({
   accessToken,
   onTokenRefresh,
 }: { startDayOfWeek: string } & AuthParams): Promise<PillPack> {
-  const res = await apiFetch(`http://localhost:5555/api/blister-packs`, {
+  const res = await apiFetch(`http://localhost:5555/api/new-blister-packs`, {
     method: "POST",
     accessToken,
     onTokenRefresh,
