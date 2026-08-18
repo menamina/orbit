@@ -19,7 +19,11 @@ function PillComponent() {
     ...getCurrentPackQuery(accessToken, setAccessToken),
   });
 
-  const { mutate: startPackMutation, isPending } = useMutation({
+  const {
+    mutate: startPackMutation,
+    error: startingPackError,
+    isPending,
+  } = useMutation({
     ...startNewPackMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });

@@ -1,6 +1,6 @@
 import { useAuth } from "../../authContext";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PillPack as PillPackType, Pill } from "../../tanstack/pillTypes";
 import { dltPillMut, trackPillInPackMut } from "../../tanstack/pillTS";
 
@@ -13,6 +13,7 @@ interface PillPackProps {
 
 function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
   const { accessToken, setAccessToken } = useAuth();
+  const queryClient = useQueryClient();
   const [clickedCircle, setClickedCircle] = useState<number | null>(null);
 
   const days = [];
@@ -39,8 +40,21 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
       ? currentPack?.pills.map((pill) => pill.dayNumber)
       : [0];
 
-  const { mutate: takePill } = useMutation({ ...trackPillInPackMut() });
-  const { mutate: dltPill } = useMutation({ ...dltPillMut() });
+  const { mutate: takePill, isPending: isTakingPill } = useMutation({
+    ...trackPillInPackMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentPack"] });
+      setClickedCircle(null);
+    },
+  });
+
+  const { mutate: dltPill, isPending: isDeletingPill } = useMutation({
+    ...dltPillMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentPack"] });
+      setClickedCircle(null);
+    },
+  });
 
   return (
     <>
@@ -93,6 +107,7 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
           <Box>
             {clickedCircle === nextDayHalo && (
               <button
+                disabled={isTakingPill}
                 onClick={() =>
                   takePill({
                     packNumber: currentPack!.packNumber,
@@ -103,11 +118,12 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
                   })
                 }
               >
-                take today's pill
+                {isTakingPill ? "Taking pill..." : "take today's pill"}
               </button>
             )}
             {clickedCircle && allNumbersInPack.includes(clickedCircle) && (
               <button
+                disabled={isDeletingPill}
                 onClick={() => {
                   const pillToDelete = currentPack?.pills?.find(
                     (pill) => pill.dayNumber === clickedCircle,
@@ -121,13 +137,14 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
                   }
                 }}
               >
-                delete
+                {isDeletingPill ? "Deleting..." : "delete"}
               </button>
             )}
             {clickedCircle &&
               clickedCircle !== nextDayHalo &&
               !allNumbersInPack.includes(clickedCircle) && (
                 <button
+                  disabled={isTakingPill}
                   onClick={() =>
                     takePill({
                       packNumber: currentPack!.packNumber,
@@ -138,7 +155,7 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
                     })
                   }
                 >
-                  take missed pill
+                  {isTakingPill ? "Taking pill..." : "take missed pill"}
                 </button>
               )}
           </Box>
