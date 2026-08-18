@@ -7,10 +7,10 @@ import Index from "./index";
 
 import Login from "./components/login";
 import OAuthToken from "./components/oauthToken";
-import Home from "./components/homePage";
-import Pill from "./components/pillPack";
-import Cycle from "./components/cycleTracking";
-import Notes from "./components/notes";
+import Home from "./components/app/homePage";
+import Pill from "./components/pill/pillPack";
+import Cycle from "./components/cycle/cycleTracking";
+import Notes from "./components/notes/writeOrEditNote";
 import Settings from "./components/settings";
 
 const queryClient = new QueryClient();

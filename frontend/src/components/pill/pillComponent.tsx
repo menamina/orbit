@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { useAuth } from "../authContext";
+import { useAuth } from "../../authContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCurrentPackQuery, startNewPackMut } from "../tanstack/pillTS";
+import { getCurrentPackQuery, startNewPackMut } from "../../tanstack/pillTS";
 
 import PillPack from "./pillPack";
 
@@ -12,6 +12,8 @@ function PillComponent() {
   const { accessToken, setAccessToken } = useAuth();
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
   const queryClient = useQueryClient();
+
+  const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
 
   const { data: currentPack } = useQuery({
     ...getCurrentPackQuery(accessToken, setAccessToken),

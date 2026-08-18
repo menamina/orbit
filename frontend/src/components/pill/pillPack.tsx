@@ -1,4 +1,4 @@
-import type { PillPack as PillPackType, Pill } from "../tanstack/pillTypes";
+import type { PillPack as PillPackType, Pill } from "../../tanstack/pillTypes";
 
 import { Box, Paper } from "@mui/material";
 
