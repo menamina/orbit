@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../main";
 
-function ErrorModal() {}
+function ErrorModal(error) {
+  return (
+    <div>
+      <p></p>
+    </div>
+  );
+}
 
 export default ErrorModal;
