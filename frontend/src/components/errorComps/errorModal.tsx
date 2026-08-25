@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../main";
+import { Box } from "@mui/material";
 
-function ErrorModal(error) {
+type Err = {
+  error: string;
+};
+
+function ErrorModal(error: Err) {
   return (
-    <div>
-      <p></p>
-    </div>
+    <Box
+      sx={{
+        position: "absolute",
+      }}
+    >
+      <div>{error.error}</div>
+    </Box>
   );
 }
 

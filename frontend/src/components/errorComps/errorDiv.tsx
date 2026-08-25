@@ -2,14 +2,18 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../main";
 import Alert from "@mui/material/Alert";
 
-function ErrorDiv(error) {
+type Err = {
+  error: string;
+};
+
+function ErrorDiv(error: Err) {
   const [closeDiv, setCloseDiv] = useState(false);
 
   if (closeDiv === false) {
     return (
       <div>
         <Alert severity="warning" onClose={() => setCloseDiv(true)}>
-          {error}
+          {error.error}
         </Alert>
       </div>
     );
