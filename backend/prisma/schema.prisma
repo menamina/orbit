@@ -79,8 +79,8 @@ model CycleTracking {
 }
 
 model PillPack {
-  id                      Int                @id @default(autoincrement())
-  userID                  Int
+  id                Int                @id @default(autoincrement())
+  userID            Int
   packNumber        Int
   startDate         DateTime
   endDate           DateTime?

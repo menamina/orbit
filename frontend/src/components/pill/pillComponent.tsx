@@ -20,7 +20,7 @@ function PillComponent() {
   const { accessToken, setAccessToken } = useAuth();
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
   const [openDots, setOpenedDots] = useState(false);
-  const [displayErrModal, setDisplayErrModal] = useState(false);
+  const [displayDltModal, setDisplayDltModal] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -49,6 +49,8 @@ function PillComponent() {
     ...dltPackMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
+      setDisplayDltModal(false);
+      setOpenedDots(false);
     },
   });
 
@@ -122,16 +124,47 @@ function PillComponent() {
             <img src={Dots} alt="3 dots" />
             {openDots && (
               <Box>
-                <button onClick={() => setDisplayErrModal(true)}>
+                <button onClick={() => setDisplayDltModal(true)}>
                   delete current pack
                 </button>
-                <Box>cancel</Box>
+                <button onClick={() => setDisplayDltModal(false)}>
+                  cancel
+                </button>
               </Box>
             )}
           </Box>
         </>
       )}
-      {displayErrModal && }
+      {displayDltModal && (
+        <Box>
+          <Box>Are you sure you want to delete this pack?</Box>
+          <Box>
+            <button
+              disabled={dltingPackPending}
+              onClick={() => {
+                setOpenedDots(false);
+                setDisplayDltModal(false);
+              }}
+            >
+              cancel
+            </button>
+            <button
+              disabled={dltingPackPending}
+              onClick={() => {
+                dltPack({
+                  packID: currentPack!.id,
+                  accessToken: accessToken,
+                  onTokenRefresh: setAccessToken,
+                });
+              }}
+            >
+              delete
+            </button>
+          </Box>
+        </Box>
+      )}
+      {startingPackError && <ErrorDiv error={startingPackError} />}
+      {dltingPackError && <ErrorDiv error={dltingPackError} />}
     </>
   );
 }
