@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../authContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import {
   startNewPackMut,
   dltPackMut,
 } from "../../tanstack/pillTS";
+import { ApiError } from "../../tanstack/api";
 
 import PillPack from "./pillPack";
 
@@ -17,10 +19,12 @@ import Dots from "../imgs/dotsVert.svg";
 import { Box, Paper, Button } from "@mui/material";
 
 function PillComponent() {
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, setAccessToken, setUser } = useAuth();
+  const navigate = useNavigate();
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
   const [openDots, setOpenedDots] = useState(false);
   const [displayDltModal, setDisplayDltModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -39,6 +43,11 @@ function PillComponent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
     },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
   });
 
   const {
@@ -52,12 +61,23 @@ function PillComponent() {
       setDisplayDltModal(false);
       setOpenedDots(false);
     },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
   });
 
   const effectiveDayOfWeek = currentPack?.startDayOfWeek || dayOfTheWeekToStart;
 
   return (
     <>
+      {startingPackError && !showLoginModal && (
+        <ErrorDiv error={startingPackError} />
+      )}
+      {dltingPackError && !showLoginModal && (
+        <ErrorDiv error={dltingPackError} />
+      )}
       {!currentPack || currentPack?.pills?.length === 0 ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <Paper sx={{ padding: "20px", textAlign: "center" }}>
@@ -163,8 +183,16 @@ function PillComponent() {
           </Box>
         </Box>
       )}
-      {startingPackError && <ErrorDiv error={startingPackError} />}
-      {dltingPackError && <ErrorDiv error={dltingPackError} />}
+      {showLoginModal && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
     </>
   );
 }
