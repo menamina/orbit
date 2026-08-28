@@ -1,5 +1,6 @@
 import { useAuth } from "../../authContext";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PillPack as PillPackType, Pill } from "../../tanstack/pillTypes";
@@ -22,6 +23,7 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
   const queryClient = useQueryClient();
   const [clickedCircle, setClickedCircle] = useState<number | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
 
   const days = [];
   for (let x = 0; x < 28; x++) {
