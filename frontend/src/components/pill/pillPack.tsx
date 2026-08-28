@@ -1,8 +1,14 @@
 import { useAuth } from "../../authContext";
 import { useState } from "react";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PillPack as PillPackType, Pill } from "../../tanstack/pillTypes";
 import { trackPillInPackMut, dltPillMut } from "../../tanstack/pillTS";
+
+import { ApiError } from "../../tanstack/api";
+
+import ErrorDiv from "../errorComps/errorDiv";
+import ErrorModal from "../errorComps/errorModal";
 
 import { Box, Paper } from "@mui/material";
 
@@ -12,9 +18,10 @@ interface PillPackProps {
 }
 
 function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
   const [clickedCircle, setClickedCircle] = useState<number | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const days = [];
   for (let x = 0; x < 28; x++) {
@@ -40,24 +47,45 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
       ? currentPack?.pills.map((pill) => pill.dayNumber)
       : [0];
 
-  const { mutate: takePill, isPending: isTakingPill } = useMutation({
+  const {
+    mutate: takePill,
+    isPending: isTakingPill,
+    error: takePillError,
+  } = useMutation({
     ...trackPillInPackMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
       setClickedCircle(null);
     },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
   });
 
-  const { mutate: dltPill, isPending: isDeletingPill } = useMutation({
+  const {
+    mutate: dltPill,
+    isPending: isDeletingPill,
+    error: dltPillError,
+  } = useMutation({
     ...dltPillMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
       setClickedCircle(null);
     },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
   });
 
   return (
     <>
+      {takePillError && !showLoginModal && <ErrorDiv error={takePillError} />}
+      {dltPillError && !showLoginModal && <ErrorDiv error={dltPillError} />}
+
       <Box
         sx={{ display: "flex", flexDirection: "column", bgColor: "#E3DFFF" }}
         // or "#c6c0ec" for this box and other color for main app?
@@ -161,6 +189,16 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
           </Box>
         </Box>
       </Box>
+      {showLoginModal && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
     </>
   );
 }
