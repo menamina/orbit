@@ -6,7 +6,7 @@ import type {
   WriteNoteType,
   NoteToUpdate,
 } from "./notesTypes";
-import { apiFetch, type AuthParams } from "./api";
+import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getNotesByMonthQuery = (
   thisMonth: ThisMonth,
@@ -54,7 +54,11 @@ async function getNotesThisMonth(
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot get notes, try again");
+    throw new ApiError(
+      errorData.error || "Cannot get notes, try again",
+      res.status,
+      errorData.code,
+    );
   }
   return await res.json();
 }
@@ -76,7 +80,11 @@ async function writeANote({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot write note, try again");
+    throw new ApiError(
+      errorData.error || "Cannot write note, try again",
+      res.status,
+      errorData.code,
+    );
   }
 
   return await res.json();
@@ -99,8 +107,7 @@ async function updateANote({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
-    // ^ if res is 401 login \\
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -123,7 +130,11 @@ async function dltNote({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot delete note, try again");
+    throw new ApiError(
+      errorData.error || "Cannot delete note, try again",
+      res.status,
+      errorData.code,
+    );
   }
 
   return await res.json();

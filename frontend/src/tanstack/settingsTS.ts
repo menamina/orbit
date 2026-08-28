@@ -4,7 +4,7 @@ import type {
   PasswordUpdateType,
   UpdateCycleType,
 } from "./settingsTypes";
-import { apiFetch, type AuthParams } from "./api";
+import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getSettingsQuery = (
   accessToken: string,

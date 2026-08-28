@@ -5,7 +5,7 @@ import type {
   LoginResponse,
   AuthCheckResponse,
 } from "./authTypes";
-import { apiFetch, type AuthParams } from "./api";
+import { apiFetch, ApiError, type AuthParams } from "./api";
 
 // --------- TANSTACK QUERY + MUTATION OPTIONS --------- \\
 
@@ -78,7 +78,12 @@ async function checkAuth(
   });
 
   if (!res.ok) {
-    throw new Error("Must login");
+    const errorData = await res.json();
+    throw new ApiError(
+      errorData.error || "Must login",
+      res.status,
+      errorData.code,
+    );
   }
 
   const data = await res.json();
@@ -189,8 +194,10 @@ async function logoutEverywhere({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(
+    throw new ApiError(
       errorData.error || "Oops something went wrong - there's a server error",
+      res.status,
+      errorData.code,
     );
   }
 

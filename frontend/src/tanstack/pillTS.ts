@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 
 import type { PillPack, Pill } from "./pillTypes";
-import { apiFetch, type AuthParams } from "./api";
+import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getCurrentPackQuery = (
   accessToken: string | null,
@@ -80,7 +80,7 @@ async function getCurrentPack({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -104,7 +104,7 @@ async function getAllPillPacks({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -125,7 +125,7 @@ async function getSpecificPillPack({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -148,7 +148,7 @@ async function startNewPack({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -180,7 +180,7 @@ async function trackPillInPack({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -199,7 +199,7 @@ async function dltPill({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();
@@ -218,7 +218,7 @@ async function dltPack({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error);
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();

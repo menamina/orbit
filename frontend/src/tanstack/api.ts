@@ -1,3 +1,19 @@
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+
+  isAuthError() {
+    return this.status === 401;
+  }
+}
+
 interface FetchOptions extends RequestInit {
   accessToken?: string | null;
   onTokenRefresh?: (newToken: string) => void;
@@ -46,8 +62,10 @@ export async function apiFetch(
 
     if (!refreshRes.ok) {
       const refreshErrorData = await refreshRes.json();
-      throw new Error(
+      throw new ApiError(
         refreshErrorData.error || "Session expired - please login again",
+        refreshRes.status,
+        refreshErrorData.code,
       );
     }
 

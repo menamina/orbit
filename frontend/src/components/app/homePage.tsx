@@ -3,6 +3,8 @@ import { Box } from "@mui/material";
 
 import Nav from "../nav";
 
+// media queries
+
 function Home() {
   return (
     <Box
