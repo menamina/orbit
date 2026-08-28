@@ -10,11 +10,18 @@ import {
 
 import PillPack from "./pillPack";
 
+import ErrorDiv from "../errorComps/errorDiv";
+import ErrorModal from "../errorComps/errorModal";
+import Dots from "../imgs/dotsVert.svg";
+
 import { Box, Paper, Button } from "@mui/material";
 
 function PillComponent() {
   const { accessToken, setAccessToken } = useAuth();
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
+  const [openDots, setOpenedDots] = useState(false);
+  const [displayErrModal, setDisplayErrModal] = useState(false);
+
   const queryClient = useQueryClient();
 
   const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
@@ -106,11 +113,25 @@ function PillComponent() {
           />
         </Box>
       ) : (
-        <PillPack
-          currentPack={currentPack}
-          dayOfTheWeekToStart={effectiveDayOfWeek}
-        />
+        <>
+          <PillPack
+            currentPack={currentPack}
+            dayOfTheWeekToStart={effectiveDayOfWeek}
+          />
+          <Box onClick={() => setOpenedDots(true)}>
+            <img src={Dots} alt="3 dots" />
+            {openDots && (
+              <Box>
+                <button onClick={() => setDisplayErrModal(true)}>
+                  delete current pack
+                </button>
+                <Box>cancel</Box>
+              </Box>
+            )}
+          </Box>
+        </>
       )}
+      {displayErrModal && }
     </>
   );
 }
