@@ -60,7 +60,11 @@ async function getSettings({ accessToken, onTokenRefresh }: AuthParams) {
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot get settings, try again");
+    throw new ApiError(
+      errorData.error || "Cannot get settings, try again",
+      res.status,
+      errorData.code,
+    );
   }
 
   return await res.json();
@@ -83,7 +87,11 @@ async function updateSettings({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot update settings, try again");
+    throw new ApiError(
+      errorData.error || "Cannot update settings, try again",
+      res.status,
+      errorData.code,
+    );
   }
   return await res.json();
 }
@@ -105,7 +113,11 @@ async function updatePassword({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot update password, try again");
+    throw new ApiError(
+      errorData.error || "Cannot update password, try again",
+      res.status,
+      errorData.code,
+    );
   }
   return await res.json();
 }
@@ -118,7 +130,11 @@ async function getCycle({ accessToken, onTokenRefresh }: AuthParams) {
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot get cycle info, try again");
+    throw new ApiError(
+      errorData.error || "Cannot get cycle info, try again",
+      res.status,
+      errorData.code,
+    );
   }
 
   return await res.json();
@@ -141,10 +157,12 @@ async function updateCycle({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(
+    throw new ApiError(
       errorData.error ||
         errorData.message ||
         "Cannot update cycle info, try again",
+      res.status,
+      errorData.code,
     );
   }
 
@@ -163,7 +181,11 @@ async function dltAccount({
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Cannot delete account, try again");
+    throw new ApiError(
+      errorData.error || "Cannot delete account, try again",
+      res.status,
+      errorData.code,
+    );
   }
 
   return await res.json();
