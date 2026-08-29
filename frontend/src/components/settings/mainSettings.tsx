@@ -212,7 +212,14 @@ function MainSettings() {
               </Box>
             </Box>
             <Box>
-              <button onClick={() => setEdit(false)}>cancel</button>
+              <button
+                onClick={() => {
+                  setEdit(false);
+                  setOpenImgOptions(false);
+                }}
+              >
+                cancel
+              </button>
               <button
                 disabled={settingsUpdatePending}
                 onClick={() =>
