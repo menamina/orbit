@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../authContext";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updatePasswordMut } from "../../tanstack/settingsTS";
 
 import { ApiError } from "../../tanstack/api";
@@ -13,6 +13,28 @@ import { Box, Paper, Button } from "@mui/material";
 import ErrorDiv from "../errorComps/errorDiv";
 import ErrorModal from "../errorComps/errorModal";
 
-function PasswordSettings() {}
+function PasswordSettings() {
+  const { accessToken, setAccessToken, setUser } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const {
+    mutate: updatePassword,
+    isPending: passwordUpdatePending,
+    error: updatePasswordError,
+  } = useMutation({
+    ...updatePasswordMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
+  });
+}
 
 export default PasswordSettings;

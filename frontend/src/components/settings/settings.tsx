@@ -1,17 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../authContext";
-
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { updatePasswordMut, dltAccountMut } from "../../tanstack/settingsTS";
-
-import { ApiError } from "../../tanstack/api";
-
-import { Box, Paper, Button } from "@mui/material";
-
-import ErrorDiv from "../errorComps/errorDiv";
-import ErrorModal from "../errorComps/errorModal";
+import { Box } from "@mui/material";
 
 import MainSettings from "./mainSettings";
 import PasswordSettings from "./passwordSettings";
@@ -20,53 +9,12 @@ import DeleteSettings from "./dltSettings";
 type Views = "main" | "password" | "delete";
 
 function Settings() {
-  const { accessToken, setAccessToken, setUser } = useAuth();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
   const [view, setView] = useState<Views>("main");
-
-  const [displayDltModal, setDisplayDltModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
-  const {
-    mutate: updatePassword,
-    isPending: passwordUpdatePending,
-    error: updatePasswordError,
-  } = useMutation({
-    ...updatePasswordMut(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
-    },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
-  });
-
-  const {
-    mutate: dltAccount,
-    isPending: dltAccPending,
-    error: dltAccountError,
-  } = useMutation({
-    ...dltAccountMut(),
-    onSuccess: () => {
-      setUser(null);
-      setAccessToken(null);
-      navigate("/login");
-    },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
-  });
 
   return (
     <>
       <Box>
-        <Box
+        <button
           onClick={() => {
             if (view !== "main") {
               setView("main");
@@ -74,8 +22,8 @@ function Settings() {
           }}
         >
           Settings
-        </Box>
-        <Box
+        </button>
+        <button
           onClick={() => {
             if (view !== "password") {
               setView("password");
@@ -83,8 +31,8 @@ function Settings() {
           }}
         >
           Password
-        </Box>
-        <Box
+        </button>
+        <button
           onClick={() => {
             if (view !== "delete") {
               setView("delete");
@@ -92,7 +40,7 @@ function Settings() {
           }}
         >
           Delete Account
-        </Box>
+        </button>
       </Box>
       <Box>
         {view === "main" && <MainSettings />}

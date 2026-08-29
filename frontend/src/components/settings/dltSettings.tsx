@@ -13,6 +13,29 @@ import { Box, Paper, Button } from "@mui/material";
 import ErrorDiv from "../errorComps/errorDiv";
 import ErrorModal from "../errorComps/errorModal";
 
-function DeleteSettings() {}
+function DeleteSettings() {
+  const { accessToken, setAccessToken, setUser } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const {
+    mutate: dltAccount,
+    isPending: dltAccPending,
+    error: dltAccountError,
+  } = useMutation({
+    ...dltAccountMut(),
+    onSuccess: () => {
+      setUser(null);
+      setAccessToken(null);
+      navigate("/login");
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
+  });
+}
 
 export default DeleteSettings;
