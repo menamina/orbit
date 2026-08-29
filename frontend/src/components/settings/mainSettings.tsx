@@ -56,11 +56,6 @@ function MainSettings() {
   const { data: userSettings, error: getSettingsError } = useQuery({
     ...getSettingsQuery(accessToken, setAccessToken),
     retry: false,
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
 
   const [settingsToUpdate, setSettingsToUpdate] = useState<SettingsType>({
@@ -204,6 +199,12 @@ function MainSettings() {
           </>
         )}
       </Box>
+      {updateSettingsError && !showLoginModal && (
+        <ErrorDiv error={updateSettingsError} />
+      )}
+      {getSettingsError && !showLoginModal && (
+        <ErrorDiv error={getSettingsError} />
+      )}
       {showLoginModal && (
         <ErrorModal
           error="Your session expired. Please login again."

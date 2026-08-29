@@ -30,8 +30,9 @@ function PillComponent() {
 
   const weekdays = ["sun", "mon", "tues", "wed", "thur", "fri", "sat"];
 
-  const { data: currentPack } = useQuery({
+  const { data: currentPack, error: getCurrentPackError } = useQuery({
     ...getCurrentPackQuery(accessToken, setAccessToken),
+    retry: false,
   });
 
   const {
@@ -183,7 +184,7 @@ function PillComponent() {
           </Box>
         </Box>
       )}
-      {showLoginModal && (
+      {(showLoginModal || (getCurrentPackError instanceof ApiError && getCurrentPackError.isAuthError())) && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {
@@ -192,6 +193,9 @@ function PillComponent() {
             navigate("/login");
           }}
         />
+      )}
+      {getCurrentPackError && !(getCurrentPackError instanceof ApiError && getCurrentPackError.isAuthError()) && (
+        <ErrorDiv error={getCurrentPackError} />
       )}
     </>
   );
