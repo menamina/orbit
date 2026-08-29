@@ -13,6 +13,9 @@ import { Box, Paper, Button } from "@mui/material";
 
 import ErrorDiv from "../errorComps/errorDiv";
 import ErrorModal from "../errorComps/errorModal";
+import IconOptions from "./iconOptions";
+
+import PhotoChange from "../../imgs/changePhoto.svg";
 
 import Cheesecake from "../../icons/cheesecake.jpeg";
 import Coffee from "../../icons/coffee.jpeg";
@@ -50,6 +53,7 @@ function MainSettings() {
   const navigate = useNavigate();
 
   const [edit, setEdit] = useState(false);
+  const [openImgOptions, setOpenImgOptions] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -86,9 +90,31 @@ function MainSettings() {
   return (
     <>
       <Box>
-        <Box>
+        {updateSettingsError && !showLoginModal && (
+          <ErrorDiv error={updateSettingsError} />
+        )}
+        {getSettingsError && !showLoginModal && (
+          <ErrorDiv error={getSettingsError} />
+        )}
+        <Box
+          onClick={() => setOpenImgOptions(true)}
+          sx={{
+            cursor: openImgOptions ? "default" : "pointer",
+            position: "",
+          }}
+        >
+          {edit && (
+            <img
+              src={PhotoChange}
+              alt="camera image indicating ability to change photo"
+            />
+          )}
           <img
-            src={icons[userSettings?.icon as keyof typeof icons]}
+            src={
+              openImgOptions
+                ? icons[settingsToUpdate.icon as keyof typeof icons]
+                : icons[userSettings?.icon as keyof typeof icons]
+            }
             alt={`your profile picutre is ${userSettings.icon}`}
           />
         </Box>
@@ -199,12 +225,16 @@ function MainSettings() {
           </>
         )}
       </Box>
-      {updateSettingsError && !showLoginModal && (
-        <ErrorDiv error={updateSettingsError} />
+      {openImgOptions && (
+        <IconOptions
+          images={icons}
+          onSelect={() =>
+            setSettingsToUpdate({ ...settingsToUpdate, icon: iconKey })
+          }
+          onClose={() => setOpenImgOptions(false)}
+        />
       )}
-      {getSettingsError && !showLoginModal && (
-        <ErrorDiv error={getSettingsError} />
-      )}
+
       {showLoginModal && (
         <ErrorModal
           error="Your session expired. Please login again."
