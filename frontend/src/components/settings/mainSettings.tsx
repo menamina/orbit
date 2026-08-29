@@ -18,6 +18,8 @@ function MainSettings() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const [edit, setEdit] = useState(false);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { data: userSettings, error: getSettingsError } = useQuery({
@@ -39,6 +41,28 @@ function MainSettings() {
       }
     },
   });
+
+  return (
+    <>
+      <Box>
+        <img src={} alt={`your profile picutre is ${userSettings.icon}`} />
+      </Box>
+      <Box>
+        {!edit && (
+          <>
+            <Box>Name: </Box>
+            <Box>Username: </Box>
+            <Box>Email: </Box>
+            <Box>
+              <Box>Cycle</Box>
+              <Box>Cycle Length: {userSettings.cycleLength} days</Box>
+              <Box>Days between period: {userSettings.daysBetweenPeriod}</Box>
+            </Box>
+          </>
+        )}
+      </Box>
+    </>
+  );
 }
 // icon option pop up on side
 

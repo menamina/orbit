@@ -53,11 +53,11 @@ model RefreshToken {
 model Settings {
   id                      Int                @id @default(autoincrement())
   userID                  Int                @unique
-  icon                    String             @default("")
+  icon                    String             @default("cheesecake")
   saltedHash              String?            // Optional - GitHub/OAuth users won't have password
-  cycleLength             Int?
-  daysBetweenPeriod       Int?
-  ovulationPrediction     Int?
+  cycleLength             Int                @default(0)
+  daysBetweenPeriod       Int                @default(0)
+  ovulationPrediction     Int                @default(0)
 
   user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
   @@index([userID])
