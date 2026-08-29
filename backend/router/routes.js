@@ -145,7 +145,6 @@ router.delete("/api/deleteNote", checkAuth, dltNote);
 
 // ======== SETTINGS ======== \\
 router.get("/api/settings", checkAuth, getSettings);
-// need multer for img \\
 router.patch("/api/updateSettings", checkAuth, settingsUpdate);
 router.patch(
   "/api/updatePassword",

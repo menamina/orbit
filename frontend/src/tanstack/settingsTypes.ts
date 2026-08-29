@@ -3,7 +3,6 @@ export type SettingsType = {
   username: string;
   email: string;
   icon: string;
-  appColor: string;
 };
 
 export type PasswordUpdateType = {

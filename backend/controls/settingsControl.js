@@ -15,7 +15,6 @@ async function getSettings(req, res) {
         settings: {
           select: {
             icon: true,
-            appColor: true,
           },
         },
       },
@@ -30,7 +29,6 @@ async function getSettings(req, res) {
       username: user.username,
       email: user.email,
       icon: user.settings?.icon,
-      appColor: user.settings?.appColor,
     });
   } catch (error) {
     console.log(error);
@@ -41,7 +39,7 @@ async function getSettings(req, res) {
 async function settingsUpdate(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { name, username, email, icon, appColor } = req.body;
+    const { name, username, email, icon } = req.body;
 
     const user = await prisma.user.findUnique({
       where: {
@@ -78,11 +76,10 @@ async function settingsUpdate(req, res) {
         ...(name && { name }),
         ...(username && { username }),
         ...(email && { email }),
-        ...((icon || appColor) && {
+        ...(icon && {
           settings: {
             update: {
               ...(icon && { icon }),
-              ...(appColor && { appColor }),
             },
           },
         }),

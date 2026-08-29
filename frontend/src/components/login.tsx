@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
-import { useAuth } from "../main";
+import { useAuth } from "../authContext";
 
 import {
   checkIfUsernameIsInUse,
@@ -21,7 +21,6 @@ import GitHubBlack from "./imgs/GitHub_Invertocat_Black_Clearspace.png";
 
 function Login() {
   const nav = useNavigate();
-  const queryClient = useQueryClient();
 
   const { setAccessToken, setUser } = useAuth();
   const [toggle, setToggle] = useState("login");
@@ -194,11 +193,9 @@ function Login() {
           </Button>
 
           <Box>
-            {usernameInUse && <Paper>{loginError.message}</Paper>}
-            {emailInUse && <Paper>{emailError.message}</Paper>}
-            {signupError.map((error: string, index: number) => (
-              <Paper key={index}>{error}</Paper>
-            ))}
+            {usernameInUse && <Paper>{usernameInUse.message}</Paper>}
+            {emailInUse && <Paper>{emailInUse.message}</Paper>}
+            {signupError && <Paper>{signupError.message}</Paper>}
           </Box>
 
           {(Object.keys(signupInfo) as Array<keyof SignupData>).map((field) => (
