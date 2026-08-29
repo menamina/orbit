@@ -1,16 +1,18 @@
-import { Box, Paper, Button } from "@mui/material";
-
-type IconsType = {
-  [key: string]: string;
-};
+import { Box, Button } from "@mui/material";
 
 interface IconOptionsProps {
-  images: IconsType;
+  images: Record<string, string>;
+  usersCurrentImg: string;
   onSelect: (iconKey: string) => void;
   onClose: () => void;
 }
 
-function IconOptions({ images, onSelect, onClose }: IconOptionsProps) {
+function IconOptions({
+  images,
+  usersCurrentImg,
+  onSelect,
+  onClose,
+}: IconOptionsProps) {
   return (
     <Box>
       <Box>Select an icon</Box>
@@ -30,6 +32,7 @@ function IconOptions({ images, onSelect, onClose }: IconOptionsProps) {
             }}
             sx={{
               cursor: "pointer",
+              border: usersCurrentImg === key ? "1px solid red" : null,
               "&:hover": {
                 opacity: 0.7,
               },

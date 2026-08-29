@@ -9,7 +9,7 @@ import { getSettingsQuery, updateSettingsMut } from "../../tanstack/settingsTS";
 import { ApiError } from "../../tanstack/api";
 import type { SettingsType } from "../tanstack/SettingsType";
 
-import { Box, Paper, Button } from "@mui/material";
+import { Box } from "@mui/material";
 
 import ErrorDiv from "../errorComps/errorDiv";
 import ErrorModal from "../errorComps/errorModal";
@@ -97,16 +97,20 @@ function MainSettings() {
           <ErrorDiv error={getSettingsError} />
         )}
         <Box
-          onClick={() => setOpenImgOptions(true)}
+          onClick={() => (edit ? setOpenImgOptions(true) : null)}
           sx={{
             cursor: openImgOptions ? "default" : "pointer",
-            position: "",
+            position: "relative",
           }}
         >
           {edit && (
             <img
               src={PhotoChange}
               alt="camera image indicating ability to change photo"
+              style={{
+                position: "absolute",
+                zIndex: 1,
+              }}
             />
           )}
           <img
@@ -228,7 +232,8 @@ function MainSettings() {
       {openImgOptions && (
         <IconOptions
           images={icons}
-          onSelect={() =>
+          usersCurrentImg={userSettings.icon}
+          onSelect={(iconKey) =>
             setSettingsToUpdate({ ...settingsToUpdate, icon: iconKey })
           }
           onClose={() => setOpenImgOptions(false)}
