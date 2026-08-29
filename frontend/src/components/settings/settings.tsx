@@ -13,15 +13,28 @@ import {
   dltAccountMut,
 } from "../../tanstack/settingsTS";
 
-import { ApiError } from "../tanstack/api";
+import { ApiError } from "../../tanstack/api";
+
+import { Box, Paper, Button } from "@mui/material";
 
 import ErrorDiv from "../errorComps/errorDiv";
 import ErrorModal from "../errorComps/errorModal";
+
+import MainSettings from "./mainSettings";
+import PasswordSettings from "./passwordSettings";
+import DeleteSettings from "./dltSettings";
+
+type Views = "main" | "password" | "delete";
 
 function Settings() {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const [view, setView] = useState<Views>("main");
+
+  const [displayDltModal, setDisplayDltModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { data: userSettings, error: getSettingsError } = useQuery(
     getSettingsQuery(accessToken, setAccessToken),
@@ -80,11 +93,11 @@ function Settings() {
   });
 
   const {
-    mutate: dltAccountMut,
+    mutate: dltAccount,
     isPending: dltAccPending,
-    error: dltAccountMutError,
+    error: dltAccountError,
   } = useMutation({
-    ...dltAccountMutMut(),
+    ...dltAccountMut(),
     onSuccess: () => {
       setUser(null);
       setAccessToken(null);
@@ -96,6 +109,15 @@ function Settings() {
       }
     },
   });
+
+  return (
+    <>
+      <Box>Settings</Box>
+      {view === "main" && <MainSettings />}
+      {view === "password" && <PasswordSettings />}
+      {view === "password" && <DeleteSettings />}
+    </>
+  );
 }
 
 export default Settings;

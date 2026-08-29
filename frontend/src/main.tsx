@@ -11,7 +11,7 @@ import Home from "./components/app/homePage";
 import Pill from "./components/pill/pillPack";
 import Cycle from "./components/cycle/cycleTracking";
 import Notes from "./components/notes/writeOrEditNote";
-import Settings from "./components/settings";
+import Settings from "./components/settings/settings";
 
 const queryClient = new QueryClient();
 
