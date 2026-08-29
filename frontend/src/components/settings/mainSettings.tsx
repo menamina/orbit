@@ -232,7 +232,7 @@ function MainSettings() {
       {openImgOptions && (
         <IconOptions
           images={icons}
-          usersCurrentImg={userSettings.icon}
+          usersCurrentImg={settingsToUpdate.icon}
           onSelect={(iconKey) =>
             setSettingsToUpdate({ ...settingsToUpdate, icon: iconKey })
           }
