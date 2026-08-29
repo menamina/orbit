@@ -55,16 +55,24 @@ function MainSettings() {
 
   const { data: userSettings, error: getSettingsError } = useQuery({
     ...getSettingsQuery(accessToken, setAccessToken),
+    retry: false,
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
   });
 
-    const [settingsToUpdate, setSettingsToUpdate] = useState<SettingsType>({
-    name: {userSettings.name},
-    username: {userSettings.username},
-    email: {userSettings.email},
-    icon: {userSettings.icon},
-    cycleLength: {userSettings.cycleLength},
-    daysBetweenPeriod: {userSettings.daysBetweenPeriod},
-  });const {
+  const [settingsToUpdate, setSettingsToUpdate] = useState<SettingsType>({
+    name: userSettings?.name || "",
+    username: userSettings?.username || "",
+    email: userSettings?.email || "",
+    icon: userSettings?.icon || "",
+    cycleLength: userSettings?.cycleLength,
+    daysBetweenPeriod: userSettings?.daysBetweenPeriod,
+  });
+
+  const {
     mutate: updateSettings,
     isPending: settingsUpdatePending,
     error: updateSettingsError,
@@ -114,34 +122,100 @@ function MainSettings() {
           <>
             <Box>
               <label>Name:</label>
-              <input value={} />
+              <input
+                value={settingsToUpdate.name}
+                onChange={(e) =>
+                  setSettingsToUpdate({
+                    ...settingsToUpdate,
+                    name: e.target.value,
+                  })
+                }
+              />
             </Box>
             <Box>
-              <label></label>
-              <input />
+              <label>Username:</label>
+              <input
+                value={settingsToUpdate.username}
+                onChange={(e) =>
+                  setSettingsToUpdate({
+                    ...settingsToUpdate,
+                    username: e.target.value,
+                  })
+                }
+              />
             </Box>
             <Box>
-              <label></label>
-              <input />
+              <label>Email:</label>
+              <input
+                value={settingsToUpdate.email}
+                onChange={(e) =>
+                  setSettingsToUpdate({
+                    ...settingsToUpdate,
+                    email: e.target.value,
+                  })
+                }
+              />
             </Box>
 
             <Box>
               <Box>Cycle</Box>
               <Box>
-                <label></label>
-                <input />
+                <label>Cycle Length:</label>
+                <input
+                  type="number"
+                  value={settingsToUpdate.cycleLength || ""}
+                  onChange={(e) =>
+                    setSettingsToUpdate({
+                      ...settingsToUpdate,
+                      cycleLength: Number(e.target.value),
+                    })
+                  }
+                />
+              </Box>
+              <Box>
+                <label>Days between period:</label>
+                <input
+                  type="number"
+                  value={settingsToUpdate.daysBetweenPeriod || ""}
+                  onChange={(e) =>
+                    setSettingsToUpdate({
+                      ...settingsToUpdate,
+                      daysBetweenPeriod: Number(e.target.value),
+                    })
+                  }
+                />
               </Box>
             </Box>
             <Box>
               <button onClick={() => setEdit(false)}>cancel</button>
-              <button disabled={settingsUpdatePending} onClick={() => updateSettings(settingsToUpdate)}>save</button>
+              <button
+                disabled={settingsUpdatePending}
+                onClick={() =>
+                  updateSettings({
+                    accessToken,
+                    onTokenRefresh: setAccessToken,
+                    ...settingsToUpdate,
+                  })
+                }
+              >
+                save
+              </button>
             </Box>
           </>
         )}
       </Box>
+      {showLoginModal && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
     </>
   );
 }
-// icon option pop up on side
 
 export default MainSettings;
