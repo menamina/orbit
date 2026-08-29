@@ -4,12 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../authContext";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getSettingsQuery,
-  updateSettingsMut,
-  updatePasswordMut,
-  dltAccountMut,
-} from "../../tanstack/settingsTS";
+import { updatePasswordMut, dltAccountMut } from "../../tanstack/settingsTS";
 
 import { ApiError } from "../../tanstack/api";
 
@@ -33,26 +28,6 @@ function Settings() {
 
   const [displayDltModal, setDisplayDltModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
-  const { data: userSettings, error: getSettingsError } = useQuery(
-    getSettingsQuery(accessToken, setAccessToken),
-  );
-
-  const {
-    mutate: updateSettings,
-    isPending: settingsUpdatePending,
-    error: updateSettingsError,
-  } = useMutation({
-    ...updateSettingsMut(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
-    },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
-  });
 
   const {
     mutate: updatePassword,

@@ -4,14 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../authContext";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getSettingsQuery,
-  updateSettingsMut,
-  updatePasswordMut,
-  getCycleQuery,
-  updateCycleMut,
-  dltAccountMut,
-} from "../../tanstack/settingsTS";
+import { getSettingsQuery, updateSettingsMut } from "../../tanstack/settingsTS";
 
 import { ApiError } from "../../tanstack/api";
 
@@ -27,9 +20,25 @@ function MainSettings() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { data: userSettings, error: getSettingsError } = useQuery(
-    getSettingsQuery(accessToken, setAccessToken),
-  );
+  const { data: userSettings, error: getSettingsError } = useQuery({
+    ...getSettingsQuery(accessToken, setAccessToken),
+  });
+
+  const {
+    mutate: updateSettings,
+    isPending: settingsUpdatePending,
+    error: updateSettingsError,
+  } = useMutation({
+    ...updateSettingsMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.isAuthError()) {
+        setShowLoginModal(true);
+      }
+    },
+  });
 }
 // icon option pop up on side
 
