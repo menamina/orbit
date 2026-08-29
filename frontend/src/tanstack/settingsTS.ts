@@ -2,12 +2,11 @@ import { queryOptions, mutationOptions } from "@tanstack/react-query";
 import type {
   SettingsType,
   PasswordUpdateType,
-  UpdateCycleType,
 } from "./settingsTypes";
 import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getSettingsQuery = (
-  accessToken: string,
+  accessToken: string | null,
   onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
@@ -25,22 +24,6 @@ export const updateSettingsMut = () => {
 export const updatePasswordMut = () => {
   return mutationOptions({
     mutationFn: updatePassword,
-  });
-};
-
-export const getCycleQuery = (
-  accessToken: string,
-  onTokenRefresh?: (token: string) => void,
-) => {
-  return queryOptions({
-    queryKey: ["usersCycle"],
-    queryFn: () => getCycle({ accessToken, onTokenRefresh }),
-  });
-};
-
-export const updateCycleMut = () => {
-  return mutationOptions({
-    mutationFn: updateCycle,
   });
 };
 
@@ -119,53 +102,6 @@ async function updatePassword({
       errorData.code,
     );
   }
-  return await res.json();
-}
-
-async function getCycle({ accessToken, onTokenRefresh }: AuthParams) {
-  const res = await apiFetch(`http://localhost:5555/api/getCycleInfo`, {
-    accessToken,
-    onTokenRefresh,
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new ApiError(
-      errorData.error || "Cannot get cycle info, try again",
-      res.status,
-      errorData.code,
-    );
-  }
-
-  return await res.json();
-}
-
-async function updateCycle({
-  accessToken,
-  onTokenRefresh,
-  ...data
-}: UpdateCycleType & AuthParams): Promise<{ success: boolean }> {
-  const res = await apiFetch(`http://localhost:5555/api/updateCycleInfo`, {
-    method: "PATCH",
-    accessToken,
-    onTokenRefresh,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new ApiError(
-      errorData.error ||
-        errorData.message ||
-        "Cannot update cycle info, try again",
-      res.status,
-      errorData.code,
-    );
-  }
-
   return await res.json();
 }
 

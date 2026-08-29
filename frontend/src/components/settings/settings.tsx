@@ -8,8 +8,6 @@ import {
   getSettingsQuery,
   updateSettingsMut,
   updatePasswordMut,
-  getCycleQuery,
-  updateCycleMut,
   dltAccountMut,
 } from "../../tanstack/settingsTS";
 
@@ -40,10 +38,6 @@ function Settings() {
     getSettingsQuery(accessToken, setAccessToken),
   );
 
-  const { data: cycleData, error: getCycleDataError } = useQuery(
-    getCycleQuery(accessToken, setAccessToken),
-  );
-
   const {
     mutate: updateSettings,
     isPending: settingsUpdatePending,
@@ -51,7 +45,7 @@ function Settings() {
   } = useMutation({
     ...updateSettingsMut(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
+      queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -67,23 +61,7 @@ function Settings() {
   } = useMutation({
     ...updatePasswordMut(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
-    },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
-  });
-
-  const {
-    mutate: updateCycle,
-    isPending: cycleUpdatePending,
-    error: updateCycleError,
-  } = useMutation({
-    ...updateCycleMut(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
+      queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -112,10 +90,40 @@ function Settings() {
 
   return (
     <>
-      <Box>Settings</Box>
-      {view === "main" && <MainSettings />}
-      {view === "password" && <PasswordSettings />}
-      {view === "password" && <DeleteSettings />}
+      <Box>
+        <Box
+          onClick={() => {
+            if (view !== "main") {
+              setView("main");
+            }
+          }}
+        >
+          Settings
+        </Box>
+        <Box
+          onClick={() => {
+            if (view !== "password") {
+              setView("password");
+            }
+          }}
+        >
+          Password
+        </Box>
+        <Box
+          onClick={() => {
+            if (view !== "delete") {
+              setView("delete");
+            }
+          }}
+        >
+          Delete Account
+        </Box>
+      </Box>
+      <Box>
+        {view === "main" && <MainSettings />}
+        {view === "password" && <PasswordSettings />}
+        {view === "delete" && <DeleteSettings />}
+      </Box>
     </>
   );
 }

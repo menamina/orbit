@@ -3,15 +3,12 @@ export type SettingsType = {
   username: string;
   email: string;
   icon: string;
+  cycleLength?: number;
+  daysBetweenPeriod?: number;
 };
 
 export type PasswordUpdateType = {
   oldPassword: string;
   password: string;
   confirmPassword: string;
-};
-
-export type UpdateCycleType = {
-  cycleLength: number;
-  daysBetweenPeriod: number;
 };

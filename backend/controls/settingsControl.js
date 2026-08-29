@@ -15,6 +15,8 @@ async function getSettings(req, res) {
         settings: {
           select: {
             icon: true,
+            cycleLength: true,
+            daysBetweenPeriod: true,
           },
         },
       },
@@ -29,6 +31,8 @@ async function getSettings(req, res) {
       username: user.username,
       email: user.email,
       icon: user.settings?.icon,
+      cycleLength: user.settings?.cycleLength,
+      daysBetweenPeriod: user.settings?.daysBetweenPeriod,
     });
   } catch (error) {
     console.log(error);
@@ -39,7 +43,7 @@ async function getSettings(req, res) {
 async function settingsUpdate(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { name, username, email, icon } = req.body;
+    const { name, username, email, icon, cycleLength, daysBetweenPeriod } = req.body;
 
     const user = await prisma.user.findUnique({
       where: {
@@ -70,21 +74,36 @@ async function settingsUpdate(req, res) {
       }
     }
 
+    // Validate cycle data if provided
+    if (cycleLength !== undefined && (isNaN(Number(cycleLength)) || Number(cycleLength) <= 0)) {
+      return res.status(400).json({ error: "Cycle length must be a positive number" });
+    }
+    if (daysBetweenPeriod !== undefined && (isNaN(Number(daysBetweenPeriod)) || Number(daysBetweenPeriod) <= 0)) {
+      return res.status(400).json({ error: "Days between period must be a positive number" });
+    }
+
+    // Update user data
     await prisma.user.update({
       where: { id: userID },
       data: {
         ...(name && { name }),
         ...(username && { username }),
         ...(email && { email }),
-        ...(icon && {
-          settings: {
-            update: {
-              ...(icon && { icon }),
-            },
-          },
-        }),
       },
     });
+
+    // Update settings data (icon and cycle info)
+    const settingsUpdateData = {};
+    if (icon) settingsUpdateData.icon = icon;
+    if (cycleLength !== undefined) settingsUpdateData.cycleLength = Number(cycleLength);
+    if (daysBetweenPeriod !== undefined) settingsUpdateData.daysBetweenPeriod = Number(daysBetweenPeriod);
+
+    if (Object.keys(settingsUpdateData).length > 0) {
+      await prisma.settings.update({
+        where: { userID },
+        data: settingsUpdateData,
+      });
+    }
 
     return res.status(200).json({ success: true });
   } catch (error) {
