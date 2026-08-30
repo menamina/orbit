@@ -9,9 +9,12 @@ import { updatePasswordMut } from "../../tanstack/settingsTS";
 import { ApiError } from "../../tanstack/api";
 
 import { Box, Paper, Button } from "@mui/material";
+import TextField from "@mui/material/TextField";
 
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
+
+const labels = ["Old password", "New passowrd", "Confirm new password"];
 
 function PasswordSettings() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -19,6 +22,11 @@ function PasswordSettings() {
   const navigate = useNavigate();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword:"",
+    confirmNewPassword: ""
+  })
 
   const {
     mutate: updatePassword,
@@ -39,7 +47,19 @@ function PasswordSettings() {
   return (
     <>
       <Box>Password</Box>
-      <Box>Box</Box>
+      <Box>
+        {labels.map((label) => (
+          <Box>
+            <TextField
+              required
+              id={label}
+              label={label}
+              variant="standard"
+              onChange={(e) => }
+            />
+          </Box>
+        ))}
+      </Box>
     </>
   );
 }
