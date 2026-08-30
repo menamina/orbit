@@ -88,7 +88,7 @@ function MainSettings() {
   useEffect(() => {
     if (
       settingsToUpdate.username === "" ||
-      userSettings.user === settingsToUpdate.username
+      userSettings?.username === settingsToUpdate.username
     ) {
       return;
     }
@@ -98,10 +98,13 @@ function MainSettings() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [settingsToUpdate.username]);
+  }, [settingsToUpdate.username, userSettings?.username]);
 
   useEffect(() => {
-    if (settingsToUpdate.email === "") {
+    if (
+      settingsToUpdate.email === "" ||
+      userSettings?.email === settingsToUpdate.email
+    ) {
       return;
     }
 
@@ -110,7 +113,7 @@ function MainSettings() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [settingsToUpdate.email]);
+  }, [settingsToUpdate.email, userSettings?.email]);
 
   const {
     mutate: updateSettings,
@@ -202,27 +205,24 @@ function MainSettings() {
               <label>Username:</label>
               <input
                 value={settingsToUpdate.username}
-                onChange={(e) => {
+                onChange={(e) =>
                   setSettingsToUpdate({
                     ...settingsToUpdate,
                     username: e.target.value,
-                  });
-
-                  setUsernameQuery(e.target.value);
-                }}
+                  })
+                }
               />
             </Box>
             <Box>
               <label>Email:</label>
               <input
                 value={settingsToUpdate.email}
-                onChange={(e) => {
+                onChange={(e) =>
                   setSettingsToUpdate({
                     ...settingsToUpdate,
                     email: e.target.value,
-                  });
-                  setEmailQuery(e.target.value);
-                }}
+                  })
+                }
               />
             </Box>
 
