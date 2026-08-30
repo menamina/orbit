@@ -86,7 +86,10 @@ function MainSettings() {
   const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
 
   useEffect(() => {
-    if (settingsToUpdate.username === "") {
+    if (
+      settingsToUpdate.username === "" ||
+      userSettings.user === settingsToUpdate.username
+    ) {
       return;
     }
 
@@ -199,24 +202,27 @@ function MainSettings() {
               <label>Username:</label>
               <input
                 value={settingsToUpdate.username}
-                onChange={(e) =>
+                onChange={(e) => {
                   setSettingsToUpdate({
                     ...settingsToUpdate,
                     username: e.target.value,
-                  })
-                }
+                  });
+
+                  setUsernameQuery(e.target.value);
+                }}
               />
             </Box>
             <Box>
               <label>Email:</label>
               <input
                 value={settingsToUpdate.email}
-                onChange={(e) =>
+                onChange={(e) => {
                   setSettingsToUpdate({
                     ...settingsToUpdate,
                     email: e.target.value,
-                  })
-                }
+                  });
+                  setEmailQuery(e.target.value);
+                }}
               />
             </Box>
 

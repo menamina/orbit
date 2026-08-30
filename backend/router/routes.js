@@ -14,6 +14,10 @@ import passport from "../auth/passport.js";
 
 import { validateSignup } from "../utils/validator.js";
 import { passwordValidator } from "../utils/passwordValidation.js";
+import {
+  validateUsername,
+  validateEmail,
+} from "../utils/usernameAndEmailVal.js";
 
 import {
   login,
@@ -73,8 +77,8 @@ router.get("/", checkAuth, (req, res) => {
 
 router.post("/api/checkRefreshToken", refreshToken);
 
-router.get("/api/signup/username", usernameInUse);
-router.get("/api/signup/email", emailInUse);
+router.get("/api/signup/username", validateUsername, usernameInUse);
+router.get("/api/signup/email", validateEmail, emailInUse);
 router.post("/api/signup", validateSignup, signup);
 
 router.post("/api/login", login);
