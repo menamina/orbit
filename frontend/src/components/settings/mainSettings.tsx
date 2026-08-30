@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../authContext";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSettingsQuery, updateSettingsMut } from "../../tanstack/settingsTS";
+import {
+  checkIfUsernameIsInUse,
+  checkIfEmailIsInUse,
+} from "../../tanstack/authTS";
 
 import { ApiError } from "../../tanstack/api";
 import type { SettingsType } from "../tanstack/SettingsType";
@@ -52,15 +56,15 @@ function MainSettings() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const [edit, setEdit] = useState(false);
-  const [openImgOptions, setOpenImgOptions] = useState(false);
-
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const { data: userSettings, error: getSettingsError } = useQuery({
     ...getSettingsQuery(accessToken, setAccessToken),
     retry: false,
   });
+
+  const [edit, setEdit] = useState(false);
+
+  const [usernameQuery, setUsernameQuery] = useState("");
+  const [emailQuery, setEmailQuery] = useState("");
 
   const [settingsToUpdate, setSettingsToUpdate] = useState<SettingsType>({
     name: userSettings?.name || "",
@@ -70,6 +74,40 @@ function MainSettings() {
     cycleLength: userSettings?.cycleLength,
     daysBetweenPeriod: userSettings?.daysBetweenPeriod,
   });
+
+  const [openImgOptions, setOpenImgOptions] = useState(false);
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const { error: usernameInUse } = useQuery(
+    checkIfUsernameIsInUse(usernameQuery),
+  );
+
+  const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
+
+  useEffect(() => {
+    if (settingsToUpdate.username === "") {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setUsernameQuery(settingsToUpdate.username);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [settingsToUpdate.username]);
+
+  useEffect(() => {
+    if (settingsToUpdate.email === "") {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setEmailQuery(settingsToUpdate.email);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [settingsToUpdate.email]);
 
   const {
     mutate: updateSettings,
