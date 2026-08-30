@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Box, Button } from "@mui/material";
 
 interface IconOptionsProps {
@@ -13,9 +14,10 @@ function IconOptions({
   onSelect,
   onClose,
 }: IconOptionsProps) {
+  const [clickedIcon, setClickedIcon] = useState<string>("");
+
   return (
     <Box>
-      <Box>Select an icon</Box>
       <Box
         sx={{
           display: "grid",
@@ -27,12 +29,16 @@ function IconOptions({
           <Box
             key={key}
             onClick={() => {
-              onSelect(key);
-              onClose();
+              setClickedIcon(key);
             }}
             sx={{
               cursor: "pointer",
-              border: usersCurrentImg === key ? "1px solid red" : null,
+              border:
+                usersCurrentImg === key
+                  ? "1px solid gray"
+                  : clickedIcon === key
+                    ? "1px solid blue"
+                    : null,
               "&:hover": {
                 opacity: 0.7,
               },
@@ -46,7 +52,18 @@ function IconOptions({
           </Box>
         ))}
       </Box>
-      <Button onClick={onClose}>Cancel</Button>
+      <Box>
+        <Button onClick={onClose}>cancel</Button>
+        <Button
+          disabled={!clickedIcon}
+          onClick={() => {
+            onSelect(clickedIcon);
+            onClose();
+          }}
+        >
+          save
+        </Button>
+      </Box>
     </Box>
   );
 }

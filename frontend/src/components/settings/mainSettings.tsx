@@ -131,6 +131,16 @@ function MainSettings() {
     },
   });
 
+  const isFormValid = Object.values(settingsToUpdate).every((value) => {
+    if (typeof value === "string") {
+      return value.trim() !== "";
+    }
+    if (typeof value === "number") {
+      return value > 0;
+    }
+    return true;
+  });
+
   return (
     <>
       <Box>
@@ -233,7 +243,7 @@ function MainSettings() {
                     })
                   }
                   error={!!errorObj}
-                  helperText={errorObj?.message || ""}
+                  helperText={errorObj?.error || ""}
                   variant="outlined"
                   fullWidth
                 />
@@ -274,7 +284,12 @@ function MainSettings() {
                 cancel
               </button>
               <button
-                disabled={settingsUpdatePending}
+                disabled={
+                  !isFormValid ||
+                  settingsUpdatePending ||
+                  !!usernameInUseError ||
+                  !!emailInUseError
+                }
                 onClick={() =>
                   updateSettings({
                     accessToken,
