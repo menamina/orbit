@@ -8,13 +8,13 @@ import { dltAccountMut } from "../../tanstack/settingsTS";
 
 import { ApiError } from "../../tanstack/api";
 
-import { Box } from "@mui/material";
+import { Box, Paper, Button } from "@mui/material";
 
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import ConfirmModal from "../popups/confirmModal";
 
-function DeleteSettings(setSettingsView) {
+function DeleteSettings(setSettingsView: (view: string) => void) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
 
@@ -68,27 +68,52 @@ function DeleteSettings(setSettingsView) {
       {dltAccountError && !showLoginModal && (
         <ErrorDiv error={dltAccountError} />
       )}
-      <Box>Delete Account</Box>
-      <Box>
-        Your account will be permanently deleted and everything associated with
-        it will no longer be available to other users or yourself; once you
-        delete your account there is no recovering it.
-      </Box>
-      <Box>
-        <button
-          type="button"
-          className="settingsButtons"
-          onClick={() => setSettingsView("main")}
-        >
-          cancel
-        </button>
-        <button
-          type="button"
-          className="settingsButtons"
-          onClick={() => setDltModal(true)}
-        >
-          delete
-        </button>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <Paper sx={{ padding: "20px" }}>
+          <Box
+            sx={{
+              fontSize: "24px",
+              fontWeight: "600",
+              marginBottom: "15px",
+              color: "#d32f2f",
+            }}
+          >
+            Delete Account
+          </Box>
+          <Box sx={{ color: "#666", lineHeight: "1.6" }}>
+            Your account will be permanently deleted and everything associated
+            with it will no longer be available to other users or yourself; once
+            you delete your account there is no recovering it.
+          </Box>
+        </Paper>
+        <Box sx={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+          <Button
+            variant="outlined"
+            onClick={() => setSettingsView("main")}
+            sx={{
+              color: "#1b1a61",
+              borderColor: "#1b1a61",
+              "&:hover": {
+                borderColor: "#151349",
+                bgcolor: "rgba(27, 26, 97, 0.04)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => setDltModal(true)}
+            sx={{
+              bgcolor: "#d32f2f",
+              "&:hover": {
+                bgcolor: "#c62828",
+              },
+            }}
+          >
+            Delete Account
+          </Button>
+        </Box>
       </Box>
     </>
   );
