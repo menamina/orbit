@@ -13,7 +13,7 @@ import {
 import { ApiError } from "../../tanstack/api";
 import type { SettingsType } from "../tanstack/SettingsType";
 
-import { Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 
 import ErrorDiv from "../errorComps/errorDiv";
 import ErrorModal from "../errorComps/errorModal";
@@ -79,11 +79,11 @@ function MainSettings() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { error: usernameInUse } = useQuery(
+  const { error: usernameInUseError } = useQuery(
     checkIfUsernameIsInUse(usernameQuery),
   );
 
-  const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
+  const { error: emailInUseError } = useQuery(checkIfEmailIsInUse(emailQuery));
 
   useEffect(() => {
     if (
@@ -140,6 +140,7 @@ function MainSettings() {
         {getSettingsError && !showLoginModal && (
           <ErrorDiv error={getSettingsError} />
         )}
+
         <Box
           onClick={() => (edit ? setOpenImgOptions(true) : null)}
           sx={{
@@ -169,18 +170,37 @@ function MainSettings() {
         {!edit && (
           <>
             <Box>
-              <Box>Name: {userSettings?.name}</Box>
-              <Box>Username: {userSettings?.username}</Box>
-              <Box>Email: {userSettings?.email}</Box>
+              {[
+                { label: "Name", value: userSettings?.name },
+                { label: "Username", value: userSettings?.username },
+                { label: "Email", value: userSettings?.email },
+              ].map(({ label, value }) => (
+                <Box key={label}>
+                  {label}: {value}
+                </Box>
+              ))}
             </Box>
 
             <Box>
               <Box>Cycle</Box>
               <Box>
-                <Box>Cycle Length: {userSettings?.cycleLength} days</Box>
-                <Box>
-                  Days between period: {userSettings?.daysBetweenPeriod}
-                </Box>
+                {[
+                  {
+                    label: "Cycle Length",
+                    value: userSettings?.cycleLength,
+                    suffix: " days",
+                  },
+                  {
+                    label: "Days between period",
+                    value: userSettings?.daysBetweenPeriod,
+                    suffix: " days",
+                  },
+                ].map(({ label, value, suffix }) => (
+                  <Box key={label}>
+                    {label}: {value}
+                    {suffix}
+                  </Box>
+                ))}
               </Box>
             </Box>
 
@@ -189,70 +209,59 @@ function MainSettings() {
         )}
         {edit && (
           <>
-            <Box>
-              <label>Name:</label>
-              <input
-                value={settingsToUpdate.name}
-                onChange={(e) =>
-                  setSettingsToUpdate({
-                    ...settingsToUpdate,
-                    name: e.target.value,
-                  })
-                }
-              />
-            </Box>
-            <Box>
-              <label>Username:</label>
-              <input
-                value={settingsToUpdate.username}
-                onChange={(e) =>
-                  setSettingsToUpdate({
-                    ...settingsToUpdate,
-                    username: e.target.value,
-                  })
-                }
-              />
-            </Box>
-            <Box>
-              <label>Email:</label>
-              <input
-                value={settingsToUpdate.email}
-                onChange={(e) =>
-                  setSettingsToUpdate({
-                    ...settingsToUpdate,
-                    email: e.target.value,
-                  })
-                }
-              />
-            </Box>
+            {[
+              { key: "name", label: "Name" },
+              { key: "username", label: "Username" },
+              { key: "email", label: "Email" },
+            ].map(({ key, label }) => {
+              const errorObj =
+                key === "username"
+                  ? usernameInUseError
+                  : key === "email"
+                    ? emailInUseError
+                    : null;
+
+              return (
+                <TextField
+                  key={key}
+                  label={label}
+                  value={settingsToUpdate[key]}
+                  onChange={(e) =>
+                    setSettingsToUpdate({
+                      ...settingsToUpdate,
+                      [key]: e.target.value,
+                    })
+                  }
+                  error={!!errorObj}
+                  helperText={errorObj?.message || ""}
+                  variant="outlined"
+                  fullWidth
+                />
+              );
+            })}
 
             <Box>
               <Box>Cycle</Box>
               <Box>
-                <label>Cycle Length:</label>
-                <input
-                  type="number"
-                  value={settingsToUpdate.cycleLength || ""}
-                  onChange={(e) =>
-                    setSettingsToUpdate({
-                      ...settingsToUpdate,
-                      cycleLength: Number(e.target.value),
-                    })
-                  }
-                />
-              </Box>
-              <Box>
-                <label>Days between period:</label>
-                <input
-                  type="number"
-                  value={settingsToUpdate.daysBetweenPeriod || ""}
-                  onChange={(e) =>
-                    setSettingsToUpdate({
-                      ...settingsToUpdate,
-                      daysBetweenPeriod: Number(e.target.value),
-                    })
-                  }
-                />
+                {[
+                  { key: "cycleLength", label: "Cycle Length" },
+                  { key: "daysBetweenPeriod", label: "Days between period" },
+                ].map(({ key, label }) => (
+                  <TextField
+                    key={key}
+                    label={label}
+                    type="number"
+                    value={settingsToUpdate[key] || ""}
+                    onChange={(e) =>
+                      setSettingsToUpdate({
+                        ...settingsToUpdate,
+                        [key]: Number(e.target.value),
+                      })
+                    }
+                    variant="outlined"
+                    fullWidth
+                  />
+                ))}
               </Box>
             </Box>
             <Box>
