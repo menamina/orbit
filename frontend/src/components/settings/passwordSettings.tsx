@@ -22,7 +22,7 @@ function PasswordSettings() {
   const navigate = useNavigate();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [editPassword, setEditPassword] = useState(false)
+  const [editPassword, setEditPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
@@ -47,16 +47,26 @@ function PasswordSettings() {
 
   return (
     <>
+      {showLoginModal && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
       <Box>Password</Box>
-      {}
+      {/* if the error is not bc of validation */}
       <Box>
         {labels.map((label) => (
           <Box>
             <TextField
               required
-              id={label}
+              id={`outlined-${label}`}
               label={label}
-              variant="standard"
+              variant="outlined"
               onChange={(e) =>
                 setPasswordData({ ...passwordData, [label]: e.target.value })
               }
@@ -66,7 +76,12 @@ function PasswordSettings() {
       </Box>
       <Box>
         {!editPassword && <button>edit</button>}
-              {editPassword && (<button onClick={() => setEditPassword(false)}>cancel</button> <button>save</button>)}
+        {editPassword && (
+          <>
+            <button onClick={() => setEditPassword(false)}>cancel</button>
+            <button>save</button>
+          </>
+        )}
       </Box>
     </>
   );

@@ -1,8 +1,5 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type {
-  SettingsType,
-  PasswordUpdateType,
-} from "./settingsTypes";
+import type { SettingsType, PasswordUpdateType } from "./settingsTypes";
 import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getSettingsQuery = (
