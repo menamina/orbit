@@ -22,11 +22,12 @@ function PasswordSettings() {
   const navigate = useNavigate();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [editPassword, setEditPassword] = useState(false)
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
-    newPassword:"",
-    confirmNewPassword: ""
-  })
+    newPassword: "",
+    confirmNewPassword: "",
+  });
 
   const {
     mutate: updatePassword,
@@ -47,6 +48,7 @@ function PasswordSettings() {
   return (
     <>
       <Box>Password</Box>
+      {}
       <Box>
         {labels.map((label) => (
           <Box>
@@ -55,10 +57,16 @@ function PasswordSettings() {
               id={label}
               label={label}
               variant="standard"
-              onChange={(e) => }
+              onChange={(e) =>
+                setPasswordData({ ...passwordData, [label]: e.target.value })
+              }
             />
           </Box>
         ))}
+      </Box>
+      <Box>
+        {!editPassword && <button>edit</button>}
+              {editPassword && (<button onClick={() => setEditPassword(false)}>cancel</button> <button>save</button>)}
       </Box>
     </>
   );
