@@ -8,8 +8,8 @@ import { trackPillInPackMut, dltPillMut } from "../../tanstack/pillTS";
 
 import { ApiError } from "../../tanstack/api";
 
-import ErrorDiv from "../errorComps/errorDiv";
-import ErrorModal from "../errorComps/errorModal";
+import ErrorDiv from "../popups/errorDiv";
+import ErrorModal from "../popups/errorModal";
 
 import { Box, Paper } from "@mui/material";
 

@@ -12,8 +12,9 @@ import { ApiError } from "../../tanstack/api";
 
 import PillPack from "./pillPack";
 
-import ErrorDiv from "../errorComps/errorDiv";
-import ErrorModal from "../errorComps/errorModal";
+import ErrorDiv from "../popups/errorDiv";
+import ErrorModal from "../popups/errorModal";
+import ConfirmModal from "../popups/confirmModal";
 import Dots from "../imgs/dotsVert.svg";
 
 import { Box, Paper, Button } from "@mui/material";
@@ -157,34 +158,25 @@ function PillComponent() {
         </>
       )}
       {displayDltModal && (
-        <Box>
-          <Box>Are you sure you want to delete this pack?</Box>
-          <Box>
-            <button
-              disabled={dltingPackPending}
-              onClick={() => {
-                setOpenedDots(false);
-                setDisplayDltModal(false);
-              }}
-            >
-              cancel
-            </button>
-            <button
-              disabled={dltingPackPending}
-              onClick={() => {
-                dltPack({
-                  packID: currentPack!.id,
-                  accessToken: accessToken,
-                  onTokenRefresh: setAccessToken,
-                });
-              }}
-            >
-              delete
-            </button>
-          </Box>
-        </Box>
+        <ConfirmModal
+          message="Are you sure you want to delete this pack?"
+          onConfirm={() => {
+            dltPack({
+              packID: currentPack!.id,
+              accessToken: accessToken,
+              onTokenRefresh: setAccessToken,
+            });
+          }}
+          onCancel={() => {
+            setOpenedDots(false);
+            setDisplayDltModal(false);
+          }}
+          isPending={dltingPackPending}
+        />
       )}
-      {(showLoginModal || (getCurrentPackError instanceof ApiError && getCurrentPackError.isAuthError())) && (
+      {(showLoginModal ||
+        (getCurrentPackError instanceof ApiError &&
+          getCurrentPackError.isAuthError())) && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {
@@ -194,9 +186,11 @@ function PillComponent() {
           }}
         />
       )}
-      {getCurrentPackError && !(getCurrentPackError instanceof ApiError && getCurrentPackError.isAuthError()) && (
-        <ErrorDiv error={getCurrentPackError} />
-      )}
+      {getCurrentPackError &&
+        !(
+          getCurrentPackError instanceof ApiError &&
+          getCurrentPackError.isAuthError()
+        ) && <ErrorDiv error={getCurrentPackError} />}
     </>
   );
 }

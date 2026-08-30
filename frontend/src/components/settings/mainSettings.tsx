@@ -15,8 +15,8 @@ import type { SettingsType } from "../tanstack/SettingsType";
 
 import { Box, TextField } from "@mui/material";
 
-import ErrorDiv from "../errorComps/errorDiv";
-import ErrorModal from "../errorComps/errorModal";
+import ErrorDiv from "../popups/errorDiv";
+import ErrorModal from "../popups/errorModal";
 import IconOptions from "./iconOptions";
 
 import PhotoChange from "../../imgs/changePhoto.svg";

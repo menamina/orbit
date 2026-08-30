@@ -10,8 +10,8 @@ import { ApiError } from "../../tanstack/api";
 
 import { Box, Paper, Button } from "@mui/material";
 
-import ErrorDiv from "../errorComps/errorDiv";
-import ErrorModal from "../errorComps/errorModal";
+import ErrorDiv from "../popups/errorDiv";
+import ErrorModal from "../popups/errorModal";
 
 function PasswordSettings() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -35,6 +35,13 @@ function PasswordSettings() {
       }
     },
   });
+
+  return (
+    <>
+      <Box>Password</Box>
+      <Box>Box</Box>
+    </>
+  );
 }
 
 export default PasswordSettings;
