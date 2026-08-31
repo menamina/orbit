@@ -81,38 +81,44 @@ function PasswordSettings() {
 
       {editPassword && (
         <Box>
-          {labels.map((index, label) => (
-            <Box key={label}>
-              <TextField
-                required
-                type={
-                  showLabelPassword[index as keyof typeof showLabelPassword] ===
-                  false
-                    ? "password"
-                    : "text"
-                }
-                id={`outlined-${label}`}
-                label={label}
-                variant="outlined"
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, [label]: e.target.value })
-                }
-              />
-              {Object.entries(showLabelPassword).map(([key]) => (
-                <Box
-                  key={key}
-                  onClick={() =>
-                    setShowLabelPassword((prev) => ({
-                      ...prev,
-                      [key]: !prev[key as keyof typeof prev],
-                    }))
+          {labels.map((index, label) => {
+            return (
+              <Box key={label}>
+                <TextField
+                  required
+                  type={
+                    showLabelPassword[
+                      index as keyof typeof showLabelPassword
+                    ] === false
+                      ? "password"
+                      : "text"
                   }
-                >
-                  <img src="" alt="" />
-                </Box>
-              ))}
-            </Box>
-          ))}
+                  id={`outlined-${label}`}
+                  label={label}
+                  variant="outlined"
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      [label]: e.target.value,
+                    })
+                  }
+                />
+                {Object.entries(showLabelPassword).map(([key]) => (
+                  <Box
+                    key={key}
+                    onClick={() =>
+                      setShowLabelPassword((prev) => ({
+                        ...prev,
+                        [key]: !prev[key as keyof typeof prev],
+                      }))
+                    }
+                  >
+                    <img src="" alt="" />
+                  </Box>
+                ))}
+              </Box>
+            );
+          })}
         </Box>
       )}
       <Box>
