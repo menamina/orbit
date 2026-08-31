@@ -14,11 +14,7 @@ import TextField from "@mui/material/TextField";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
-const fields = [
-  { label: "Old password", key: "oldPassword" },
-  { label: "New password", key: "password" },
-  { label: "Confirm password", key: "confirmPassword" },
-];
+const labels = ["Old password", "New passowrd", "Confirm new password"];
 
 function PasswordSettings() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -29,8 +25,13 @@ function PasswordSettings() {
   const [editPassword, setEditPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
-    password: "",
-    confirmPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
+  const [showLabelPassword, setShowLabelPassword] = useState({
+    old: false,
+    new: false,
+    confirmNew: false,
   });
 
   const {
@@ -41,12 +42,6 @@ function PasswordSettings() {
     ...updatePasswordMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
-      setEditPassword(false);
-      setPasswordData({
-        oldPassword: "",
-        newPassword: "",
-        confirmNewPassword: "",
-      });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -56,24 +51,6 @@ function PasswordSettings() {
   });
 
   const noEmptyData = Object.values(passwordData).every((item) => item !== "");
-
-  const handleSave = () => {
-    updatePassword({
-      accessToken,
-      oldPassword: passwordData.oldPassword,
-      newPassword: passwordData.newPassword,
-      confirmNewPassword: passwordData.confirmNewPassword,
-    });
-  };
-
-  const handleCancel = () => {
-    setEditPassword(false);
-    setPasswordData({
-      oldPassword: "",
-      newPassword: "",
-      confirmNewPassword: "",
-    });
-  };
 
   return (
     <>
@@ -89,36 +66,56 @@ function PasswordSettings() {
       )}
       <Box>Password</Box>
 
-      {updatePasswordError && !updatePasswordError.isAuthError() && (
-        <ErrorDiv error={updatePasswordError.message} />
-      )}
-
-      {editPassword && (
+      {!editPassword && (
         <Box>
-          {fields.map((field) => (
-            <Box key={field.key}>
-              <TextField
-                required
-                type="password"
-                id={`outlined-${field.key}`}
-                label={field.label}
-                value={passwordData[field.key as keyof typeof passwordData]}
-                variant="outlined"
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, [field.key]: e.target.value })
-                }
-              />
-            </Box>
+          {labels.map((label) => (
+            <TextField
+              disabled
+              key={label}
+              placeholder="•••"
+              variant="outlined"
+            />
           ))}
         </Box>
       )}
 
+      {editPassword && (
+        <Box>
+          {labels.map((index, label) => (
+            <Box key={label}>
+              <TextField
+                required
+                type={showLabelPassword[index] === false ? "password" : "text"}
+                id={`outlined-${label}`}
+                label={label}
+                variant="outlined"
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, [label]: e.target.value })
+                }
+              />
+              {Object.entries(showLabelPassword).map(([key]) => (
+                <Box
+                  key={key}
+                  onClick={() =>
+                    setShowLabelPassword((prev) => ({
+                      ...prev,
+                      [key]: !prev[key as keyof typeof prev],
+                    }))
+                  }
+                >
+                  <img src="" alt="" />
+                </Box>
+              ))}
+            </Box>
+          ))}
+        </Box>
+      )}
       <Box>
-        {!editPassword && <button onClick={() => setEditPassword(true)}>edit</button>}
+        {!editPassword && <button>edit</button>}
         {editPassword && (
           <>
-            <button onClick={handleCancel}>cancel</button>
-            <button onClick={handleSave} disabled={passwordUpdatePending || !noEmptyData}>
+            <button onClick={() => setEditPassword(false)}>cancel</button>
+            <button disabled={passwordUpdatePending || !noEmptyData}>
               save
             </button>
           </>
