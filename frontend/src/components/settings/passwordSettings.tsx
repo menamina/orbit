@@ -14,7 +14,11 @@ import TextField from "@mui/material/TextField";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
-const labels = ["Old password", "New passowrd", "Confirm new password"];
+const fields = [
+  { label: "Old password", key: "oldPassword" },
+  { label: "New password", key: "password" },
+  { label: "Confirm password", key: "confirmPassword" },
+];
 
 function PasswordSettings() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -25,8 +29,8 @@ function PasswordSettings() {
   const [editPassword, setEditPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
-    newPassword: "",
-    confirmNewPassword: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const {
@@ -37,6 +41,12 @@ function PasswordSettings() {
     ...updatePasswordMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
+      setEditPassword(false);
+      setPasswordData({
+        oldPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -44,6 +54,26 @@ function PasswordSettings() {
       }
     },
   });
+
+  const noEmptyData = Object.values(passwordData).every((item) => item !== "");
+
+  const handleSave = () => {
+    updatePassword({
+      accessToken,
+      oldPassword: passwordData.oldPassword,
+      newPassword: passwordData.newPassword,
+      confirmNewPassword: passwordData.confirmNewPassword,
+    });
+  };
+
+  const handleCancel = () => {
+    setEditPassword(false);
+    setPasswordData({
+      oldPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+  };
 
   return (
     <>
@@ -58,28 +88,39 @@ function PasswordSettings() {
         />
       )}
       <Box>Password</Box>
-      {/* if the error is not bc of validation */}
+
+      {updatePasswordError && !updatePasswordError.isAuthError() && (
+        <ErrorDiv error={updatePasswordError.message} />
+      )}
+
+      {editPassword && (
+        <Box>
+          {fields.map((field) => (
+            <Box key={field.key}>
+              <TextField
+                required
+                type="password"
+                id={`outlined-${field.key}`}
+                label={field.label}
+                value={passwordData[field.key as keyof typeof passwordData]}
+                variant="outlined"
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, [field.key]: e.target.value })
+                }
+              />
+            </Box>
+          ))}
+        </Box>
+      )}
+
       <Box>
-        {labels.map((label) => (
-          <Box>
-            <TextField
-              required
-              id={`outlined-${label}`}
-              label={label}
-              variant="outlined"
-              onChange={(e) =>
-                setPasswordData({ ...passwordData, [label]: e.target.value })
-              }
-            />
-          </Box>
-        ))}
-      </Box>
-      <Box>
-        {!editPassword && <button>edit</button>}
+        {!editPassword && <button onClick={() => setEditPassword(true)}>edit</button>}
         {editPassword && (
           <>
-            <button onClick={() => setEditPassword(false)}>cancel</button>
-            <button>save</button>
+            <button onClick={handleCancel}>cancel</button>
+            <button onClick={handleSave} disabled={passwordUpdatePending || !noEmptyData}>
+              save
+            </button>
           </>
         )}
       </Box>
