@@ -25,8 +25,8 @@ function PasswordSettings() {
   const [editPassword, setEditPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
-    newPassword: "",
-    confirmNewPassword: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showLabelPassword, setShowLabelPassword] = useState({
     old: false,
@@ -85,7 +85,12 @@ function PasswordSettings() {
             <Box key={label}>
               <TextField
                 required
-                type={showLabelPassword[index] === false ? "password" : "text"}
+                type={
+                  showLabelPassword[index as keyof typeof showLabelPassword] ===
+                  false
+                    ? "password"
+                    : "text"
+                }
                 id={`outlined-${label}`}
                 label={label}
                 variant="outlined"
@@ -115,7 +120,16 @@ function PasswordSettings() {
         {editPassword && (
           <>
             <button onClick={() => setEditPassword(false)}>cancel</button>
-            <button disabled={passwordUpdatePending || !noEmptyData}>
+            <button
+              disabled={passwordUpdatePending || !noEmptyData}
+              onClick={() =>
+                updatePassword({
+                  accessToken,
+                  onTokenRefresh: setAccessToken,
+                  ...passwordData,
+                })
+              }
+            >
               save
             </button>
           </>
