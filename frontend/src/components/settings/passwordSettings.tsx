@@ -15,6 +15,8 @@ import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
 const labels = ["Old password", "New passowrd", "Confirm new password"];
+const passwordDataKeys = ["oldPassword", "password", "confirmPassword"] as const;
+const showPasswordKeys = ["old", "new", "confirmNew"] as const;
 
 function PasswordSettings() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -81,15 +83,15 @@ function PasswordSettings() {
 
       {editPassword && (
         <Box>
-          {labels.map((index, label) => {
+          {labels.map((label, index) => {
+            const dataKey = passwordDataKeys[index];
+            const showKey = showPasswordKeys[index];
             return (
               <Box key={label}>
                 <TextField
                   required
                   type={
-                    showLabelPassword[
-                      index as keyof typeof showLabelPassword
-                    ] === false
+                    showLabelPassword[showKey] === false
                       ? "password"
                       : "text"
                   }
@@ -99,23 +101,20 @@ function PasswordSettings() {
                   onChange={(e) =>
                     setPasswordData({
                       ...passwordData,
-                      [label]: e.target.value,
+                      [dataKey]: e.target.value,
                     })
                   }
                 />
-                {Object.entries(showLabelPassword).map(([key]) => (
-                  <Box
-                    key={key}
-                    onClick={() =>
-                      setShowLabelPassword((prev) => ({
-                        ...prev,
-                        [key]: !prev[key as keyof typeof prev],
-                      }))
-                    }
-                  >
-                    <img src="" alt="" />
-                  </Box>
-                ))}
+                <Box
+                  onClick={() =>
+                    setShowLabelPassword((prev) => ({
+                      ...prev,
+                      [showKey]: !prev[showKey],
+                    }))
+                  }
+                >
+                  <img src="" alt="" />
+                </Box>
               </Box>
             );
           })}
