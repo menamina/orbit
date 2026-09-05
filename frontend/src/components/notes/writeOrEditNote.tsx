@@ -37,6 +37,8 @@ function Note({
     note: noteData?.note ? noteData.note : "",
   });
 
+  const [isEditing, setIsEditing] = useState(noteData ? false : true);
+
   const NOTE = Object.values(note).every((item) => item !== "");
 
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -116,6 +118,7 @@ function Note({
             aria-label="write or update a note"
             minRows={15}
             style={{ width: 200 }}
+            disabled={!isEditing}
             onChange={(e) =>
               setNote((prev) => ({ ...prev, note: e.target.value }))
             }
@@ -129,7 +132,12 @@ function Note({
             cancel
           </Button>
           <Button
-            disabled={!NOTE || writePending || updatePending || dltPending}
+            disabled={
+              (!NOTE && isEditing) ||
+              writePending ||
+              updatePending ||
+              dltPending
+            }
             onClick={() => {
               if (!noteData) {
                 writeNote({
@@ -138,6 +146,8 @@ function Note({
                   note: note.note,
                   date,
                 });
+              } else if (noteData && !isEditing) {
+                setIsEditing(true);
               } else {
                 updateNote({
                   accessToken,
@@ -148,7 +158,7 @@ function Note({
               }
             }}
           >
-            {!noteData ? "save" : "update"}
+            {!noteData ? "save" : isEditing ? "update" : "edit"}
           </Button>
         </Box>
       </Box>
