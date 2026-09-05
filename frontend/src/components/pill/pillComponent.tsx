@@ -15,6 +15,7 @@ import PillPack from "./pillPack";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import ConfirmModal from "../popups/confirmModal";
+import type { ConfirmModalProps } from "../popups/confirmModal";
 import Dots from "../imgs/dotsVert.svg";
 
 import { Box, Paper, Button } from "@mui/material";
@@ -71,6 +72,22 @@ function PillComponent() {
   });
 
   const effectiveDayOfWeek = currentPack?.startDayOfWeek || dayOfTheWeekToStart;
+
+  const deletePackModalProps: ConfirmModalProps = {
+    message: "Are you sure you want to delete this pack?",
+    onConfirm: () => {
+      dltPack({
+        packID: currentPack!.id,
+        accessToken: accessToken,
+        onTokenRefresh: setAccessToken,
+      });
+    },
+    onCancel: () => {
+      setOpenedDots(false);
+      setDisplayDltModal(false);
+    },
+    isPending: dltingPackPending,
+  };
 
   return (
     <>
@@ -157,23 +174,7 @@ function PillComponent() {
           </Box>
         </>
       )}
-      {displayDltModal && (
-        <ConfirmModal
-          message="Are you sure you want to delete this pack?"
-          onConfirm={() => {
-            dltPack({
-              packID: currentPack!.id,
-              accessToken: accessToken,
-              onTokenRefresh: setAccessToken,
-            });
-          }}
-          onCancel={() => {
-            setOpenedDots(false);
-            setDisplayDltModal(false);
-          }}
-          isPending={dltingPackPending}
-        />
-      )}
+      {displayDltModal && <ConfirmModal {...deletePackModalProps} />}
       {(showLoginModal ||
         (getCurrentPackError instanceof ApiError &&
           getCurrentPackError.isAuthError())) && (

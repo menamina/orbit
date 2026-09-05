@@ -1,6 +1,6 @@
 import { Box, Button } from "@mui/material";
 
-type ConfirmModalProps = {
+export type ConfirmModalProps = {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;

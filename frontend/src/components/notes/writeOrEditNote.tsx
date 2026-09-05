@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../authContext";
 import { useNavigate } from "react-router-dom";
 
-import { Box, Paper, Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
 
 import {
@@ -17,6 +17,7 @@ import { ApiError } from "../../tanstack/api";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import ConfirmModal from "../popups/confirmModal";
+import type { ConfirmModalProps } from "../popups/confirmModal";
 
 type NoteData = {
   id: number;
@@ -36,10 +37,10 @@ function Note({
     id: noteData?.id ? noteData.id : "",
     note: noteData?.note ? noteData.note : "",
   });
+  const NOTE = Object.values(note).every((item) => item !== "");
 
   const [isEditing, setIsEditing] = useState(noteData ? false : true);
-
-  const NOTE = Object.values(note).every((item) => item !== "");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
@@ -71,6 +72,7 @@ function Note({
     ...updateNoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      setIsEditing(false);
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -95,6 +97,21 @@ function Note({
     },
   });
 
+  const confirmDlt: ConfirmModalProps = {
+    message: "Are you sure you want to delete this note?",
+    onConfirm: () => {
+      if (noteData) {
+        dltNote({
+          accessToken,
+          onTokenRefresh: setAccessToken,
+          noteID: noteData.id,
+        });
+      }
+    },
+    onCancel: () => setConfirmDelete(false),
+    isPending: dltPending,
+  };
+
   return (
     <Box
       sx={{
@@ -110,7 +127,29 @@ function Note({
           direction: "column",
         }}
       >
-        <Box>something with a thought bubble</Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          {noteData && (
+            <Button
+              color="error"
+              variant="outlined"
+              disabled={writePending || updatePending || dltPending}
+              onClick={() => {
+                setConfirmDelete(true);
+              }}
+            >
+              {/* trash can icon */}
+              <img src="" alt="" />
+            </Button>
+          )}
+          <Box>something with a thought bubble</Box>
+        </Box>
         <Box>
           <TextareaAutosize
             value={note.note}
@@ -172,6 +211,7 @@ function Note({
           }}
         />
       )}
+      {confirmDelete && <ConfirmModal {...confirmDlt} />}
     </Box>
   );
 }

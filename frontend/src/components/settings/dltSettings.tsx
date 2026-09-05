@@ -13,6 +13,7 @@ import { Box, Paper, Button } from "@mui/material";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import ConfirmModal from "../popups/confirmModal";
+import type { ConfirmModalProps } from "../popups/confirmModal";
 
 function DeleteSettings(setSettingsView: (view: string) => void) {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -39,22 +40,22 @@ function DeleteSettings(setSettingsView: (view: string) => void) {
     },
   });
 
+  const deleteAccountModalProps: ConfirmModalProps = {
+    message: "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.",
+    onConfirm: () => {
+      dltAccount({
+        accessToken: accessToken,
+        onTokenRefresh: setAccessToken,
+      });
+    },
+    onCancel: () => setDltModal(false),
+    isPending: dltAccPending,
+    confirmText: "Delete Account",
+  };
+
   return (
     <>
-      {dltModal && (
-        <ConfirmModal
-          message="Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost."
-          onConfirm={() => {
-            dltAccount({
-              accessToken: accessToken,
-              onTokenRefresh: setAccessToken,
-            });
-          }}
-          onCancel={() => setDltModal(false)}
-          isPending={dltAccPending}
-          confirmText="Delete Account"
-        />
-      )}
+      {dltModal && <ConfirmModal {...deleteAccountModalProps} />}
       {showLoginModal && (
         <ErrorModal
           error="Your session expired. Please login again."
