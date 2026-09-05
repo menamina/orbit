@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { useAuth } from "../../authContext";
+import { useNavigate } from "react-router-dom";
 
 import { Box, Paper, Button } from "@mui/material";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
 
-import { writeANoteMut, updateNoteMut, dltNoteMut } from "../tanstack/notesTS";
+import {
+  writeANoteMut,
+  updateNoteMut,
+  dltNoteMut,
+} from "../../tanstack/notesTS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "../../tanstack/api";
@@ -16,15 +21,16 @@ import ConfirmModal from "../popups/confirmModal";
 type NoteData = {
   id: number;
   note: string;
-  onClose: () => void;
 };
 
 function Note({
   noteData = null,
   date,
+  onClose,
 }: {
   noteData: NoteData | null;
   date: string;
+  onClose: () => void;
 }) {
   const [note, setNote] = useState({
     id: noteData?.id ? noteData.id : "",
@@ -33,12 +39,17 @@ function Note({
 
   const NOTE = Object.values(note).every((item) => item !== "");
 
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { mutate: writeNote, isPending: writePending } = useMutation({
+  const {
+    mutate: writeNote,
+    isPending: writePending,
+    error: writeError,
+  } = useMutation({
     ...writeANoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
@@ -50,7 +61,11 @@ function Note({
     },
   });
 
-  const { mutate: updateNote, isPending: updatePending } = useMutation({
+  const {
+    mutate: updateNote,
+    isPending: updatePending,
+    error: updateError,
+  } = useMutation({
     ...updateNoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
@@ -62,7 +77,11 @@ function Note({
     },
   });
 
-  const { mutate: dltNote, isPending: dltPending } = useMutation({
+  const {
+    mutate: dltNote,
+    isPending: dltPending,
+    error: dltError,
+  } = useMutation({
     ...dltNoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
@@ -80,6 +99,9 @@ function Note({
         padding: "40px",
       }}
     >
+      {writeError && !showLoginModal && <ErrorDiv error={writeError} />}
+      {updateError && !showLoginModal && <ErrorDiv error={updateError} />}
+      {dltError && !showLoginModal && <ErrorDiv error={dltError} />}
       <Box
         sx={{
           display: "flex",
@@ -130,6 +152,16 @@ function Note({
           </Button>
         </Box>
       </Box>
+      {showLoginModal && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
     </Box>
   );
 }
