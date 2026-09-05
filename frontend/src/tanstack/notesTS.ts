@@ -8,6 +8,17 @@ import type {
 } from "./notesTypes";
 import { apiFetch, ApiError, type AuthParams } from "./api";
 
+export const getNoteByDayQuery = (
+  date: string,
+  accessToken: string,
+  onTokenRefresh?: (token: string) => void,
+) => {
+  return queryOptions({
+    queryKey: ["thisDaysNote", date],
+    queryFn: () => getThisDaysNote(date, { accessToken, onTokenRefresh }),
+  });
+};
+
 export const getNotesByMonthQuery = (
   thisMonth: ThisMonth,
   accessToken: string,
@@ -39,6 +50,26 @@ export const dltNoteMut = () => {
 };
 
 // --------- API CALLS --------- \\
+
+async function getThisDaysNote(
+  date: string,
+  { accessToken, onTokenRefresh }: AuthParams,
+): Promise<NoteType> {
+  const res = await apiFetch(`http://localhost:5555/api/notes/${date}`, {
+    accessToken,
+    onTokenRefresh,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new ApiError(
+      errorData.error || "Cannot get notes, try again",
+      res.status,
+      errorData.code,
+    );
+  }
+  return await res.json();
+}
 
 async function getNotesThisMonth(
   thisMonth: ThisMonth,

@@ -18,13 +18,13 @@ type NoteData = {
   note: string;
 };
 
-function Note({ noteData = null }: { noteData: NoteData | null }) {
+function Note({ noteData = null, date }: { noteData: NoteData | null, date: string }) {
   const [note, setNote] = useState({
     id: noteData?.id ? noteData.id : "",
     note: noteData?.note ? noteData.note : "",
   });
 
-  const { accessToken, setAccessToken, setUser } = useAuth();
+  const { accessToken, setAccessToken } = useAuth();
   const queryClient = useQueryClient();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -32,7 +32,7 @@ function Note({ noteData = null }: { noteData: NoteData | null }) {
   const { data: writeNote, isPending: writePending } = useMutation({
     ...writeANoteMut(),
     onSuccess: () => {
-       queryClient.invalidateQueries({ queryKey: ["todaysNote"] });
+       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -43,7 +43,9 @@ function Note({ noteData = null }: { noteData: NoteData | null }) {
 
   const { data: updateNote, isPending: updatePending } = useMutation({
     ...updateNoteMut(),
-    onSuccess: () => {},
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+    },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
         setShowLoginModal(true);
@@ -53,7 +55,9 @@ function Note({ noteData = null }: { noteData: NoteData | null }) {
 
   const { data: dltNote, isPending: dltPending } = useMutation({
     ...dltNoteMut(),
-    onSuccess: () => {},
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+    },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
         setShowLoginModal(true);

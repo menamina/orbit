@@ -142,6 +142,7 @@ router.post("/api/track/period", checkAuth, trackCycle);
 router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== NOTES ======== \\
+router.get("/api/notes/:date", checkAuth, getDatesNote);
 router.get("/api/notes/:month/:year", checkAuth, getNotes);
 router.post("/api/writeNote", checkAuth, writeNote);
 router.patch("/api/updateNote", checkAuth, updateNote);
