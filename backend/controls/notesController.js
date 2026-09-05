@@ -1,5 +1,27 @@
 import prisma from "../prisma/client.js";
 
+async function getDatesNote(req, res) {
+  const userID = Number(req.user.userID);
+  const date = Number(req.body.date);
+
+  if (isNaN(date)) {
+    return res.status(400).json({ error: "Invalid date" });
+  }
+
+  const note = await prisma.notes.findFirst({
+    where: {
+      userID,
+      date,
+    },
+  });
+
+  if (!note) {
+    const noNote = [];
+    return res.status(200).json(noNote);
+  }
+  return res.status(200).json(note);
+}
+
 async function getNotes(req, res) {
   try {
     const userID = Number(req.user.userID);
@@ -133,4 +155,4 @@ async function dltNote(req, res) {
   }
 }
 
-export { getNotes, writeNote, updateNote, dltNote };
+export { getDatesNote, getNotes, writeNote, updateNote, dltNote };

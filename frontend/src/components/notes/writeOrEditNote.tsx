@@ -16,23 +16,32 @@ import ConfirmModal from "../popups/confirmModal";
 type NoteData = {
   id: number;
   note: string;
+  onClose: () => void;
 };
 
-function Note({ noteData = null, date }: { noteData: NoteData | null, date: string }) {
+function Note({
+  noteData = null,
+  date,
+}: {
+  noteData: NoteData | null;
+  date: string;
+}) {
   const [note, setNote] = useState({
     id: noteData?.id ? noteData.id : "",
     note: noteData?.note ? noteData.note : "",
   });
+
+  const NOTE = Object.values(note).every((item) => item !== "");
 
   const { accessToken, setAccessToken } = useAuth();
   const queryClient = useQueryClient();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { data: writeNote, isPending: writePending } = useMutation({
+  const { mutate: writeNote, isPending: writePending } = useMutation({
     ...writeANoteMut(),
     onSuccess: () => {
-       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -41,10 +50,10 @@ function Note({ noteData = null, date }: { noteData: NoteData | null, date: stri
     },
   });
 
-  const { data: updateNote, isPending: updatePending } = useMutation({
+  const { mutate: updateNote, isPending: updatePending } = useMutation({
     ...updateNoteMut(),
     onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -53,10 +62,10 @@ function Note({ noteData = null, date }: { noteData: NoteData | null, date: stri
     },
   });
 
-  const { data: dltNote, isPending: dltPending } = useMutation({
+  const { mutate: dltNote, isPending: dltPending } = useMutation({
     ...dltNoteMut(),
     onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isAuthError()) {
@@ -91,8 +100,34 @@ function Note({ noteData = null, date }: { noteData: NoteData | null, date: stri
           />
         </Box>
         <Box>
-          <Button onClick={() => }>cancel</Button>
-          <Button onClick={() => !noteData ? writeNote({accessToken, onTokenRefresh: setAccessToken, ...note }) }>{!noteData ? "save" : "update"}</Button>
+          <Button
+            disabled={writePending || updatePending || dltPending}
+            onClick={onClose}
+          >
+            cancel
+          </Button>
+          <Button
+            disabled={!NOTE || writePending || updatePending || dltPending}
+            onClick={() => {
+              if (!noteData) {
+                writeNote({
+                  accessToken,
+                  onTokenRefresh: setAccessToken,
+                  note: note.note,
+                  date,
+                });
+              } else {
+                updateNote({
+                  accessToken,
+                  onTokenRefresh: setAccessToken,
+                  noteID: Number(note.id),
+                  noteContent: note.note,
+                });
+              }
+            }}
+          >
+            {!noteData ? "save" : "update"}
+          </Button>
         </Box>
       </Box>
     </Box>

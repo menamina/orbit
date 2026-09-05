@@ -54,7 +54,7 @@ export const dltNoteMut = () => {
 async function getThisDaysNote(
   date: string,
   { accessToken, onTokenRefresh }: AuthParams,
-): Promise<NoteType> {
+): Promise<NoteType | string[]> {
   const res = await apiFetch(`http://localhost:5555/api/notes/${date}`, {
     accessToken,
     onTokenRefresh,
@@ -62,11 +62,7 @@ async function getThisDaysNote(
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new ApiError(
-      errorData.error || "Cannot get notes, try again",
-      res.status,
-      errorData.code,
-    );
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
   return await res.json();
 }

@@ -55,6 +55,7 @@ import {
 } from "../controls/settingsControl.js";
 
 import {
+  getDatesNote,
   getNotes,
   writeNote,
   updateNote,
