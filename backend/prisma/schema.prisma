@@ -67,9 +67,9 @@ model Settings {
 model CycleTracking {
   id                      Int                @id @default(autoincrement())
   userID                  Int
-  startDate               DateTime
-  estimateEndDate         DateTime?
-  endDate                 DateTime?
+  startDate               DateTime           @db.Date
+  estimateEndDate         DateTime?          @db.Date
+  endDate                 DateTime?          @db.Date
 
   user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
 
@@ -81,8 +81,8 @@ model PillPack {
   id                Int                @id @default(autoincrement())
   userID            Int
   packNumber        Int
-  startDate         DateTime
-  endDate           DateTime?
+  startDate         DateTime           @db.Date
+  endDate           DateTime?          @db.Date
   isComplete        Boolean          @default(false)
   startDayOfWeek    String           @default("sun")
 
@@ -97,7 +97,7 @@ model PillTracking {
   id                Int              @id @default(autoincrement())
   pillPackID        Int
   dayNumber         Int
-  date              DateTime         // When they actually took it
+  date              DateTime         @db.Date  // When they actually took it
 
   blisterPack       PillPack      @relation(fields: [pillPackID], references: [id], onDelete: Cascade)
 
@@ -109,7 +109,7 @@ model PillTracking {
 model Notes {
   id                      Int                @id @default(autoincrement())
   userID                  Int
-  date                    DateTime           @default(now())
+  date                    DateTime           @db.Date  @default(now())
   note                    String
 
   user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
