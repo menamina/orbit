@@ -10,7 +10,7 @@ import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getNoteByDayQuery = (
   date: string,
-  accessToken: string,
+  accessToken: string | null,
   onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({
@@ -21,7 +21,7 @@ export const getNoteByDayQuery = (
 
 export const getNotesByMonthQuery = (
   thisMonth: ThisMonth,
-  accessToken: string,
+  accessToken: string | null,
   onTokenRefresh?: (token: string) => void,
 ) => {
   return queryOptions({

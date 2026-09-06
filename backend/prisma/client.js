@@ -7,7 +7,7 @@ const { Pool } = pkg;
 const mode = process.env.MODE;
 
 const connection =
-  mode === "test" ? process.env.TESTINGURL : process.env.DATABASEURL;
+  mode === "test" ? process.env.TESTING_URL : process.env.DATABASE_URL;
 
 const pool = new Pool({
   connectionString: connection,

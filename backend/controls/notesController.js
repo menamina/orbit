@@ -2,11 +2,19 @@ import prisma from "../prisma/client.js";
 
 async function getDatesNote(req, res) {
   const userID = Number(req.user.userID);
-  const date = Number(req.body.date);
+  const dateString = req.body.date;
 
-  if (isNaN(date)) {
+  if (!dateString) {
+    return res.status(400).json({ error: "Date is required" });
+  }
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
     return res.status(400).json({ error: "Invalid date" });
   }
+
+  // Normalize to midnight for DATE comparison
+  date.setHours(0, 0, 0, 0);
 
   const note = await prisma.notes.findFirst({
     where: {
@@ -68,11 +76,17 @@ async function writeNote(req, res) {
       return res.status(400).json({ error: "Note content is required" });
     }
 
+    let noteDate = null;
+    if (date) {
+      noteDate = new Date(date);
+      noteDate.setHours(0, 0, 0, 0); // Normalize to midnight
+    }
+
     const newNote = await prisma.notes.create({
       data: {
         userID,
         note,
-        ...(date && { date: new Date(date) }),
+        ...(noteDate && { date: noteDate }),
       },
     });
 

@@ -110,16 +110,11 @@ function validateAndNormalizeDate(date) {
 }
 
 async function checkDuplicateCycle(userID, dateToTrack) {
-  const endOfDay = new Date(dateToTrack);
-  endOfDay.setHours(23, 59, 59, 999);
-
+  // With @db.Date, we just need to check exact date match
   return await prisma.cycleTracking.findFirst({
     where: {
       userID,
-      startDate: {
-        gte: dateToTrack,
-        lte: endOfDay,
-      },
+      startDate: dateToTrack,
     },
   });
 }

@@ -128,11 +128,14 @@ async function startNewPack(req, res) {
 
     const newPackNumber = lastPackNumber ? lastPackNumber.packNumber + 1 : 1;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to midnight for DATE field
+
     const newPackStarted = await prisma.pillPack.create({
       data: {
         userID,
         packNumber: newPackNumber,
-        startDate: new Date(),
+        startDate: today,
         startDayOfWeek: startDayOfWeek || "sun",
       },
     });
@@ -158,15 +161,18 @@ async function trackPillInPack(req, res) {
       return res.status(400).json({ error: "Invalid number" });
     }
 
-    const date = Number(req.body.date);
-    if (isNaN(date)) {
-      return res.status(400).json({ error: "Invalid date format" });
+    const dateString = req.body.date;
+    if (!dateString) {
+      return res.status(400).json({ error: "Date is required" });
     }
 
-    const dateToTrack = new Date(date);
+    const dateToTrack = new Date(dateString);
     if (isNaN(dateToTrack.getTime())) {
       return res.status(400).json({ error: "Invalid date format" });
     }
+
+    // Normalize to midnight for DATE field
+    dateToTrack.setHours(0, 0, 0, 0);
 
     const todaysDate = new Date();
     if (dateToTrack > todaysDate) {
