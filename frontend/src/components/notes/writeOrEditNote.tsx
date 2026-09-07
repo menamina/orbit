@@ -57,11 +57,6 @@ function Note({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
 
   const {
@@ -74,11 +69,6 @@ function Note({
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
       setIsEditing(false);
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
 
   const {
@@ -90,12 +80,18 @@ function Note({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
+
+  // Check for auth errors
+  if (writeError instanceof ApiError && writeError.isAuthError()) {
+    setShowLoginModal(true);
+  }
+  if (updateError instanceof ApiError && updateError.isAuthError()) {
+    setShowLoginModal(true);
+  }
+  if (dltError instanceof ApiError && dltError.isAuthError()) {
+    setShowLoginModal(true);
+  }
 
   const confirmDlt: ConfirmModalProps = {
     message: "Are you sure you want to delete this note?",
@@ -118,9 +114,18 @@ function Note({
         padding: "40px",
       }}
     >
-      {writeError && !showLoginModal && <ErrorDiv error={writeError} />}
-      {updateError && !showLoginModal && <ErrorDiv error={updateError} />}
-      {dltError && !showLoginModal && <ErrorDiv error={dltError} />}
+      {writeError &&
+        !(writeError instanceof ApiError && writeError.isAuthError()) && (
+          <ErrorDiv error={writeError} />
+        )}
+      {updateError &&
+        !(updateError instanceof ApiError && updateError.isAuthError()) && (
+          <ErrorDiv error={updateError} />
+        )}
+      {dltError &&
+        !(dltError instanceof ApiError && dltError.isAuthError()) && (
+          <ErrorDiv error={dltError} />
+        )}
       <Box
         sx={{
           display: "flex",

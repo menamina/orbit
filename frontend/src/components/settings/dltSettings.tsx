@@ -33,12 +33,12 @@ function DeleteSettings(setSettingsView: (view: string) => void) {
       setAccessToken(null);
       navigate("/login");
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
+
+  // Check for auth errors
+  if (dltAccountError instanceof ApiError && dltAccountError.isAuthError()) {
+    setShowLoginModal(true);
+  }
 
   const deleteAccountModalProps: ConfirmModalProps = {
     message: "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.",
@@ -66,9 +66,10 @@ function DeleteSettings(setSettingsView: (view: string) => void) {
           }}
         />
       )}
-      {dltAccountError && !showLoginModal && (
-        <ErrorDiv error={dltAccountError} />
-      )}
+      {dltAccountError &&
+        !(
+          dltAccountError instanceof ApiError && dltAccountError.isAuthError()
+        ) && <ErrorDiv error={dltAccountError} />}
       <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <Paper sx={{ padding: "20px" }}>
           <Box

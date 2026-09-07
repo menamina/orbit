@@ -46,11 +46,6 @@ function PillComponent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
 
   const {
@@ -64,12 +59,24 @@ function PillComponent() {
       setDisplayDltModal(false);
       setOpenedDots(false);
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
+
+  // Check for auth errors
+  if (
+    startingPackError instanceof ApiError &&
+    startingPackError.isAuthError()
+  ) {
+    setShowLoginModal(true);
+  }
+  if (dltingPackError instanceof ApiError && dltingPackError.isAuthError()) {
+    setShowLoginModal(true);
+  }
+  if (
+    getCurrentPackError instanceof ApiError &&
+    getCurrentPackError.isAuthError()
+  ) {
+    setShowLoginModal(true);
+  }
 
   const effectiveDayOfWeek = currentPack?.startDayOfWeek || dayOfTheWeekToStart;
 
@@ -91,12 +98,15 @@ function PillComponent() {
 
   return (
     <>
-      {startingPackError && !showLoginModal && (
-        <ErrorDiv error={startingPackError} />
-      )}
-      {dltingPackError && !showLoginModal && (
-        <ErrorDiv error={dltingPackError} />
-      )}
+      {startingPackError &&
+        !(
+          startingPackError instanceof ApiError &&
+          startingPackError.isAuthError()
+        ) && <ErrorDiv error={startingPackError} />}
+      {dltingPackError &&
+        !(
+          dltingPackError instanceof ApiError && dltingPackError.isAuthError()
+        ) && <ErrorDiv error={dltingPackError} />}
       {!currentPack || currentPack?.pills?.length === 0 ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <Paper sx={{ padding: "20px", textAlign: "center" }}>
@@ -175,9 +185,7 @@ function PillComponent() {
         </>
       )}
       {displayDltModal && <ConfirmModal {...deletePackModalProps} />}
-      {(showLoginModal ||
-        (getCurrentPackError instanceof ApiError &&
-          getCurrentPackError.isAuthError())) && (
+      {showLoginModal && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {

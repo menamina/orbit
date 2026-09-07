@@ -59,11 +59,6 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
       setClickedCircle(null);
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
 
   const {
@@ -76,17 +71,26 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
       queryClient.invalidateQueries({ queryKey: ["currentPack"] });
       setClickedCircle(null);
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
+
+  // Check for auth errors
+  if (takePillError instanceof ApiError && takePillError.isAuthError()) {
+    setShowLoginModal(true);
+  }
+  if (dltPillError instanceof ApiError && dltPillError.isAuthError()) {
+    setShowLoginModal(true);
+  }
 
   return (
     <>
-      {takePillError && !showLoginModal && <ErrorDiv error={takePillError} />}
-      {dltPillError && !showLoginModal && <ErrorDiv error={dltPillError} />}
+      {takePillError &&
+        !(takePillError instanceof ApiError && takePillError.isAuthError()) && (
+          <ErrorDiv error={takePillError} />
+        )}
+      {dltPillError &&
+        !(dltPillError instanceof ApiError && dltPillError.isAuthError()) && (
+          <ErrorDiv error={dltPillError} />
+        )}
 
       <Box
         sx={{ display: "flex", flexDirection: "column", bgColor: "#E3DFFF" }}

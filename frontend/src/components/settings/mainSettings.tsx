@@ -124,12 +124,18 @@ function MainSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
+
+  // Check for auth errors
+  if (
+    updateSettingsError instanceof ApiError &&
+    updateSettingsError.isAuthError()
+  ) {
+    setShowLoginModal(true);
+  }
+  if (getSettingsError instanceof ApiError && getSettingsError.isAuthError()) {
+    setShowLoginModal(true);
+  }
 
   const isFormValid = Object.values(settingsToUpdate).every((value) => {
     if (typeof value === "string") {
@@ -144,12 +150,16 @@ function MainSettings() {
   return (
     <>
       <Box>
-        {updateSettingsError && !showLoginModal && (
-          <ErrorDiv error={updateSettingsError} />
-        )}
-        {getSettingsError && !showLoginModal && (
-          <ErrorDiv error={getSettingsError} />
-        )}
+        {updateSettingsError &&
+          !(
+            updateSettingsError instanceof ApiError &&
+            updateSettingsError.isAuthError()
+          ) && <ErrorDiv error={updateSettingsError} />}
+        {getSettingsError &&
+          !(
+            getSettingsError instanceof ApiError &&
+            getSettingsError.isAuthError()
+          ) && <ErrorDiv error={getSettingsError} />}
 
         <Box
           onClick={() => (edit ? setOpenImgOptions(true) : null)}

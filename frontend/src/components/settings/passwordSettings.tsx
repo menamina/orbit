@@ -45,12 +45,15 @@ function PasswordSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usersSettings"] });
     },
-    onError: (error) => {
-      if (error instanceof ApiError && error.isAuthError()) {
-        setShowLoginModal(true);
-      }
-    },
   });
+
+  // Check for auth errors
+  if (
+    updatePasswordError instanceof ApiError &&
+    updatePasswordError.isAuthError()
+  ) {
+    setShowLoginModal(true);
+  }
 
   const noEmptyData = Object.values(passwordData).every((item) => item !== "");
 
@@ -66,6 +69,11 @@ function PasswordSettings() {
           }}
         />
       )}
+      {updatePasswordError &&
+        !(
+          updatePasswordError instanceof ApiError &&
+          updatePasswordError.isAuthError()
+        ) && <ErrorDiv error={updatePasswordError} />}
       <Box>Password</Box>
 
       {!editPassword && (
