@@ -27,11 +27,9 @@ type NoteData = {
 function Note({
   noteData = null,
   date,
-  onClose,
 }: {
   noteData: NoteData | null;
   date: string;
-  onClose: () => void;
 }) {
   const [note, setNote] = useState({
     id: noteData?.id ? noteData.id : "",
@@ -161,7 +159,7 @@ function Note({
         <Box>
           <Button
             disabled={writePending || updatePending || dltPending}
-            onClick={onClose}
+            onClick={() => setIsEditing(false)}
           >
             cancel
           </Button>

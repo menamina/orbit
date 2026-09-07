@@ -18,6 +18,7 @@ import { ApiError } from "../../tanstack/api";
 
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
+import NoteCyclePopUp from "./popup";
 
 const today = new Date();
 const month = today.getMonth() + 1;
@@ -276,7 +277,10 @@ function Calendar() {
       </LocalizationProvider>
 
       {showOtherComp && selectedDate && (
-        <NoteCyclePopUp date={selectedDate} onClose={() => setShowOtherComp(false)} />
+        <NoteCyclePopUp
+          date={selectedDate}
+          onClose={() => setShowOtherComp(false)}
+        />
       )}
     </>
   );

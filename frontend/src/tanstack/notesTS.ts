@@ -72,7 +72,7 @@ async function getNotesThisMonth(
   { accessToken, onTokenRefresh }: AuthParams,
 ): Promise<MonthOfNotes> {
   const res = await apiFetch(
-    `http://localhost:5555/api/notes/${thisMonth.month}/${thisMonth.year}`,
+    `http://localhost:5555/api/notes/${thisMonth.currentMonth}/${thisMonth.currentYear}`,
     {
       accessToken,
       onTokenRefresh,
