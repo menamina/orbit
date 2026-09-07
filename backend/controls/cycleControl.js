@@ -17,16 +17,26 @@ async function getCycleByMonthYear(req, res) {
     const startOfMonth = new Date(yearNum, monthNum - 1, 1);
     const startOfNextMonth = new Date(yearNum, monthNum, 1);
 
-    const cycleMonth = await prisma.cycleTracking.findMany({
+    const cycle = await prisma.user.findUnique({
       where: {
-        userID: userID,
-        startDate: {
-          gte: startOfMonth, // >= Aug 1 as ex
-          lt: startOfNextMonth, // < Sep 1 as ex
-        },
+        userID,
       },
-      orderBy: {
-        startDate: "asc",
+      select: {
+        cycleTracking: {
+          where: {
+            startDate: {
+              gte: startOfMonth,
+              lt: startOfNextMonth,
+            },
+          },
+        },
+        settings: {
+          select: {
+            ovulationPrediction: true,
+            daysBetweenPeriod: true,
+            cycleLength: true,
+          },
+        },
       },
     });
 

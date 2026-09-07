@@ -1,6 +1,6 @@
 export type ThisMonth = {
-  month: number;
-  year: number;
+  currentMonth: number;
+  currentYear: number;
 };
 
 export type NoteType = {
