@@ -79,11 +79,7 @@ async function checkAuth(
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new ApiError(
-      errorData.error || "Must login",
-      res.status,
-      errorData.code,
-    );
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   const data = await res.json();
@@ -99,11 +95,8 @@ async function isUsernameTaken(
   const data = await res.json();
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Oops something went wrong - there's a server error");
-    } else {
-      throw data;
-    }
+    const errorData = await res.json();
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return data;
@@ -116,11 +109,8 @@ async function isEmailTaken(email: string): Promise<{ success: boolean }> {
   const data = await res.json();
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Oops something went wrong - there's a server error");
-    } else {
-      throw data;
-    }
+    const errorData = await res.json();
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return data;
@@ -136,11 +126,8 @@ async function signup(data: SignupData): Promise<{ success: boolean }> {
   const responseData = await res.json();
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Oops something went wrong - there's a server error");
-    } else {
-      throw responseData;
-    }
+    const errorData = await res.json();
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return responseData;
@@ -157,11 +144,8 @@ async function login(data: LoginData): Promise<LoginResponse> {
   const responseData = await res.json();
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Oops something went wrong - there's a server error");
-    } else {
-      throw responseData;
-    }
+    const errorData = await res.json();
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return responseData;
@@ -174,9 +158,8 @@ async function logout(): Promise<{ success: boolean }> {
   });
 
   if (!res.ok) {
-    if (res.status === 500) {
-      throw new Error("Oops something went wrong - there's a server error");
-    }
+    const errorData = await res.json();
+    throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
   return await res.json();

@@ -1,8 +1,9 @@
 import { useAuth } from "../../authContext";
 
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getCycleByMonthYearQuery } from "../../tanstack/cycleTS";
 import { getNotesByMonthQuery } from "../../tanstack/notesTS";
 
@@ -13,6 +14,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { PickerDay, PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
+import { ApiError } from "../../tanstack/api";
+
+import ErrorDiv from "../popups/errorDiv";
+import ErrorModal from "../popups/errorModal";
 
 const today = new Date();
 const month = today.getMonth() + 1;
@@ -41,7 +46,7 @@ function markedDays(
     (range: { start: number; end: number }) =>
       dayNum >= range.start && dayNum <= range.end,
   );
-  const isInPeriod = !outsideCurrentMonth && !!periodInfo;
+  const isInPeriod = !outsideCurrentMonth && periodInfo;
   const isPeriodStart = periodInfo && dayNum === periodInfo.start;
   const isPeriodEnd = periodInfo && dayNum === periodInfo.end;
 
@@ -71,7 +76,7 @@ function markedDays(
               bgcolor: "rgba(255, 182, 193, 0.6)",
             },
           }),
-          // Ovulation indicator (purple border)
+
           ...(isOvulation && {
             border: "2px solid #9C27B0",
             fontWeight: "bold",
@@ -82,11 +87,12 @@ function markedDays(
   );
 }
 
-function Calendar({}) {
+function Calendar() {
   const { accessToken, setAccessToken, setUser } = useAuth();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(month);
   const [currentYear, setCurrentYear] = useState(year);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const {
     data: thisMonthsData,
@@ -114,6 +120,14 @@ function Calendar({}) {
     ),
     retry: false,
   });
+
+  // Check for auth errors
+  if (thisMonthError instanceof ApiError && thisMonthError.isAuthError()) {
+    setShowLoginModal(true);
+  }
+  if (notesError instanceof ApiError && notesError.isAuthError()) {
+    setShowLoginModal(true);
+  }
 
   const periodRanges = useMemo(() => {
     if (thisMonthsData?.cycleTracking.length === 0) return [];
@@ -217,24 +231,48 @@ function Calendar({}) {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DateCalendar
-        defaultValue={todayString}
-        loading={thisMonthPending || notesPending}
-        onMonthChange={handleMonthChange}
-        renderLoading={() => <DayCalendarSkeleton />}
-        slots={{
-          day: markedDays,
-        }}
-        slotProps={{
-          day: {
-            periodRanges,
-            noteDays,
-            ovulationDays,
-          } as any,
-        }}
-      />
-    </LocalizationProvider>
+    <>
+      {(thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
+        (notesError &&
+          notesError instanceof ApiError &&
+          notesError.isAuthError() && (
+            <ErrorModal
+              error="Your session expired. Please login again."
+              onClose={() => {
+                setAccessToken(null);
+                setUser(null);
+                navigate("/login");
+              }}
+            />
+          ))}
+      {thisMonthError &&
+        !(
+          thisMonthError instanceof ApiError && thisMonthError.isAuthError()
+        ) && <ErrorDiv error={thisMonthError} />}
+      {notesError &&
+        !(notesError instanceof ApiError && notesError.isAuthError()) && (
+          <ErrorDiv error={notesError} />
+        )}
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateCalendar
+          defaultValue={todayString}
+          loading={thisMonthPending || notesPending}
+          onMonthChange={handleMonthChange}
+          renderLoading={() => <DayCalendarSkeleton />}
+          slots={{
+            day: markedDays,
+          }}
+          slotProps={{
+            day: {
+              periodRanges,
+              noteDays,
+              ovulationDays,
+            } as any,
+          }}
+        />
+      </LocalizationProvider>
+    </>
   );
 }
 
