@@ -30,6 +30,7 @@ function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(month);
   const [currentYear, setCurrentYear] = useState(year);
   const [showOtherComp, setShowOtherComp] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const {
     data: thisMonthsData,
@@ -159,12 +160,14 @@ function Calendar() {
       periodRanges?: Array<{ start: number; end: number }>;
       ovulationDays?: number[];
       noteDays?: number[];
+      onDayDoubleClick?: (date: string) => void;
     },
   ) {
     const {
       periodRanges = [],
       ovulationDays = [],
       noteDays = [],
+      onDayDoubleClick,
       day,
       outsideCurrentMonth,
       ...other
@@ -193,7 +196,11 @@ function Calendar() {
       >
         <PickerDay
           {...other}
-          onDoubleClick={() => setShowOtherComp(true)}
+          onDoubleClick={() => {
+            if (onDayDoubleClick) {
+              onDayDoubleClick(day.format("YYYY-MM-DD"));
+            }
+          }}
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{
@@ -227,6 +234,11 @@ function Calendar() {
     setCurrentYear(date.year());
   }
 
+  function handleDayDoubleClick(date: string) {
+    setSelectedDate(date);
+    setShowOtherComp(true);
+  }
+
   return (
     <>
       {((thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
@@ -257,12 +269,15 @@ function Calendar() {
               periodRanges,
               noteDays,
               ovulationDays,
+              onDayDoubleClick: handleDayDoubleClick,
             } as any,
           }}
         />
       </LocalizationProvider>
 
-      {showOtherComp && <NoteCyclePopUp />}
+      {showOtherComp && selectedDate && (
+        <NoteCyclePopUp date={selectedDate} onClose={() => setShowOtherComp(false)} />
+      )}
     </>
   );
 }
