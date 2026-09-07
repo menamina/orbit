@@ -116,11 +116,11 @@ function Calendar({}) {
   });
 
   const periodRanges = useMemo(() => {
-    if (!thisMonthsData?.cycleTracking) return [];
+    if (thisMonthsData?.cycleTracking.length === 0) return [];
 
     const lastDayOfMonth = new Date(currentYear, currentMonth, 0).getDate();
 
-    return thisMonthsData.cycleTracking
+    return thisMonthsData?.cycleTracking
       .filter((cycle) => cycle.startDate)
       .map((cycle) => {
         const startDate = new Date(cycle.startDate);
@@ -138,12 +138,11 @@ function Calendar({}) {
 
         const endDate = new Date(endDateValue);
 
-        // Check if this period overlaps with the current month
-        // Overlap occurs if: periodStart <= monthEnd AND periodEnd >= monthStart
-        const monthStart = new Date(currentYear, currentMonth - 1, 1);
-        const monthEnd = new Date(currentYear, currentMonth, 0); // Last day of current month
+        const monthStart = new Date(currentYear, currentMonth - 1, 1); // first day of current month
+        const monthEnd = new Date(currentYear, currentMonth, 0); // last day of current month
 
-        const periodOverlapsMonth = startDate <= monthEnd && endDate >= monthStart;
+        const periodOverlapsMonth =
+          startDate <= monthEnd && endDate >= monthStart;
 
         if (!periodOverlapsMonth) {
           return null;
@@ -195,13 +194,11 @@ function Calendar({}) {
     const days: number[] = [];
 
     thisMonthsData.cycleTracking.forEach((cycle) => {
-      if (cycle.startDate && cycle.endDate) {
-        // Calculate ovulation date: endDate - ovulationPrediction
-        const endDate = new Date(cycle.endDate);
-        const ovulationDate = new Date(endDate);
-        ovulationDate.setDate(ovulationDate.getDate() - ovulationPrediction);
+      if (cycle.startDate) {
+        const startDate = new Date(cycle.startDate);
+        const ovulationDate = new Date(startDate);
+        ovulationDate.setDate(ovulationDate.getDate() + ovulationPrediction);
 
-        // Only add if it's in the current month being viewed
         if (
           ovulationDate.getMonth() + 1 === currentMonth &&
           ovulationDate.getFullYear() === currentYear
