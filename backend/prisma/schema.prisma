@@ -13,7 +13,7 @@ model User {
   email                   String             @unique
   settings                Settings?
   cycleTracking           CycleTracking[]
-  packs                PillPack[]
+  packs                   PillPack[]
   notes                   Notes[]
 
   accounts                Account[]          // Multiple OAuth providers support

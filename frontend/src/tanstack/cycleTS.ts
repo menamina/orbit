@@ -1,9 +1,6 @@
-import {
-  queryOptions,
-  mutationOptions,
-} from "@tanstack/react-query";
+import { queryOptions, mutationOptions } from "@tanstack/react-query";
 
-import type { CycleTracking, TrackCycleResponse } from "./cycleTypes";
+import type { CycleMonthResponse, TrackCycleResponse } from "./cycleTypes";
 import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getCycleByMonthYearQuery = (
@@ -14,7 +11,8 @@ export const getCycleByMonthYearQuery = (
 ) => {
   return queryOptions({
     queryKey: ["cycle", month, year],
-    queryFn: () => getCycleByMonthYear({ month, year, accessToken, onTokenRefresh }),
+    queryFn: () =>
+      getCycleByMonthYear({ month, year, accessToken, onTokenRefresh }),
   });
 };
 
@@ -40,11 +38,14 @@ async function getCycleByMonthYear({
 }: {
   month: number;
   year: number;
-} & AuthParams): Promise<CycleTracking[]> {
-  const res = await apiFetch(`http://localhost:5555/api/cycle/${month}/${year}`, {
-    accessToken,
-    onTokenRefresh,
-  });
+} & AuthParams): Promise<CycleMonthResponse> {
+  const res = await apiFetch(
+    `http://localhost:5555/api/cycle/${month}/${year}`,
+    {
+      accessToken,
+      onTokenRefresh,
+    },
+  );
 
   if (!res.ok) {
     const errorData = await res.json();

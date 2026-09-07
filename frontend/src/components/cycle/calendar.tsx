@@ -48,7 +48,7 @@ function markedDays(
   const isOvulation = !outsideCurrentMonth && ovulationDays.includes(dayNum);
   const hasNote = !outsideCurrentMonth && noteDays.includes(dayNum);
 
-  const badgeContent = hasNote ? "📝" : undefined;
+  const badgeContent = hasNote && "📝";
 
   return (
     <Badge key={day.toString()} overlap="circular" badgeContent={badgeContent}>
@@ -116,14 +116,68 @@ function Calendar({}) {
   });
 
   const periodRanges = useMemo(() => {
-    if (!thisMonthsData) return [];
-    return thisMonthsData
-      .filter((cycle) => cycle.startDate && cycle.endDate)
-      .map((cycle) => ({
-        start: new Date(cycle.startDate).getDate(),
-        end: new Date(cycle.endDate!).getDate(),
-      }));
-  }, [thisMonthsData]);
+    if (!thisMonthsData?.cycleTracking) return [];
+
+    const lastDayOfMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+    return thisMonthsData.cycleTracking
+      .filter((cycle) => cycle.startDate)
+      .map((cycle) => {
+        const startDate = new Date(cycle.startDate);
+        const endDateValue = cycle.endDate || cycle.estimateEndDate;
+
+        if (!endDateValue) {
+          if (
+            startDate.getMonth() + 1 === currentMonth &&
+            startDate.getFullYear() === currentYear
+          ) {
+            return { start: startDate.getDate(), end: startDate.getDate() };
+          }
+          return null;
+        }
+
+        const endDate = new Date(endDateValue);
+
+        // Check if this period overlaps with the current month
+        // Overlap occurs if: periodStart <= monthEnd AND periodEnd >= monthStart
+        const monthStart = new Date(currentYear, currentMonth - 1, 1);
+        const monthEnd = new Date(currentYear, currentMonth, 0); // Last day of current month
+
+        const periodOverlapsMonth = startDate <= monthEnd && endDate >= monthStart;
+
+        if (!periodOverlapsMonth) {
+          return null;
+        }
+
+        // Clamp to current month boundaries
+        let displayStart = 1;
+        let displayEnd = lastDayOfMonth;
+
+        // If period starts in this month, use actual start date
+        if (
+          startDate.getMonth() + 1 === currentMonth &&
+          startDate.getFullYear() === currentYear
+        ) {
+          displayStart = startDate.getDate();
+        }
+
+        // If period ends in this month, use actual end date
+        if (
+          endDate.getMonth() + 1 === currentMonth &&
+          endDate.getFullYear() === currentYear
+        ) {
+          displayEnd = endDate.getDate();
+        }
+
+        return {
+          start: displayStart,
+          end: displayEnd,
+        };
+      })
+      .filter(
+        (range): range is { start: number; end: number } => range !== null,
+      );
+  }, [thisMonthsData, currentMonth, currentYear]);
 
   const noteDays = useMemo(() => {
     if (!monthNotes) return [];
@@ -133,9 +187,32 @@ function Calendar({}) {
   }, [monthNotes]);
 
   const ovulationDays = useMemo(() => {
-    if (!thisMonthsData) return [];
-    return [];
-  }, [thisMonthsData]);
+    if (!thisMonthsData?.settings || !thisMonthsData?.cycleTracking) return [];
+
+    const { ovulationPrediction } = thisMonthsData.settings;
+    if (!ovulationPrediction) return [];
+
+    const days: number[] = [];
+
+    thisMonthsData.cycleTracking.forEach((cycle) => {
+      if (cycle.startDate && cycle.endDate) {
+        // Calculate ovulation date: endDate - ovulationPrediction
+        const endDate = new Date(cycle.endDate);
+        const ovulationDate = new Date(endDate);
+        ovulationDate.setDate(ovulationDate.getDate() - ovulationPrediction);
+
+        // Only add if it's in the current month being viewed
+        if (
+          ovulationDate.getMonth() + 1 === currentMonth &&
+          ovulationDate.getFullYear() === currentYear
+        ) {
+          days.push(ovulationDate.getDate());
+        }
+      }
+    });
+
+    return days;
+  }, [thisMonthsData, currentMonth, currentYear]);
 
   function handleMonthChange(date: Dayjs) {
     setCurrentMonth(date.month() + 1);
