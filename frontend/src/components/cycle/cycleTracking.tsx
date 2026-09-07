@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../authContext";
@@ -24,16 +23,13 @@ function CycleCalendar() {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
 
-  // errors \\
-  const [errors, setErrors] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const {
     data: thisMonthsData,
     isPending: thisMonthPending,
     error: thisMonthError,
   } = useQuery({
     ...getCycleByMonthYearQuery(month, year, accessToken, setAccessToken),
+    retry: false,
   });
 
   const {
@@ -42,21 +38,13 @@ function CycleCalendar() {
     error: noteTodayError,
   } = useQuery({
     ...getNoteByDayQuery(todayString, accessToken, setAccessToken),
+    retry: false,
   });
-
-  if (thisMonthError) {
-    if (thisMonthError instanceof ApiError && thisMonthError.isAuthError()) {
-      setShowLoginModal(true);
-    }
-  } else if (noteTodayError) {
-    if (noteForToday instanceof ApiError && noteForToday.isAuthError()) {
-      setShowLoginModal(true);
-    }
-  }
 
   return (
     <Box>
-      {showLoginModal && (
+      {((thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
+        (noteTodayError instanceof ApiError && noteTodayError.isAuthError())) && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {
@@ -66,13 +54,13 @@ function CycleCalendar() {
         />
       )}
       {thisMonthError &&
-        !showLoginModal &&
-        !(thisMonthError instanceof ApiError && thisMonthError.isAuthError())(
-          <ErrorDiv error={thisMonthError.message} />,
+        !(thisMonthError instanceof ApiError && thisMonthError.isAuthError()) && (
+          <ErrorDiv error={thisMonthError.message} />
         )}
-      {noteTodayError && !showLoginModal && (
-        <ErrorDiv error={noteTodayError.message} />
-      )}
+      {noteTodayError &&
+        !(noteTodayError instanceof ApiError && noteTodayError.isAuthError()) && (
+          <ErrorDiv error={noteTodayError.message} />
+        )}
     </Box>
   );
 }
