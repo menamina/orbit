@@ -20,7 +20,6 @@ function DeleteSettings(setSettingsView: (view: string) => void) {
   const navigate = useNavigate();
 
   const [dltModal, setDltModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const {
     mutate: dltAccount,
@@ -34,11 +33,6 @@ function DeleteSettings(setSettingsView: (view: string) => void) {
       navigate("/login");
     },
   });
-
-  // Check for auth errors
-  if (dltAccountError instanceof ApiError && dltAccountError.isAuthError()) {
-    setShowLoginModal(true);
-  }
 
   const deleteAccountModalProps: ConfirmModalProps = {
     message: "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.",
@@ -56,20 +50,18 @@ function DeleteSettings(setSettingsView: (view: string) => void) {
   return (
     <>
       {dltModal && <ConfirmModal {...deleteAccountModalProps} />}
-      {showLoginModal && (
-        <ErrorModal
-          error="Your session expired. Please login again."
-          onClose={() => {
-            setAccessToken(null);
-            setUser(null);
-            navigate("/login");
-          }}
-        />
-      )}
-      {dltAccountError &&
-        !(
-          dltAccountError instanceof ApiError && dltAccountError.isAuthError()
-        ) && <ErrorDiv error={dltAccountError} />}
+      {dltAccountError instanceof ApiError &&
+        dltAccountError.isAuthError() && (
+          <ErrorModal
+            error="Your session expired. Please login again."
+            onClose={() => {
+              setAccessToken(null);
+              setUser(null);
+              navigate("/login");
+            }}
+          />
+        )}
+      {dltAccountError && <ErrorDiv error={dltAccountError} />}
       <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <Paper sx={{ padding: "20px" }}>
           <Box

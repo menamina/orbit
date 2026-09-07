@@ -22,7 +22,6 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
   const [clickedCircle, setClickedCircle] = useState<number | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const navigate = useNavigate();
 
   const days = [];
@@ -73,24 +72,21 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
     },
   });
 
-  // Check for auth errors
-  if (takePillError instanceof ApiError && takePillError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-  if (dltPillError instanceof ApiError && dltPillError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-
   return (
     <>
-      {takePillError &&
-        !(takePillError instanceof ApiError && takePillError.isAuthError()) && (
-          <ErrorDiv error={takePillError} />
-        )}
-      {dltPillError &&
-        !(dltPillError instanceof ApiError && dltPillError.isAuthError()) && (
-          <ErrorDiv error={dltPillError} />
-        )}
+      {((takePillError instanceof ApiError && takePillError.isAuthError()) ||
+        (dltPillError instanceof ApiError && dltPillError.isAuthError())) && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
+      {takePillError && <ErrorDiv error={takePillError} />}
+      {dltPillError && <ErrorDiv error={dltPillError} />}
 
       <Box
         sx={{ display: "flex", flexDirection: "column", bgColor: "#E3DFFF" }}
@@ -195,16 +191,6 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
           </Box>
         </Box>
       </Box>
-      {showLoginModal && (
-        <ErrorModal
-          error="Your session expired. Please login again."
-          onClose={() => {
-            setAccessToken(null);
-            setUser(null);
-            navigate("/login");
-          }}
-        />
-      )}
     </>
   );
 }

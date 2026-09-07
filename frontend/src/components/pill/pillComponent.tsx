@@ -26,7 +26,6 @@ function PillComponent() {
   const [dayOfTheWeekToStart, setDayOfTheWeekToStart] = useState("sun");
   const [openDots, setOpenedDots] = useState(false);
   const [displayDltModal, setDisplayDltModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -61,23 +60,6 @@ function PillComponent() {
     },
   });
 
-  // Check for auth errors
-  if (
-    startingPackError instanceof ApiError &&
-    startingPackError.isAuthError()
-  ) {
-    setShowLoginModal(true);
-  }
-  if (dltingPackError instanceof ApiError && dltingPackError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-  if (
-    getCurrentPackError instanceof ApiError &&
-    getCurrentPackError.isAuthError()
-  ) {
-    setShowLoginModal(true);
-  }
-
   const effectiveDayOfWeek = currentPack?.startDayOfWeek || dayOfTheWeekToStart;
 
   const deletePackModalProps: ConfirmModalProps = {
@@ -98,15 +80,24 @@ function PillComponent() {
 
   return (
     <>
-      {startingPackError &&
-        !(
-          startingPackError instanceof ApiError &&
-          startingPackError.isAuthError()
-        ) && <ErrorDiv error={startingPackError} />}
-      {dltingPackError &&
-        !(
-          dltingPackError instanceof ApiError && dltingPackError.isAuthError()
-        ) && <ErrorDiv error={dltingPackError} />}
+      {((startingPackError instanceof ApiError &&
+        startingPackError.isAuthError()) ||
+        (dltingPackError instanceof ApiError &&
+          dltingPackError.isAuthError()) ||
+        (getCurrentPackError instanceof ApiError &&
+          getCurrentPackError.isAuthError())) && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
+      {startingPackError && <ErrorDiv error={startingPackError} />}
+      {dltingPackError && <ErrorDiv error={dltingPackError} />}
+      {getCurrentPackError && <ErrorDiv error={getCurrentPackError} />}
       {!currentPack || currentPack?.pills?.length === 0 ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <Paper sx={{ padding: "20px", textAlign: "center" }}>
@@ -185,21 +176,6 @@ function PillComponent() {
         </>
       )}
       {displayDltModal && <ConfirmModal {...deletePackModalProps} />}
-      {showLoginModal && (
-        <ErrorModal
-          error="Your session expired. Please login again."
-          onClose={() => {
-            setAccessToken(null);
-            setUser(null);
-            navigate("/login");
-          }}
-        />
-      )}
-      {getCurrentPackError &&
-        !(
-          getCurrentPackError instanceof ApiError &&
-          getCurrentPackError.isAuthError()
-        ) && <ErrorDiv error={getCurrentPackError} />}
     </>
   );
 }

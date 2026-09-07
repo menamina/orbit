@@ -77,8 +77,6 @@ function MainSettings() {
 
   const [openImgOptions, setOpenImgOptions] = useState(false);
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const { error: usernameInUseError } = useQuery(
     checkIfUsernameIsInUse(usernameQuery),
   );
@@ -126,17 +124,6 @@ function MainSettings() {
     },
   });
 
-  // Check for auth errors
-  if (
-    updateSettingsError instanceof ApiError &&
-    updateSettingsError.isAuthError()
-  ) {
-    setShowLoginModal(true);
-  }
-  if (getSettingsError instanceof ApiError && getSettingsError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-
   const isFormValid = Object.values(settingsToUpdate).every((value) => {
     if (typeof value === "string") {
       return value.trim() !== "";
@@ -150,16 +137,21 @@ function MainSettings() {
   return (
     <>
       <Box>
-        {updateSettingsError &&
-          !(
-            updateSettingsError instanceof ApiError &&
-            updateSettingsError.isAuthError()
-          ) && <ErrorDiv error={updateSettingsError} />}
-        {getSettingsError &&
-          !(
-            getSettingsError instanceof ApiError &&
-            getSettingsError.isAuthError()
-          ) && <ErrorDiv error={getSettingsError} />}
+        {((updateSettingsError instanceof ApiError &&
+          updateSettingsError.isAuthError()) ||
+          (getSettingsError instanceof ApiError &&
+            getSettingsError.isAuthError())) && (
+          <ErrorModal
+            error="Your session expired. Please login again."
+            onClose={() => {
+              setAccessToken(null);
+              setUser(null);
+              navigate("/login");
+            }}
+          />
+        )}
+        {updateSettingsError && <ErrorDiv error={updateSettingsError} />}
+        {getSettingsError && <ErrorDiv error={getSettingsError} />}
 
         <Box
           onClick={() => (edit ? setOpenImgOptions(true) : null)}
@@ -322,17 +314,6 @@ function MainSettings() {
             setSettingsToUpdate({ ...settingsToUpdate, icon: iconKey })
           }
           onClose={() => setOpenImgOptions(false)}
-        />
-      )}
-
-      {showLoginModal && (
-        <ErrorModal
-          error="Your session expired. Please login again."
-          onClose={() => {
-            setAccessToken(null);
-            setUser(null);
-            navigate("/login");
-          }}
         />
       )}
     </>

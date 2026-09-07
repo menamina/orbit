@@ -46,8 +46,6 @@ function Note({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const {
     mutate: writeNote,
     isPending: writePending,
@@ -82,17 +80,6 @@ function Note({
     },
   });
 
-  // Check for auth errors
-  if (writeError instanceof ApiError && writeError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-  if (updateError instanceof ApiError && updateError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-  if (dltError instanceof ApiError && dltError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-
   const confirmDlt: ConfirmModalProps = {
     message: "Are you sure you want to delete this note?",
     onConfirm: () => {
@@ -114,18 +101,21 @@ function Note({
         padding: "40px",
       }}
     >
-      {writeError &&
-        !(writeError instanceof ApiError && writeError.isAuthError()) && (
-          <ErrorDiv error={writeError} />
-        )}
-      {updateError &&
-        !(updateError instanceof ApiError && updateError.isAuthError()) && (
-          <ErrorDiv error={updateError} />
-        )}
-      {dltError &&
-        !(dltError instanceof ApiError && dltError.isAuthError()) && (
-          <ErrorDiv error={dltError} />
-        )}
+      {((writeError instanceof ApiError && writeError.isAuthError()) ||
+        (updateError instanceof ApiError && updateError.isAuthError()) ||
+        (dltError instanceof ApiError && dltError.isAuthError())) && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
+      {writeError && <ErrorDiv error={writeError} />}
+      {updateError && <ErrorDiv error={updateError} />}
+      {dltError && <ErrorDiv error={dltError} />}
       <Box
         sx={{
           display: "flex",
@@ -206,16 +196,6 @@ function Note({
           </Button>
         </Box>
       </Box>
-      {showLoginModal && (
-        <ErrorModal
-          error="Your session expired. Please login again."
-          onClose={() => {
-            setAccessToken(null);
-            setUser(null);
-            navigate("/login");
-          }}
-        />
-      )}
       {confirmDelete && <ConfirmModal {...confirmDlt} />}
     </Box>
   );

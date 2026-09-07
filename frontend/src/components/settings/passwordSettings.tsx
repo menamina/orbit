@@ -23,7 +23,6 @@ function PasswordSettings() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [editPassword, setEditPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -47,33 +46,22 @@ function PasswordSettings() {
     },
   });
 
-  // Check for auth errors
-  if (
-    updatePasswordError instanceof ApiError &&
-    updatePasswordError.isAuthError()
-  ) {
-    setShowLoginModal(true);
-  }
-
   const noEmptyData = Object.values(passwordData).every((item) => item !== "");
 
   return (
     <>
-      {showLoginModal && (
-        <ErrorModal
-          error="Your session expired. Please login again."
-          onClose={() => {
-            setAccessToken(null);
-            setUser(null);
-            navigate("/login");
-          }}
-        />
-      )}
-      {updatePasswordError &&
-        !(
-          updatePasswordError instanceof ApiError &&
-          updatePasswordError.isAuthError()
-        ) && <ErrorDiv error={updatePasswordError} />}
+      {updatePasswordError instanceof ApiError &&
+        updatePasswordError.isAuthError() && (
+          <ErrorModal
+            error="Your session expired. Please login again."
+            onClose={() => {
+              setAccessToken(null);
+              setUser(null);
+              navigate("/login");
+            }}
+          />
+        )}
+      {updatePasswordError && <ErrorDiv error={updatePasswordError} />}
       <Box>Password</Box>
 
       {!editPassword && (

@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCycleByMonthYearQuery } from "../../tanstack/cycleTS";
 import { getNotesByMonthQuery } from "../../tanstack/notesTS";
 
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import Badge from "@mui/material/Badge";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -24,75 +24,12 @@ const month = today.getMonth() + 1;
 const year = today.getFullYear();
 const todayString = today.toISOString().split("T")[0] as string;
 
-function markedDays(
-  props: PickerDayProps & {
-    periodRanges?: Array<{ start: number; end: number }>;
-    ovulationDays?: number[];
-    noteDays?: number[];
-  },
-) {
-  const {
-    periodRanges = [],
-    ovulationDays = [],
-    noteDays = [],
-    day,
-    outsideCurrentMonth,
-    ...other
-  } = props;
-
-  const dayNum = day.date();
-
-  const periodInfo = periodRanges.find(
-    (range: { start: number; end: number }) =>
-      dayNum >= range.start && dayNum <= range.end,
-  );
-  const isInPeriod = !outsideCurrentMonth && periodInfo;
-  const isPeriodStart = periodInfo && dayNum === periodInfo.start;
-  const isPeriodEnd = periodInfo && dayNum === periodInfo.end;
-
-  const isOvulation = !outsideCurrentMonth && ovulationDays.includes(dayNum);
-  const hasNote = !outsideCurrentMonth && noteDays.includes(dayNum);
-
-  const badgeContent = hasNote && "📝";
-
-  return (
-    <Badge key={day.toString()} overlap="circular" badgeContent={badgeContent}>
-      <PickerDay
-        {...other}
-        outsideCurrentMonth={outsideCurrentMonth}
-        day={day}
-        sx={{
-          ...(isInPeriod && {
-            bgcolor: "rgba(255, 182, 193, 0.4)",
-            borderRadius:
-              isPeriodStart && isPeriodEnd
-                ? "50%"
-                : isPeriodStart
-                  ? "50% 0 0 50%"
-                  : isPeriodEnd
-                    ? "0 50% 50% 0"
-                    : "0",
-            "&:hover": {
-              bgcolor: "rgba(255, 182, 193, 0.6)",
-            },
-          }),
-
-          ...(isOvulation && {
-            border: "2px solid #9C27B0",
-            fontWeight: "bold",
-          }),
-        }}
-      />
-    </Badge>
-  );
-}
-
 function Calendar() {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(month);
   const [currentYear, setCurrentYear] = useState(year);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showOtherComp, setShowOtherComp] = useState(false);
 
   const {
     data: thisMonthsData,
@@ -120,14 +57,6 @@ function Calendar() {
     ),
     retry: false,
   });
-
-  // Check for auth errors
-  if (thisMonthError instanceof ApiError && thisMonthError.isAuthError()) {
-    setShowLoginModal(true);
-  }
-  if (notesError instanceof ApiError && notesError.isAuthError()) {
-    setShowLoginModal(true);
-  }
 
   const periodRanges = useMemo(() => {
     if (thisMonthsData?.cycleTracking.length === 0) return [];
@@ -225,6 +154,74 @@ function Calendar() {
     return days;
   }, [thisMonthsData, currentMonth, currentYear]);
 
+  function markedDays(
+    props: PickerDayProps & {
+      periodRanges?: Array<{ start: number; end: number }>;
+      ovulationDays?: number[];
+      noteDays?: number[];
+    },
+  ) {
+    const {
+      periodRanges = [],
+      ovulationDays = [],
+      noteDays = [],
+      day,
+      outsideCurrentMonth,
+      ...other
+    } = props;
+
+    const dayNum = day.date();
+
+    const periodInfo = periodRanges.find(
+      (range: { start: number; end: number }) =>
+        dayNum >= range.start && dayNum <= range.end,
+    );
+    const isInPeriod = !outsideCurrentMonth && periodInfo;
+    const isPeriodStart = periodInfo && dayNum === periodInfo.start;
+    const isPeriodEnd = periodInfo && dayNum === periodInfo.end;
+
+    const isOvulation = !outsideCurrentMonth && ovulationDays.includes(dayNum);
+    const hasNote = !outsideCurrentMonth && noteDays.includes(dayNum);
+
+    const badgeContent = hasNote && "📝";
+
+    return (
+      <Badge
+        key={day.toString()}
+        overlap="circular"
+        badgeContent={badgeContent}
+      >
+        <PickerDay
+          {...other}
+          onDoubleClick={() => setShowOtherComp(true)}
+          outsideCurrentMonth={outsideCurrentMonth}
+          day={day}
+          sx={{
+            ...(isInPeriod && {
+              bgcolor: "rgba(255, 182, 193, 0.4)",
+              borderRadius:
+                isPeriodStart && isPeriodEnd
+                  ? "50%"
+                  : isPeriodStart
+                    ? "50% 0 0 50%"
+                    : isPeriodEnd
+                      ? "0 50% 50% 0"
+                      : "0",
+              "&:hover": {
+                bgcolor: "rgba(255, 182, 193, 0.6)",
+              },
+            }),
+
+            ...(isOvulation && {
+              border: "2px solid #9C27B0",
+              fontWeight: "bold",
+            }),
+          }}
+        />
+      </Badge>
+    );
+  }
+
   function handleMonthChange(date: Dayjs) {
     setCurrentMonth(date.month() + 1);
     setCurrentYear(date.year());
@@ -232,27 +229,19 @@ function Calendar() {
 
   return (
     <>
-      {(thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
-        (notesError &&
-          notesError instanceof ApiError &&
-          notesError.isAuthError() && (
-            <ErrorModal
-              error="Your session expired. Please login again."
-              onClose={() => {
-                setAccessToken(null);
-                setUser(null);
-                navigate("/login");
-              }}
-            />
-          ))}
-      {thisMonthError &&
-        !(
-          thisMonthError instanceof ApiError && thisMonthError.isAuthError()
-        ) && <ErrorDiv error={thisMonthError} />}
-      {notesError &&
-        !(notesError instanceof ApiError && notesError.isAuthError()) && (
-          <ErrorDiv error={notesError} />
-        )}
+      {((thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
+        (notesError instanceof ApiError && notesError.isAuthError())) && (
+        <ErrorModal
+          error="Your session expired. Please login again."
+          onClose={() => {
+            setAccessToken(null);
+            setUser(null);
+            navigate("/login");
+          }}
+        />
+      )}
+      {thisMonthError && <ErrorDiv error={thisMonthError} />}
+      {notesError && <ErrorDiv error={notesError} />}
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DateCalendar
@@ -272,6 +261,8 @@ function Calendar() {
           }}
         />
       </LocalizationProvider>
+
+      {showOtherComp && <NoteCyclePopUp />}
     </>
   );
 }
