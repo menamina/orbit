@@ -32,6 +32,7 @@ function Calendar() {
   const [currentYear, setCurrentYear] = useState(year);
   const [showOtherComp, setShowOtherComp] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [editCalendar, setEditCalendar] = useState(false);
 
   const {
     data: thisMonthsData,
@@ -258,6 +259,7 @@ function Calendar() {
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DateCalendar
+          label={!editCalendar && "disabled"}
           defaultValue={todayString}
           loading={thisMonthPending || notesPending}
           onMonthChange={handleMonthChange}
@@ -280,6 +282,8 @@ function Calendar() {
         <NoteCyclePopUp
           date={selectedDate}
           onClose={() => setShowOtherComp(false)}
+          editCalendar={() => setEditCalendar((prev) => !prev)}
+          isEditingCalendar={editCalendar}
         />
       )}
     </>
