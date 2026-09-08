@@ -57,7 +57,6 @@ async function trackCycle(req, res) {
 
     const dateToTrack = validateAndNormalizeDate(date);
 
-    // Check if this day already exists
     const existing = await prisma.cycleDay.findUnique({
       where: {
         userID_date: {
@@ -73,7 +72,6 @@ async function trackCycle(req, res) {
         .json({ error: "Day already tracked for this date" });
     }
 
-    // Create the cycle day
     const cycleDay = await prisma.cycleDay.create({
       data: {
         userID,
@@ -81,7 +79,6 @@ async function trackCycle(req, res) {
       },
     });
 
-    // Update predictions based on all cycle data
     await updatePredictionsBasedOnActualData(userID);
 
     res.status(200).json(cycleDay);
@@ -112,99 +109,61 @@ function validateAndNormalizeDate(date) {
   return dateToTrack;
 }
 
-// Adaptive prediction: Update based on actual historical cycle data
+// prediction: Update based on actual historical cycle data
 async function updatePredictionsBasedOnActualData(userID) {
   try {
-    // Get all cycle days ordered by date
-    const allCycleDays = await prisma.cycleDay.findMany({
-      where: {
-        userID,
-      },
-      orderBy: {
-        date: "asc",
-      },
+    const allDays = await prisma.cycleDay.findMany({
+      where: { userID },
+      orderBy: { date: "asc" },
     });
 
-    if (allCycleDays.length < 5) {
-      // Not enough data to calculate meaningful averages
-      return;
-    }
+    if (allDays.length < 5) return;
 
-    // Group consecutive days into periods
+    // Find periods by detecting gaps > 7 days
     const periods = [];
-    let currentPeriod = null;
+    let periodStart = new Date(allDays[0].date);
+    let periodEnd = new Date(allDays[0].date);
 
-    for (const day of allCycleDays) {
-      const dayDate = new Date(day.date);
+    for (let i = 1; i < allDays.length; i++) {
+      const currentDate = new Date(allDays[i].date);
+      const prevDate = new Date(allDays[i - 1].date);
+      const dayGap = (currentDate - prevDate) / (1000 * 60 * 60 * 24);
 
-      if (!currentPeriod) {
-        // Start new period
-        currentPeriod = {
-          startDate: dayDate,
-          endDate: dayDate,
-          days: [dayDate],
-        };
-      } else {
-        const lastDate = currentPeriod.endDate;
-        const daysDiff = Math.ceil(
-          (dayDate - lastDate) / (1000 * 60 * 60 * 24),
-        );
-
-        if (daysDiff <= 2) {
-          // Continue current period (allow 1 day gap for irregular periods)
-          currentPeriod.endDate = dayDate;
-          currentPeriod.days.push(dayDate);
-        } else {
-          // Start new period
-          periods.push(currentPeriod);
-          currentPeriod = {
-            startDate: dayDate,
-            endDate: dayDate,
-            days: [dayDate],
-          };
-        }
+      if (dayGap > 7) {
+        periods.push({ start: periodStart, end: periodEnd });
+        periodStart = currentDate;
       }
+      periodEnd = currentDate;
     }
+    periods.push({ start: periodStart, end: periodEnd });
 
-    if (currentPeriod) {
-      periods.push(currentPeriod);
-    }
+    if (periods.length < 2) return;
 
-    if (periods.length < 2) {
-      return;
-    }
+    // Calculate averages
+    const periodLengths = periods.map(
+      (p) => Math.ceil((p.end - p.start) / (1000 * 60 * 60 * 24)) + 1,
+    );
+    const cycleGaps = periods
+      .slice(0, -1)
+      .map((p, i) => (periods[i + 1].start - p.start) / (1000 * 60 * 60 * 24));
 
-    // Calculate average period length (how many days bleeding lasts)
-    const periodLengths = periods.map((period) => period.days.length);
     const avgPeriodLength = Math.round(
-      periodLengths.reduce((sum, len) => sum + len, 0) / periodLengths.length,
+      periodLengths.reduce((a, b) => a + b) / periodLengths.length,
+    );
+    const avgCycleLength = Math.round(
+      cycleGaps.reduce((a, b) => a + b) / cycleGaps.length,
     );
 
-    // Calculate days between periods (cycle length)
-    const cycleGaps = [];
-    for (let i = 0; i < periods.length - 1; i++) {
-      const currentStart = periods[i].startDate;
-      const nextStart = periods[i + 1].startDate;
-      const diffTime = Math.abs(nextStart - currentStart);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      cycleGaps.push(diffDays);
-    }
-
-    const avgDaysBetweenPeriod = Math.round(
-      cycleGaps.reduce((sum, gap) => sum + gap, 0) / cycleGaps.length,
-    );
-
-    // Update settings with calculated averages
     await prisma.settings.update({
       where: { userID },
       data: {
         cycleLength: avgPeriodLength,
-        daysBetweenPeriod: avgDaysBetweenPeriod,
-        ovulationPrediction: avgDaysBetweenPeriod - 14, // Ovulation typically 14 days before next period
+        daysBetweenPeriod: avgCycleLength,
+        ovulationPrediction: avgCycleLength - 14,
       },
     });
   } catch (error) {
-    console.log("Error updating predictions based on actual data:", error);
+    console.log("Error updating predictions:", error);
   }
 }
 
@@ -235,7 +194,6 @@ async function dltCycle(req, res) {
       where: { id: cycleID },
     });
 
-    // Recalculate predictions based on remaining data
     await updatePredictionsBasedOnActualData(userID);
 
     res.status(200).json({ success: true });
