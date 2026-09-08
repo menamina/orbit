@@ -33,6 +33,7 @@ function Calendar() {
   const [showOtherComp, setShowOtherComp] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editCalendar, setEditCalendar] = useState(false);
+    const [daysToEdit, setDaysToEdit] = useState([]);
 
   const {
     data: thisMonthsData,
@@ -203,6 +204,7 @@ function Calendar() {
               onDayDoubleClick(day.format("YYYY-MM-DD"));
             }
           }}
+          onClick={() => editCalendar && setDayToEdit((prev) => {...prev, day})}
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{

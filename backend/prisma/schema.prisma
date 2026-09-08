@@ -12,7 +12,7 @@ model User {
   username                String             @unique
   email                   String             @unique
   settings                Settings?
-  cycleTracking           CycleTracking[]
+  cycleDays               CycleDay[]
   packs                   PillPack[]
   notes                   Notes[]
 
@@ -64,17 +64,16 @@ model Settings {
 }
 
 
-model CycleTracking {
+model CycleDay {
   id                      Int                @id @default(autoincrement())
   userID                  Int
-  startDate               DateTime           @db.Date
-  estimateEndDate         DateTime?          @db.Date
-  endDate                 DateTime?          @db.Date
+  date                    DateTime            @db.Date
+
 
   user                    User               @relation(fields: [userID], references: [id], onDelete: Cascade)
-
-  @@index([userID, startDate])
-  @@index([userID])
+  
+  @@index([userID, id])
+  @@index([userID, date])
 }
 
 model PillPack {

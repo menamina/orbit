@@ -22,7 +22,7 @@ async function getCycleByMonthYear(req, res) {
         userID,
       },
       select: {
-        cycleTracking: {
+        cycleDays: {
           where: {
             startDate: {
               gte: startOfMonth,
@@ -65,7 +65,7 @@ async function trackCycle(req, res) {
       where: { id: userID },
       include: {
         settings: true,
-        cycleTracking: {
+        cycleDays: {
           orderBy: { startDate: "desc" },
           take: 1,
         },
@@ -73,7 +73,7 @@ async function trackCycle(req, res) {
     });
 
     const settings = userData?.settings;
-    const mostRecentCycle = userData?.cycleTracking?.[0];
+    const mostRecentCycle = userData?.cycleDays?.[0];
     const isNewCycle = shouldCreateNewCycle(mostRecentCycle, dateToTrack);
 
     const cycle = isNewCycle
@@ -121,7 +121,7 @@ function validateAndNormalizeDate(date) {
 
 async function checkDuplicateCycle(userID, dateToTrack) {
   // With @db.Date, we just need to check exact date match
-  return await prisma.cycleTracking.findFirst({
+  return await prisma.cycleDays.findFirst({
     where: {
       userID,
       startDate: dateToTrack,
@@ -146,7 +146,7 @@ async function createNewCycle(userID, dateToTrack, settings) {
     estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
   }
 
-  const newCycle = await prisma.cycleTracking.create({
+  const newCycle = await prisma.cycleDays.create({
     data: {
       userID,
       startDate: dateToTrack,
@@ -160,7 +160,7 @@ async function createNewCycle(userID, dateToTrack, settings) {
 }
 
 async function updateExistingCycle(cycleID, dateToTrack, userID) {
-  const cycle = await prisma.cycleTracking.findUnique({
+  const cycle = await prisma.cycleDays.findUnique({
     where: { id: cycleID },
   });
 
@@ -182,7 +182,7 @@ async function updateExistingCycle(cycleID, dateToTrack, userID) {
     estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
   }
 
-  const updatedCycle = await prisma.cycleTracking.update({
+  const updatedCycle = await prisma.cycleDays.update({
     where: { id: cycleID },
     data: {
       endDate: dateToTrack,
@@ -246,7 +246,7 @@ async function updatePredictions(userID, startDate) {
 async function updatePredictionsBasedOnActualData(userID) {
   try {
     // Get the last 3 completed cycles to calculate averages
-    const recentCycles = await prisma.cycleTracking.findMany({
+    const recentCycles = await prisma.cycleDays.findMany({
       where: {
         userID,
         endDate: { not: null }, // Only completed cycles
@@ -323,7 +323,7 @@ async function dltCycle(req, res) {
       return res.status(400).json({ error: "Invalid cycle ID" });
     }
 
-    const cycle = await prisma.cycleTracking.findUnique({
+    const cycle = await prisma.cycleDays.findUnique({
       where: { id: cycleID },
     });
 
@@ -337,7 +337,7 @@ async function dltCycle(req, res) {
         .json({ error: "Not authorized to delete this record" });
     }
 
-    await prisma.cycleTracking.delete({
+    await prisma.cycleDays.delete({
       where: { id: cycleID },
     });
 
