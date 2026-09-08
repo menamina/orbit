@@ -135,6 +135,7 @@ async function updatePredictionsBasedOnActualData(userID) {
       }
       periodEnd = currentDate;
     }
+
     periods.push({ start: periodStart, end: periodEnd });
 
     if (periods.length < 2) return;
@@ -143,6 +144,7 @@ async function updatePredictionsBasedOnActualData(userID) {
     const periodLengths = periods.map(
       (p) => Math.ceil((p.end - p.start) / (1000 * 60 * 60 * 24)) + 1,
     );
+
     const cycleGaps = periods
       .slice(0, -1)
       .map((p, i) => (periods[i + 1].start - p.start) / (1000 * 60 * 60 * 24));
