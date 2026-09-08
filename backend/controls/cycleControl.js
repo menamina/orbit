@@ -43,7 +43,18 @@ async function getCycleByMonthYear(req, res) {
       },
     });
 
-    return res.status(200).json(data);
+    // Calculate ovulation dates for this month
+    const ovulationDates = await calculateOvulationDatesForMonth(
+      userID,
+      monthNum,
+      yearNum,
+      data?.settings?.ovulationPrediction,
+    );
+
+    return res.status(200).json({
+      ...data,
+      ovulationDates,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Server error" });
@@ -202,6 +213,56 @@ async function dltCycle(req, res) {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Server error" });
+  }
+}
+
+async function calculateOvulationDatesForMonth(
+  userID,
+  monthNum,
+  yearNum,
+  ovulationPrediction,
+) {
+  if (!ovulationPrediction) return [];
+
+  try {
+    const allDays = await prisma.cycleDay.findMany({
+      where: { userID },
+      orderBy: { date: "asc" },
+    });
+
+    if (allDays.length === 0) return [];
+
+    // Find period starts by detecting 7+ day gaps
+    const periodStarts = [new Date(allDays[0].date)];
+
+    for (let i = 1; i < allDays.length; i++) {
+      const currentDate = new Date(allDays[i].date);
+      const prevDate = new Date(allDays[i - 1].date);
+      const dayGap = (currentDate - prevDate) / (1000 * 60 * 60 * 24);
+
+      if (dayGap > 7) {
+        periodStarts.push(currentDate);
+      }
+    }
+
+    // Calculate ovulation dates and filter for requested month
+    const ovulationDatesInMonth = [];
+    periodStarts.forEach((periodStart) => {
+      const ovulationDate = new Date(periodStart);
+      ovulationDate.setDate(ovulationDate.getDate() + ovulationPrediction);
+
+      if (
+        ovulationDate.getMonth() + 1 === monthNum &&
+        ovulationDate.getFullYear() === yearNum
+      ) {
+        ovulationDatesInMonth.push(ovulationDate.getDate());
+      }
+    });
+
+    return ovulationDatesInMonth;
+  } catch (error) {
+    console.log("Error calculating ovulation dates:", error);
+    return [];
   }
 }
 

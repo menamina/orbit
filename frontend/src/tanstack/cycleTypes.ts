@@ -1,9 +1,7 @@
-export type CycleTracking = {
+export type CycleDay = {
   id: number;
   userID: number;
-  startDate: string;
-  estimateEndDate?: string | null;
-  endDate?: string | null;
+  date: string;
 };
 
 export type CycleSettings = {
@@ -13,11 +11,9 @@ export type CycleSettings = {
 };
 
 export type CycleMonthResponse = {
-  cycleTracking: CycleTracking[];
+  cycleDays: CycleDay[];
   settings: CycleSettings | null;
+  ovulationDates: number[];
 };
 
-export type TrackCycleResponse = CycleTracking & {
-  isNewCycle: boolean;
-  ovulationPrediction?: number;
-};
+export type TrackCycleResponse = CycleDay;

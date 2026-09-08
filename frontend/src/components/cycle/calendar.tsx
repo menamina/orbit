@@ -33,7 +33,7 @@ function Calendar() {
   const [showOtherComp, setShowOtherComp] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editCalendar, setEditCalendar] = useState(false);
-  const [daysToEdit, setDaysToEdit] = useState([]);
+  const [daysToEdit, setDaysToEdit] = useState<string[]>([]);
 
   const {
     data: thisMonthsData,
@@ -62,68 +62,10 @@ function Calendar() {
     retry: false,
   });
 
-  const periodRanges = useMemo(() => {
-    if (thisMonthsData?.cycleTracking.length === 0) return [];
-
-    const lastDayOfMonth = new Date(currentYear, currentMonth, 0).getDate();
-
-    return thisMonthsData?.cycleTracking
-      .filter((cycle) => cycle.startDate)
-      .map((cycle) => {
-        const startDate = new Date(cycle.startDate);
-        const endDateValue = cycle.endDate || cycle.estimateEndDate;
-
-        if (!endDateValue) {
-          if (
-            startDate.getMonth() + 1 === currentMonth &&
-            startDate.getFullYear() === currentYear
-          ) {
-            return { start: startDate.getDate(), end: startDate.getDate() };
-          }
-          return null;
-        }
-
-        const endDate = new Date(endDateValue);
-
-        const monthStart = new Date(currentYear, currentMonth - 1, 1); // first day of current month
-        const monthEnd = new Date(currentYear, currentMonth, 0); // last day of current month
-
-        const periodOverlapsMonth =
-          startDate <= monthEnd && endDate >= monthStart;
-
-        if (!periodOverlapsMonth) {
-          return null;
-        }
-
-        // Clamp to current month boundaries
-        let displayStart = 1;
-        let displayEnd = lastDayOfMonth;
-
-        // If period starts in this month, use actual start date
-        if (
-          startDate.getMonth() + 1 === currentMonth &&
-          startDate.getFullYear() === currentYear
-        ) {
-          displayStart = startDate.getDate();
-        }
-
-        // If period ends in this month, use actual end date
-        if (
-          endDate.getMonth() + 1 === currentMonth &&
-          endDate.getFullYear() === currentYear
-        ) {
-          displayEnd = endDate.getDate();
-        }
-
-        return {
-          start: displayStart,
-          end: displayEnd,
-        };
-      })
-      .filter(
-        (range): range is { start: number; end: number } => range !== null,
-      );
-  }, [thisMonthsData, currentMonth, currentYear]);
+  const periodDays = useMemo(() => {
+    if (!thisMonthsData?.cycleDays) return [];
+    return thisMonthsData.cycleDays.map((day) => day.date);
+  }, [thisMonthsData]);
 
   const noteDays = useMemo(() => {
     if (!monthNotes) return [];
@@ -132,41 +74,15 @@ function Calendar() {
     );
   }, [monthNotes]);
 
-  const ovulationDays = useMemo(() => {
-    if (!thisMonthsData?.settings || !thisMonthsData?.cycleTracking) return [];
-
-    const { ovulationPrediction } = thisMonthsData.settings;
-    if (!ovulationPrediction) return [];
-
-    const days: number[] = [];
-
-    thisMonthsData.cycleTracking.forEach((cycle) => {
-      if (cycle.startDate) {
-        const startDate = new Date(cycle.startDate);
-        const ovulationDate = new Date(startDate);
-        ovulationDate.setDate(ovulationDate.getDate() + ovulationPrediction);
-
-        if (
-          ovulationDate.getMonth() + 1 === currentMonth &&
-          ovulationDate.getFullYear() === currentYear
-        ) {
-          days.push(ovulationDate.getDate());
-        }
-      }
-    });
-
-    return days;
-  }, [thisMonthsData, currentMonth, currentYear]);
-
   function markedDays(
     props: PickerDayProps & {
-      periodRanges?: Array<{ start: number; end: number }>;
+      periodDays?: string[];
       ovulationDays?: number[];
       noteDays?: number[];
     },
   ) {
     const {
-      periodRanges = [],
+      periodDays = [],
       ovulationDays = [],
       noteDays = [],
       day,
@@ -175,14 +91,15 @@ function Calendar() {
     } = props;
 
     const dayNum = day.date();
+    const dayStr = day.format("YYYY-MM-DD");
 
-    const periodInfo = periodRanges.find(
-      (range: { start: number; end: number }) =>
-        dayNum >= range.start && dayNum <= range.end,
-    );
-    const isInPeriod = !outsideCurrentMonth && periodInfo;
-    const isPeriodStart = periodInfo && dayNum === periodInfo.start;
-    const isPeriodEnd = periodInfo && dayNum === periodInfo.end;
+    const isInPeriod = !outsideCurrentMonth && periodDays.includes(dayStr);
+    const isPeriodStart =
+      isInPeriod &&
+      !periodDays.includes(day.subtract(1, "day").format("YYYY-MM-DD"));
+    const isPeriodEnd =
+      isInPeriod &&
+      !periodDays.includes(day.add(1, "day").format("YYYY-MM-DD"));
 
     const isOvulation = !outsideCurrentMonth && ovulationDays.includes(dayNum);
     const hasNote = !outsideCurrentMonth && noteDays.includes(dayNum);
@@ -198,26 +115,33 @@ function Calendar() {
         <PickerDay
           {...other}
           onDoubleClick={() => handleDayDoubleClick(day.format("YYYY-MM-DD"))}
-          onClick={() =>
-            editCalendar && setDaysToEdit((prev) => ({ ...prev, day }))
-          }
+          onClick={() => {
+            if (editCalendar) {
+              setDaysToEdit((prev) =>
+                prev.includes(dayStr)
+                  ? prev.filter((d) => d !== dayStr)
+                  : [...prev, dayStr],
+              );
+            }
+          }}
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{
-            ...(isInPeriod && {
-              bgcolor: "rgba(255, 182, 193, 0.4)",
-              borderRadius:
-                isPeriodStart && isPeriodEnd
-                  ? "50%"
-                  : isPeriodStart
-                    ? "50% 0 0 50%"
-                    : isPeriodEnd
-                      ? "0 50% 50% 0"
-                      : "0",
-              "&:hover": {
-                bgcolor: "rgba(255, 182, 193, 0.6)",
-              },
-            }),
+            ...(isInPeriod &&
+              !daysToEdit.includes(dayStr) && {
+                bgcolor: "rgba(255, 182, 193, 0.4)",
+                borderRadius:
+                  isPeriodStart && isPeriodEnd
+                    ? "50%"
+                    : isPeriodStart
+                      ? "50% 0 0 50%"
+                      : isPeriodEnd
+                        ? "0 50% 50% 0"
+                        : "0",
+                "&:hover": {
+                  bgcolor: "rgba(255, 182, 193, 0.6)",
+                },
+              }),
 
             ...(isOvulation && {
               border: "2px solid #9C27B0",
@@ -267,9 +191,9 @@ function Calendar() {
           }}
           slotProps={{
             day: {
-              periodRanges,
+              periodDays,
               noteDays,
-              ovulationDays,
+              ovulationDays: thisMonthsData?.ovulationDates || [],
             } as any,
           }}
         />
