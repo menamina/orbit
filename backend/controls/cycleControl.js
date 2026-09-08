@@ -17,17 +17,20 @@ async function getCycleByMonthYear(req, res) {
     const startOfMonth = new Date(yearNum, monthNum - 1, 1);
     const startOfNextMonth = new Date(yearNum, monthNum, 1);
 
-    const cycle = await prisma.user.findUnique({
+    const data = await prisma.user.findUnique({
       where: {
         userID,
       },
       select: {
         cycleDays: {
           where: {
-            startDate: {
+            date: {
               gte: startOfMonth,
               lt: startOfNextMonth,
             },
+          },
+          orderBy: {
+            date: "asc",
           },
         },
         settings: {
@@ -40,7 +43,7 @@ async function getCycleByMonthYear(req, res) {
       },
     });
 
-    return res.status(200).json(cycle);
+    return res.status(200).json(data);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Server error" });
@@ -54,44 +57,34 @@ async function trackCycle(req, res) {
 
     const dateToTrack = validateAndNormalizeDate(date);
 
-    const duplicate = await checkDuplicateCycle(userID, dateToTrack);
-    if (duplicate) {
-      return res
-        .status(400)
-        .json({ error: "Cycle already tracked for this date" });
-    }
-
-    const userData = await prisma.user.findUnique({
-      where: { id: userID },
-      include: {
-        settings: true,
-        cycleDays: {
-          orderBy: { startDate: "desc" },
-          take: 1,
+    // Check if this day already exists
+    const existing = await prisma.cycleDay.findUnique({
+      where: {
+        userID_date: {
+          userID,
+          date: dateToTrack,
         },
       },
     });
 
-    const settings = userData?.settings;
-    const mostRecentCycle = userData?.cycleDays?.[0];
-    const isNewCycle = shouldCreateNewCycle(mostRecentCycle, dateToTrack);
+    if (existing) {
+      return res
+        .status(400)
+        .json({ error: "Day already tracked for this date" });
+    }
 
-    const cycle = isNewCycle
-      ? await createNewCycle(userID, dateToTrack, settings)
-      : await updateExistingCycle(mostRecentCycle.id, dateToTrack, userID);
-
-    const updatedSettings = await prisma.settings.findUnique({
-      where: { userID },
-      select: {
-        ovulationPrediction: true,
+    // Create the cycle day
+    const cycleDay = await prisma.cycleDay.create({
+      data: {
+        userID,
+        date: dateToTrack,
       },
     });
 
-    res.status(200).json({
-      ...cycle,
-      isNewCycle,
-      ovulationPrediction: updatedSettings?.ovulationPrediction,
-    });
+    // Update predictions based on all cycle data
+    await updatePredictionsBasedOnActualData(userID);
+
+    res.status(200).json(cycleDay);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Server error" });
@@ -119,195 +112,96 @@ function validateAndNormalizeDate(date) {
   return dateToTrack;
 }
 
-async function checkDuplicateCycle(userID, dateToTrack) {
-  // With @db.Date, we just need to check exact date match
-  return await prisma.cycleDays.findFirst({
-    where: {
-      userID,
-      startDate: dateToTrack,
-    },
-  });
-}
-
-function shouldCreateNewCycle(mostRecentCycle, dateToTrack) {
-  if (!mostRecentCycle) return true;
-
-  const daysSinceLastStart = Math.ceil(
-    (dateToTrack - new Date(mostRecentCycle.startDate)) / (1000 * 60 * 60 * 24),
-  );
-
-  return daysSinceLastStart < 0 || daysSinceLastStart > 10;
-}
-
-async function createNewCycle(userID, dateToTrack, settings) {
-  let estEndDate = null;
-  if (settings?.cycleLength) {
-    estEndDate = new Date(dateToTrack);
-    estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
-  }
-
-  const newCycle = await prisma.cycleDays.create({
-    data: {
-      userID,
-      startDate: dateToTrack,
-      estimateEndDate: estEndDate,
-      endDate: estEndDate,
-    },
-  });
-
-  await updatePredictions(userID, dateToTrack);
-  return newCycle;
-}
-
-async function updateExistingCycle(cycleID, dateToTrack, userID) {
-  const cycle = await prisma.cycleDays.findUnique({
-    where: { id: cycleID },
-  });
-
-  if (!cycle) {
-    throw new Error("Cycle record not found");
-  }
-
-  if (cycle.userID !== userID) {
-    throw new Error("Not authorized to update this cycle");
-  }
-
-  const settings = await prisma.settings.findUnique({
-    where: { userID },
-  });
-
-  let estEndDate = null;
-  if (settings?.cycleLength && cycle?.startDate) {
-    estEndDate = new Date(cycle.startDate);
-    estEndDate.setDate(estEndDate.getDate() + settings.cycleLength);
-  }
-
-  const updatedCycle = await prisma.cycleDays.update({
-    where: { id: cycleID },
-    data: {
-      endDate: dateToTrack,
-      ...(estEndDate && { estimateEndDate: estEndDate }),
-    },
-  });
-
-  await updatePredictionsBasedOnActualData(userID);
-  return updatedCycle;
-}
-
-async function updatePredictions(userID, startDate) {
-  try {
-    const settings = await prisma.settings.findUnique({
-      where: { userID },
-    });
-
-    if (!settings || !settings.cycleLength || !settings.daysBetweenPeriod) {
-      console.log("Missing cycle settings for predictions");
-      return;
-    }
-
-    // Calculate when the period ends (startDate + cycleLength)
-    // cycleLength = how many days you bleed (e.g., 5 days)
-    // JavaScript Date automatically handles month boundaries
-    // Example: Jan 27 + 5 days = Feb 1
-    const predictedEndDate = new Date(startDate);
-    predictedEndDate.setDate(predictedEndDate.getDate() + settings.cycleLength);
-
-    // Calculate ovulation date (typically 14 days before next period)
-    // daysBetweenPeriod = total cycle length (e.g., 28-35 days)
-    // Next period starts at: startDate + daysBetweenPeriod
-    // So ovulation is: startDate + (daysBetweenPeriod - 14)
-    const predictedOvulationDate = new Date(startDate);
-    predictedOvulationDate.setDate(
-      predictedOvulationDate.getDate() + (settings.daysBetweenPeriod - 14),
-    );
-
-    // Store predictions as day offsets from period start
-    const ovulationPrediction = settings.daysBetweenPeriod - 14;
-
-    // Update the predictions in the database
-    await prisma.settings.update({
-      where: { userID },
-      data: {
-        ovulationPrediction,
-      },
-    });
-
-    return {
-      predictedEndDate,
-      predictedOvulationDate,
-    };
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Server error" });
-  }
-}
-
 // Adaptive prediction: Update based on actual historical cycle data
 async function updatePredictionsBasedOnActualData(userID) {
   try {
-    // Get the last 3 completed cycles to calculate averages
-    const recentCycles = await prisma.cycleDays.findMany({
+    // Get all cycle days ordered by date
+    const allCycleDays = await prisma.cycleDay.findMany({
       where: {
         userID,
-        endDate: { not: null }, // Only completed cycles
       },
       orderBy: {
-        startDate: "desc",
+        date: "asc",
       },
-      take: 3,
     });
 
-    if (recentCycles.length < 2) {
-      // Not enough data to calculate averages yet
+    if (allCycleDays.length < 5) {
+      // Not enough data to calculate meaningful averages
       return;
     }
 
-    // Calculate actual cycle lengths (how many days bleeding lasted)
-    const periodLengths = recentCycles.map((cycle) => {
-      const start = new Date(cycle.startDate);
-      const end = new Date(cycle.endDate);
-      const diffTime = Math.abs(end - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
-    });
+    // Group consecutive days into periods
+    const periods = [];
+    let currentPeriod = null;
 
-    // Calculate average period length
+    for (const day of allCycleDays) {
+      const dayDate = new Date(day.date);
+
+      if (!currentPeriod) {
+        // Start new period
+        currentPeriod = {
+          startDate: dayDate,
+          endDate: dayDate,
+          days: [dayDate],
+        };
+      } else {
+        const lastDate = currentPeriod.endDate;
+        const daysDiff = Math.ceil(
+          (dayDate - lastDate) / (1000 * 60 * 60 * 24),
+        );
+
+        if (daysDiff <= 2) {
+          // Continue current period (allow 1 day gap for irregular periods)
+          currentPeriod.endDate = dayDate;
+          currentPeriod.days.push(dayDate);
+        } else {
+          // Start new period
+          periods.push(currentPeriod);
+          currentPeriod = {
+            startDate: dayDate,
+            endDate: dayDate,
+            days: [dayDate],
+          };
+        }
+      }
+    }
+
+    if (currentPeriod) {
+      periods.push(currentPeriod);
+    }
+
+    if (periods.length < 2) {
+      return;
+    }
+
+    // Calculate average period length (how many days bleeding lasts)
+    const periodLengths = periods.map((period) => period.days.length);
     const avgPeriodLength = Math.round(
       periodLengths.reduce((sum, len) => sum + len, 0) / periodLengths.length,
     );
 
     // Calculate days between periods (cycle length)
     const cycleGaps = [];
-    for (let i = 0; i < recentCycles.length - 1; i++) {
-      const currentStart = new Date(recentCycles[i].startDate);
-      const nextStart = new Date(recentCycles[i + 1].startDate);
-      const diffTime = Math.abs(currentStart - nextStart);
+    for (let i = 0; i < periods.length - 1; i++) {
+      const currentStart = periods[i].startDate;
+      const nextStart = periods[i + 1].startDate;
+      const diffTime = Math.abs(nextStart - currentStart);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       cycleGaps.push(diffDays);
     }
 
-    let avgDaysBetweenPeriod = null;
-    if (cycleGaps.length > 0) {
-      avgDaysBetweenPeriod = Math.round(
-        cycleGaps.reduce((sum, gap) => sum + gap, 0) / cycleGaps.length,
-      );
-    }
+    const avgDaysBetweenPeriod = Math.round(
+      cycleGaps.reduce((sum, gap) => sum + gap, 0) / cycleGaps.length,
+    );
 
-    const updateData = {
-      cycleLength: avgPeriodLength,
-      ovulationPrediction: avgDaysBetweenPeriod
-        ? avgDaysBetweenPeriod - 14
-        : undefined,
-      nextCyclePrediction: avgDaysBetweenPeriod || undefined,
-    };
-
-    if (avgDaysBetweenPeriod) {
-      updateData.daysBetweenPeriod = avgDaysBetweenPeriod;
-    }
-
+    // Update settings with calculated averages
     await prisma.settings.update({
       where: { userID },
-      data: updateData,
+      data: {
+        cycleLength: avgPeriodLength,
+        daysBetweenPeriod: avgDaysBetweenPeriod,
+        ovulationPrediction: avgDaysBetweenPeriod - 14, // Ovulation typically 14 days before next period
+      },
     });
   } catch (error) {
     console.log("Error updating predictions based on actual data:", error);
@@ -323,21 +217,21 @@ async function dltCycle(req, res) {
       return res.status(400).json({ error: "Invalid cycle ID" });
     }
 
-    const cycle = await prisma.cycleDays.findUnique({
+    const cycleDay = await prisma.cycleDay.findUnique({
       where: { id: cycleID },
     });
 
-    if (!cycle) {
-      return res.status(404).json({ error: "Cycle record not found" });
+    if (!cycleDay) {
+      return res.status(404).json({ error: "Cycle day not found" });
     }
 
-    if (cycle.userID !== userID) {
+    if (cycleDay.userID !== userID) {
       return res
         .status(403)
         .json({ error: "Not authorized to delete this record" });
     }
 
-    await prisma.cycleDays.delete({
+    await prisma.cycleDay.delete({
       where: { id: cycleID },
     });
 
@@ -355,8 +249,6 @@ export {
   getCycleByMonthYear,
   trackCycle,
   dltCycle,
-  updatePredictions,
   updatePredictionsBasedOnActualData,
   validateAndNormalizeDate,
-  shouldCreateNewCycle,
 };

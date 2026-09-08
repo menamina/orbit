@@ -33,7 +33,7 @@ function Calendar() {
   const [showOtherComp, setShowOtherComp] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editCalendar, setEditCalendar] = useState(false);
-    const [daysToEdit, setDaysToEdit] = useState([]);
+  const [daysToEdit, setDaysToEdit] = useState([]);
 
   const {
     data: thisMonthsData,
@@ -163,14 +163,12 @@ function Calendar() {
       periodRanges?: Array<{ start: number; end: number }>;
       ovulationDays?: number[];
       noteDays?: number[];
-      onDayDoubleClick?: (date: string) => void;
     },
   ) {
     const {
       periodRanges = [],
       ovulationDays = [],
       noteDays = [],
-      onDayDoubleClick,
       day,
       outsideCurrentMonth,
       ...other
@@ -199,12 +197,10 @@ function Calendar() {
       >
         <PickerDay
           {...other}
-          onDoubleClick={() => {
-            if (onDayDoubleClick) {
-              onDayDoubleClick(day.format("YYYY-MM-DD"));
-            }
-          }}
-          onClick={() => editCalendar && setDayToEdit((prev) => {...prev, day})}
+          onDoubleClick={() => handleDayDoubleClick(day.format("YYYY-MM-DD"))}
+          onClick={() =>
+            editCalendar && setDaysToEdit((prev) => ({ ...prev, day }))
+          }
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{
@@ -274,7 +270,6 @@ function Calendar() {
               periodRanges,
               noteDays,
               ovulationDays,
-              onDayDoubleClick: handleDayDoubleClick,
             } as any,
           }}
         />
