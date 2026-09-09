@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getNoteByDayQuery } from "../../tanstack/notesTS";
 import { trackCycleMut } from "../../tanstack/cycleTS";
-import type { NoteType } from "../../tanstack/notesTypes";
 
 import Close from "../../imgs/closeArrow.svg";
 
