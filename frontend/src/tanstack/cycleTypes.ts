@@ -1,6 +1,5 @@
-export type CycleDay = {
-  id: number;
-  userID: number;
+export type CycleDays = {
+  id?: number;
   date: string;
 };
 
@@ -11,7 +10,7 @@ export type CycleSettings = {
 };
 
 export type CycleMonthResponse = {
-  cycleDays: CycleDay[];
+  cycleDays: CycleDays[];
   settings: CycleSettings | null;
   ovulationDates: number[];
 };

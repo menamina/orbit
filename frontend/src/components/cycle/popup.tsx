@@ -5,7 +5,11 @@ import { useAuth } from "../../authContext";
 import { useNavigate } from "react-router-dom";
 
 import { useQuery } from "@tanstack/react-query";
-import { getNoteByDayQuery } from "../../tanstack/noteTS";
+import {
+  getNoteByDayQuery,
+  trackCycleMut,
+  useQueryClient,
+} from "../../tanstack/noteTS";
 import type { NoteType } from "../../tanstack/notesTypes";
 
 import Close from "../../imgs/closeArrow.svg";
@@ -17,19 +21,28 @@ import { Box, Button, Modal, Paper } from "@mui/material";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
-function NoteCyclePopUp({
-  date,
-  isEditingCalendar,
-  editCalendar,
-  onClose,
-}: {
+type PopupType = {
   date: string;
+  month: number;
+  year: number;
   isEditingCalendar: boolean;
   editCalendar: () => void;
   onClose: () => void;
-}) {
+  clearEdits: () => void;
+};
+
+function NoteCyclePopUp({
+  date,
+  month,
+  year,
+  isEditingCalendar,
+  editCalendar,
+  clearEdits,
+  onClose,
+}: PopupType) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {
     data: selectedDayNote,
@@ -38,6 +51,17 @@ function NoteCyclePopUp({
   } = useQuery({
     ...getNoteByDayQuery(date, accessToken, setAccessToken),
     retry: false,
+  });
+
+  const {
+    muate: trackCycle,
+    isPending: trackingPending,
+    error: trackingError,
+  } = useMutation({
+    ...trackCycleMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cycle", month, year] });
+    },
   });
 
   return (
@@ -67,10 +91,16 @@ function NoteCyclePopUp({
           {isEditingCalendar ? (
             <Box>
               <Box>
-                <Button onClick={editCalendar}>cancel</Button>
+                <Button onClick={clearEdits}>cancel</Button>
               </Box>
               <Box>
-                <Button onClick={update}>save</Button>
+                <Button
+                  onClick={() => {
+                    trackCycle();
+                  }}
+                >
+                  save
+                </Button>
               </Box>
             </Box>
           ) : (

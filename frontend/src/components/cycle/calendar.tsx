@@ -16,6 +16,8 @@ import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import { ApiError } from "../../tanstack/api";
 
+import type { CycleDays } from "../../tanstack/cycleTypes";
+
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import NoteCyclePopUp from "./popup";
@@ -28,7 +30,7 @@ const todayString = today.toISOString().split("T")[0] as string;
 type DayToEditType = {
   id?: number;
   date: string;
-}
+};
 
 function Calendar() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -82,11 +84,6 @@ function Calendar() {
     );
   }, [monthNotes]);
 
-  type CycleDays = {
-    id: number;
-    date: string;
-  };
-
   function markedDays(
     props: PickerDayProps & {
       cycleDays?: CycleDays[];
@@ -138,7 +135,8 @@ function Calendar() {
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{
-            ...(!editCalendar && isThisDayACyleDay && {
+            ...(!editCalendar &&
+              isThisDayACyleDay && {
                 bgcolor: "rgba(255, 182, 193, 0.4)",
                 borderRadius:
                   isPeriodStart && isPeriodEnd
@@ -153,9 +151,11 @@ function Calendar() {
                 },
               }),
 
-            ...(editCalendar && isThisDayACyleDay && (daysToEdit.find((dayObj) => dayObj.date === dayStr)) && {
-              bgcolor: "white"
-            }),
+            ...(editCalendar &&
+              isThisDayACyleDay &&
+              daysToEdit.find((dayObj) => dayObj.date === dayStr) && {
+                bgcolor: "white",
+              }),
 
             ...(isOvulation && {
               border: "2px solid #9C27B0",
@@ -167,13 +167,17 @@ function Calendar() {
     );
   }
 
+  function clear() {
+    setEditCalendar(false);
+    setDaysToEdit([]);
+  }
+
   function handleMonthChange(date: Dayjs) {
     setCurrentMonth(date.month() + 1);
     setCurrentYear(date.year());
     setShowOtherComp(false);
-    setEditCalendar(false);
     setSelectedDate(null);
-    setDaysToEdit([]);
+    clear();
   }
 
   function handleDayDoubleClick(date: string) {
@@ -188,7 +192,7 @@ function Calendar() {
         ...prev,
         isTracked
           ? { id: isTracked.id, date: isTracked.date }
-          : { date: dateToEdit }
+          : { date: dateToEdit },
       ]);
     }
   }
@@ -232,7 +236,14 @@ function Calendar() {
       {showOtherComp && selectedDate && (
         <NoteCyclePopUp
           date={selectedDate}
-          onClose={() => setShowOtherComp(false)}
+          month={currentMonth}
+          year={currentYear}
+          onClose={() => {
+            setShowOtherComp(false);
+            setSelectedDate(null);
+            clear();
+          }}
+          clearEdits={clear}
           editCalendar={() => setEditCalendar((prev) => !prev)}
           isEditingCalendar={editCalendar}
         />

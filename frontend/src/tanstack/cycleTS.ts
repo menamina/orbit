@@ -1,6 +1,10 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
 
-import type { CycleMonthResponse, TrackCycleResponse } from "./cycleTypes";
+import type {
+  CycleMonthResponse,
+  TrackCycleResponse,
+  CycleDays,
+} from "./cycleTypes";
 import { apiFetch, ApiError, type AuthParams } from "./api";
 
 export const getCycleByMonthYearQuery = (
@@ -56,12 +60,10 @@ async function getCycleByMonthYear({
 }
 
 async function trackCycle({
-  date,
   accessToken,
   onTokenRefresh,
-}: {
-  date: string | Date;
-} & AuthParams): Promise<TrackCycleResponse> {
+  ...data
+}: AuthParams & CycleDays): Promise<TrackCycleResponse> {
   const res = await apiFetch(`http://localhost:5555/api/track/period`, {
     method: "POST",
     accessToken,
@@ -69,7 +71,7 @@ async function trackCycle({
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ date }),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {
