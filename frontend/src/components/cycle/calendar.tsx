@@ -25,6 +25,11 @@ const month = today.getMonth() + 1;
 const year = today.getFullYear();
 const todayString = today.toISOString().split("T")[0] as string;
 
+type DayToEditType = {
+  id: number | null;
+  date: string
+}
+
 function Calendar() {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
@@ -33,7 +38,7 @@ function Calendar() {
   const [showOtherComp, setShowOtherComp] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editCalendar, setEditCalendar] = useState(false);
-  const [daysToEdit, setDaysToEdit] = useState<string[]>([]);
+  const [daysToEdit, setDaysToEdit] = useState<DayToEditType[]>([]);
 
   const {
     data: thisMonthsData,
@@ -62,9 +67,12 @@ function Calendar() {
     retry: false,
   });
 
-  const periodDays = useMemo(() => {
+  const cycleDays = useMemo(() => {
     if (!thisMonthsData?.cycleDays) return [];
-    return thisMonthsData.cycleDays.map((day) => day.date);
+    return thisMonthsData.cycleDays.map((day) => ({
+      id: day.id,
+      date: day.date,
+    }));
   }, [thisMonthsData]);
 
   const noteDays = useMemo(() => {
@@ -74,15 +82,20 @@ function Calendar() {
     );
   }, [monthNotes]);
 
+  type CycleDays = {
+    id: number;
+    date: string;
+  };
+
   function markedDays(
     props: PickerDayProps & {
-      periodDays?: string[];
+      cycleDays?: CycleDays[];
       ovulationDays?: number[];
       noteDays?: number[];
     },
   ) {
     const {
-      periodDays = [],
+      cycleDays = [],
       ovulationDays = [],
       noteDays = [],
       day,
@@ -93,13 +106,15 @@ function Calendar() {
     const dayNum = day.date();
     const dayStr = day.format("YYYY-MM-DD");
 
-    const isInPeriod = !outsideCurrentMonth && periodDays.includes(dayStr);
+    const cycleDayDates = cycleDays.map((d) => d.date);
+    const isThisDayACyleDay = cycleDayDates.filter((d) => d.date === dayStr);
+
     const isPeriodStart =
-      isInPeriod &&
-      !periodDays.includes(day.subtract(1, "day").format("YYYY-MM-DD"));
+      isThisDayACyleDay &&
+      !cycleDayDates.includes(day.subtract(1, "day").format("YYYY-MM-DD"));
     const isPeriodEnd =
-      isInPeriod &&
-      !periodDays.includes(day.add(1, "day").format("YYYY-MM-DD"));
+      isThisDayACyleDay &&
+      !cycleDayDates.includes(day.add(1, "day").format("YYYY-MM-DD"));
 
     const isOvulation = !outsideCurrentMonth && ovulationDays.includes(dayNum);
     const hasNote = !outsideCurrentMonth && noteDays.includes(dayNum);
@@ -114,20 +129,15 @@ function Calendar() {
       >
         <PickerDay
           {...other}
-          onDoubleClick={() => handleDayDoubleClick(day.format("YYYY-MM-DD"))}
-          onClick={() => {
-            if (editCalendar) {
-              setDaysToEdit((prev) =>
-                prev.includes(dayStr)
-                  ? prev.filter((d) => d !== dayStr)
-                  : [...prev, dayStr],
-              );
-            }
+          onDoubleClick={() => {
+            selectedDate !== day &&
+              handleDayDoubleClick(day.format("YYYY-MM-DD"));
           }}
+          onClick={() => handleDaysToEdit(dayStr)}
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{
-            ...(isInPeriod &&
+            ...(isThisDayACyleDay &&
               !daysToEdit.includes(dayStr) && {
                 bgcolor: "rgba(255, 182, 193, 0.4)",
                 borderRadius:
@@ -156,11 +166,26 @@ function Calendar() {
   function handleMonthChange(date: Dayjs) {
     setCurrentMonth(date.month() + 1);
     setCurrentYear(date.year());
+    setShowOtherComp(false);
+    setEditCalendar(false);
+    setSelectedDate(null);
+    setDaysToEdit([]);
   }
 
   function handleDayDoubleClick(date: string) {
     setSelectedDate(date);
     setShowOtherComp(true);
+  }
+
+  function handleDaysToEdit(dateToEdit: string) {
+    if (editCalendar) {
+      const isTracked = cycleDays.find((day) => day.date === dateToEdit);
+      setDaysToEdit((prev) => [
+      ...prev,
+      isTracked 
+        ? { id: isTracked.id, date: isTracked.date }
+        : { date: dateToEdit }
+    ]);
   }
 
   return (
@@ -191,7 +216,7 @@ function Calendar() {
           }}
           slotProps={{
             day: {
-              periodDays,
+              cycleDays,
               noteDays,
               ovulationDays: thisMonthsData?.ovulationDates || [],
             } as any,
