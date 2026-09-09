@@ -4,12 +4,9 @@ import { useAuth } from "../../authContext";
 
 import { useNavigate } from "react-router-dom";
 
-import { useQuery } from "@tanstack/react-query";
-import {
-  getNoteByDayQuery,
-  trackCycleMut,
-  useQueryClient,
-} from "../../tanstack/noteTS";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getNoteByDayQuery } from "../../tanstack/notesTS";
+import { trackCycleMut } from "../../tanstack/cycleTS";
 import type { NoteType } from "../../tanstack/notesTypes";
 
 import Close from "../../imgs/closeArrow.svg";
@@ -21,6 +18,8 @@ import { Box, Button, Modal, Paper } from "@mui/material";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
+import type { CycleDays } from "../../tanstack/cycleTypes";
+
 type PopupType = {
   date: string;
   month: number;
@@ -29,6 +28,7 @@ type PopupType = {
   editCalendar: () => void;
   onClose: () => void;
   clearEdits: () => void;
+  sendData: CycleDays[];
 };
 
 function NoteCyclePopUp({
@@ -39,6 +39,7 @@ function NoteCyclePopUp({
   editCalendar,
   clearEdits,
   onClose,
+  sendData,
 }: PopupType) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ function NoteCyclePopUp({
   });
 
   const {
-    muate: trackCycle,
+    mutate: trackCycle,
     isPending: trackingPending,
     error: trackingError,
   } = useMutation({
@@ -66,7 +67,8 @@ function NoteCyclePopUp({
 
   return (
     <>
-      {noteError instanceof ApiError && noteError.isAuthError() && (
+      {((noteError instanceof ApiError && noteError.isAuthError()) ||
+        (trackingError instanceof ApiError && trackingError.isAuthError())) && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {
@@ -77,6 +79,7 @@ function NoteCyclePopUp({
         />
       )}
       {noteError && <ErrorDiv error={noteError} />}
+      {trackingError && <ErrorDiv error={trackingError} />}
 
       <Modal open={true} onClose={onClose}>
         <Paper>
@@ -91,15 +94,19 @@ function NoteCyclePopUp({
           {isEditingCalendar ? (
             <Box>
               <Box>
-                <Button onClick={clearEdits}>cancel</Button>
+                <Button disabled={trackingPending} onClick={clearEdits}>
+                  cancel
+                </Button>
               </Box>
               <Box>
                 <Button
+                  disabled={trackingPending}
                   onClick={() => {
-                    trackCycle(
+                    trackCycle({
                       accessToken,
-                      onTokenRefresh: setAccessToken
-                    );
+                      onTokenRefresh: setAccessToken,
+                      cycleDays: sendData,
+                    });
                   }}
                 >
                   save
@@ -118,7 +125,7 @@ function NoteCyclePopUp({
             ) : (
               <Note
                 noteData={
-                  selectedDayNote
+                  selectedDayNote && !Array.isArray(selectedDayNote)
                     ? { id: selectedDayNote.id, note: selectedDayNote.note }
                     : null
                 }

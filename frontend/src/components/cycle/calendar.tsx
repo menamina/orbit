@@ -246,6 +246,7 @@ function Calendar() {
           clearEdits={clear}
           editCalendar={() => setEditCalendar((prev) => !prev)}
           isEditingCalendar={editCalendar}
+          sendData={daysToEdit}
         />
       )}
     </>

@@ -64,9 +64,32 @@ async function getCycleByMonthYear(req, res) {
 async function trackCycle(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { cycleDays } = req.body;
+    const cycleDays = req.body;
+
+    if (cycleDays.length === 0) {
+      return res.status(200).json({ success: true });
+    }
+
+    for (const obj of cycleDays) {
+      if (obj.id) {
+        const deleted = await prisma.cycleDay.delete({
+          where: { id: obj.id },
+        });
+      } else if (!obj.id) {
+        const dateToTrack = validateAndNormalizeDate(obj.date);
+
+        const created = await prisma.cycleDay.create({
+          data: {
+            userID,
+            date: dateToTrack,
+          },
+        });
+      }
+    }
 
     await updatePredictionsBasedOnActualData(userID);
+
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Server error" });
@@ -154,42 +177,6 @@ async function updatePredictionsBasedOnActualData(userID) {
   }
 }
 
-async function dltCycle(req, res) {
-  try {
-    const userID = Number(req.user.userID);
-    const cycleID = Number(req.params.cycleID);
-
-    if (isNaN(cycleID) || cycleID <= 0) {
-      return res.status(400).json({ error: "Invalid cycle ID" });
-    }
-
-    const cycleDay = await prisma.cycleDay.findUnique({
-      where: { id: cycleID },
-    });
-
-    if (!cycleDay) {
-      return res.status(404).json({ error: "Cycle day not found" });
-    }
-
-    if (cycleDay.userID !== userID) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to delete this record" });
-    }
-
-    await prisma.cycleDay.delete({
-      where: { id: cycleID },
-    });
-
-    await updatePredictionsBasedOnActualData(userID);
-
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Server error" });
-  }
-}
-
 async function calculateOvulationDatesForMonth(
   userID,
   monthNum,
@@ -243,7 +230,6 @@ async function calculateOvulationDatesForMonth(
 export {
   getCycleByMonthYear,
   trackCycle,
-  dltCycle,
   updatePredictionsBasedOnActualData,
   validateAndNormalizeDate,
 };

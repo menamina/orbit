@@ -63,7 +63,7 @@ async function trackCycle({
   accessToken,
   onTokenRefresh,
   cycleDays,
-}: AuthParams & CycleDays): Promise<TrackCycleResponse> {
+}: AuthParams & { cycleDays: CycleDays[] }): Promise<{ success: boolean }> {
   const res = await apiFetch(`http://localhost:5555/api/track/period`, {
     method: "POST",
     accessToken,

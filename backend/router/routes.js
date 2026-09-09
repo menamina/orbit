@@ -140,7 +140,6 @@ router.delete("/api/dltPack/:packID", checkAuth, dltPack);
 // ======== CYCLE ======== \\
 router.get("/api/cycle/:month/:year", checkAuth, getCycleByMonthYear);
 router.post("/api/track/period", checkAuth, trackCycle);
-router.delete("/api/cycle/:cycleID", checkAuth, dltCycle);
 
 // ======== NOTES ======== \\
 router.get("/api/notes/:date", checkAuth, getDatesNote);
