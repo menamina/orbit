@@ -96,7 +96,10 @@ function NoteCyclePopUp({
               <Box>
                 <Button
                   onClick={() => {
-                    trackCycle();
+                    trackCycle(
+                      accessToken,
+                      onTokenRefresh: setAccessToken
+                    );
                   }}
                 >
                   save

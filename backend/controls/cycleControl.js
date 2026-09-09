@@ -64,35 +64,9 @@ async function getCycleByMonthYear(req, res) {
 async function trackCycle(req, res) {
   try {
     const userID = Number(req.user.userID);
-    const { date } = req.body;
-
-    const dateToTrack = validateAndNormalizeDate(date);
-
-    const existing = await prisma.cycleDay.findUnique({
-      where: {
-        userID_date: {
-          userID,
-          date: dateToTrack,
-        },
-      },
-    });
-
-    if (existing) {
-      return res
-        .status(400)
-        .json({ error: "Day already tracked for this date" });
-    }
-
-    const cycleDay = await prisma.cycleDay.create({
-      data: {
-        userID,
-        date: dateToTrack,
-      },
-    });
+    const { cycleDays } = req.body;
 
     await updatePredictionsBasedOnActualData(userID);
-
-    res.status(200).json(cycleDay);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Server error" });

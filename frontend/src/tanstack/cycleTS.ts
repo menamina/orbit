@@ -62,7 +62,7 @@ async function getCycleByMonthYear({
 async function trackCycle({
   accessToken,
   onTokenRefresh,
-  ...data
+  cycleDays,
 }: AuthParams & CycleDays): Promise<TrackCycleResponse> {
   const res = await apiFetch(`http://localhost:5555/api/track/period`, {
     method: "POST",
@@ -71,7 +71,7 @@ async function trackCycle({
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(cycleDays),
   });
 
   if (!res.ok) {
