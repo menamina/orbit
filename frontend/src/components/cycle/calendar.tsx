@@ -26,8 +26,8 @@ const year = today.getFullYear();
 const todayString = today.toISOString().split("T")[0] as string;
 
 type DayToEditType = {
-  id: number | null;
-  date: string
+  id?: number;
+  date: string;
 }
 
 function Calendar() {
@@ -107,7 +107,7 @@ function Calendar() {
     const dayStr = day.format("YYYY-MM-DD");
 
     const cycleDayDates = cycleDays.map((d) => d.date);
-    const isThisDayACyleDay = cycleDayDates.filter((d) => d.date === dayStr);
+    const isThisDayACyleDay = cycleDayDates.includes(dayStr);
 
     const isPeriodStart =
       isThisDayACyleDay &&
@@ -130,15 +130,15 @@ function Calendar() {
         <PickerDay
           {...other}
           onDoubleClick={() => {
-            selectedDate !== day &&
+            if (selectedDate !== day.format("YYYY-MM-DD")) {
               handleDayDoubleClick(day.format("YYYY-MM-DD"));
+            }
           }}
           onClick={() => handleDaysToEdit(dayStr)}
           outsideCurrentMonth={outsideCurrentMonth}
           day={day}
           sx={{
-            ...(isThisDayACyleDay &&
-              !daysToEdit.includes(dayStr) && {
+            ...(!editCalendar && isThisDayACyleDay && {
                 bgcolor: "rgba(255, 182, 193, 0.4)",
                 borderRadius:
                   isPeriodStart && isPeriodEnd
@@ -152,6 +152,10 @@ function Calendar() {
                   bgcolor: "rgba(255, 182, 193, 0.6)",
                 },
               }),
+
+            ...(editCalendar && isThisDayACyleDay && (daysToEdit.find((dayObj) => dayObj.date === dayStr)) && {
+              bgcolor: "white"
+            }),
 
             ...(isOvulation && {
               border: "2px solid #9C27B0",
@@ -181,11 +185,12 @@ function Calendar() {
     if (editCalendar) {
       const isTracked = cycleDays.find((day) => day.date === dateToEdit);
       setDaysToEdit((prev) => [
-      ...prev,
-      isTracked 
-        ? { id: isTracked.id, date: isTracked.date }
-        : { date: dateToEdit }
-    ]);
+        ...prev,
+        isTracked
+          ? { id: isTracked.id, date: isTracked.date }
+          : { date: dateToEdit }
+      ]);
+    }
   }
 
   return (
@@ -219,7 +224,7 @@ function Calendar() {
               cycleDays,
               noteDays,
               ovulationDays: thisMonthsData?.ovulationDates || [],
-            } as any,
+            },
           }}
         />
       </LocalizationProvider>
