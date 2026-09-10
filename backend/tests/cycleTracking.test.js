@@ -67,3 +67,15 @@ afterAll(async () => {
   }
   await prisma.$disconnect();
 });
+
+describe("getting the cycle by the month and year", () => {
+  it("", async () => {});
+});
+
+describe("tracks cycle", () => {
+  it("", async () => {});
+});
+
+describe("validates and normalizes dates", () => {
+  it("", async () => {});
+});
