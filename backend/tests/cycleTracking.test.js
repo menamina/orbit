@@ -69,11 +69,16 @@ afterAll(async () => {
 });
 
 describe("getting the cycle by the month and year", () => {
-  it("", async () => {});
+  it("gets users cycle by month and year with valid data", async () => {});
+  it("does not get users cycle by month and year with invalid data", async () => {});
 });
 
 describe("tracks cycle", () => {
-  it("", async () => {});
+  it(" adds a new cycle with valid data", async () => {});
+  it(" does not add a new cycle with valid data", async () => {});
+  it(" deletes a cycle with valid data", async () => {});
+  it(" does not delete a cycle with valid data", async () => {});
+  it("with multiple items in an array it updates the cycle appropriately with valid data", async () => {});
 });
 
 describe("validates and normalizes dates", () => {

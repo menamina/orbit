@@ -66,6 +66,12 @@ async function trackCycle(req, res) {
     const userID = Number(req.user.userID);
     const cycleDays = req.body;
 
+    for (const obj of cycleDays) {
+      if (isNaN(obj.id) || isNaN(obj.date)) {
+        return res.status(400).json({ error: false });
+      }
+    }
+
     if (cycleDays.length === 0) {
       return res.status(200).json({ success: true });
     }
