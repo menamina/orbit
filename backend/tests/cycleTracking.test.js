@@ -123,7 +123,7 @@ describe("tracks cycle", () => {
       .post("/api/track/period")
       .send([{ date: "not-a-valid-date" }]);
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(400);
     expect(res.body).toHaveProperty("error");
   });
 
@@ -138,7 +138,6 @@ describe("tracks cycle", () => {
     expect(res.body).toHaveProperty("success");
     expect(res.body.success).toBe(true);
 
-    // Verify the cycle day was deleted
     const deletedCycle = await prisma.cycleDay.findUnique({
       where: { id: cycleToDelete },
     });
@@ -146,7 +145,7 @@ describe("tracks cycle", () => {
     expect(deletedCycle).toBeNull();
   });
 
-  it("handles mixed operations (add and delete) appropriately", async () => {
+  it("handles mixed operations appropriately", async () => {
     const cycleToDelete = createdCycleIds[1];
 
     const res = await agent
@@ -161,13 +160,11 @@ describe("tracks cycle", () => {
     expect(res.body).toHaveProperty("success");
     expect(res.body.success).toBe(true);
 
-    // Verify the cycle day was deleted
     const deletedCycle = await prisma.cycleDay.findUnique({
       where: { id: cycleToDelete },
     });
     expect(deletedCycle).toBeNull();
 
-    // Verify new cycle days were added
     const allCycleDays = await prisma.cycleDay.findMany({
       where: { userID: user.id },
     });
@@ -193,7 +190,6 @@ describe("validates and normalizes dates", () => {
 
     expect(res.status).toBe(200);
 
-    // Verify the date was normalized to midnight
     const cycleDay = await prisma.cycleDay.findFirst({
       where: {
         userID: user.id,
