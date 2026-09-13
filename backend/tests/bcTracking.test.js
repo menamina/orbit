@@ -72,9 +72,9 @@ afterAll(async () => {
 
 describe("birth control api", () => {
   it("creates a new pill pack", async () => {
-    const res = await agent.post(`/api/blister-packs`);
+    const res = await agent.post(`/api/new-blister-packs`);
 
-    pack = res.body.id;
+    pack = res.body.packNumber;
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("id");
@@ -159,7 +159,8 @@ describe("birth control api", () => {
     const otherPack = await prisma.pillPack.create({
       data: {
         userID: otherUser.id,
-        packNumber: 1,
+        packNumber: 2,
+        startDate: new Date("2026-08-08"),
       },
     });
 
@@ -173,7 +174,7 @@ describe("birth control api", () => {
 
     const res = await agent.delete(`/api/dltPill/${otherPill.id}`);
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(403);
     expect(res.body.error).toContain("Not authorized");
 
     await dlt(otherUser.id);

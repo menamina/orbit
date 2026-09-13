@@ -234,13 +234,16 @@ async function dltBCPIll(req, res) {
 
     const pill = await prisma.pillTracking.findUnique({
       where: { id: pillID },
+      include: {
+        blisterPack: true,
+      },
     });
 
     if (!pill) {
       return res.status(404).json({ error: "Pill record not found" });
     }
 
-    if (pill.userID !== userID) {
+    if (pill.blisterPack.userID !== userID) {
       return res
         .status(403)
         .json({ error: "Not authorized to delete this record" });

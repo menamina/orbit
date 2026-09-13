@@ -44,7 +44,6 @@ export async function apiFetch(
   });
 
   // Handle 401 (no token or user not found) - don't try to refresh
-  // need to handle extra
   if (res.status === 401) {
     return res;
   }
@@ -63,7 +62,7 @@ export async function apiFetch(
     if (!refreshRes.ok) {
       const refreshErrorData = await refreshRes.json();
       throw new ApiError(
-        refreshErrorData.error || "Session expired - please login again",
+        refreshErrorData.error,
         refreshRes.status,
         refreshErrorData.code,
       );
@@ -85,7 +84,6 @@ export async function apiFetch(
       onTokenRefresh(newAccessToken);
     }
 
-    // if refresh is not okay handle too
     return retryRes;
   }
 

@@ -68,7 +68,7 @@ async function trackCycle(req, res) {
 
     for (const obj of cycleDays) {
       if (isNaN(obj.id) || isNaN(obj.date)) {
-        return res.status(400).json({ error: false });
+        return res.status(400).json({ error: "Invalid date" });
       }
     }
 
@@ -83,6 +83,9 @@ async function trackCycle(req, res) {
         });
       } else if (!obj.id) {
         const dateToTrack = validateAndNormalizeDate(obj.date);
+        if (!dateToTrack) {
+          return res.status(400).json({ error: "Invalid date" });
+        }
 
         const created = await prisma.cycleDay.create({
           data: {
@@ -111,11 +114,11 @@ function validateAndNormalizeDate(date) {
   const dateToTrack = new Date(date);
 
   if (isNaN(dateToTrack.getTime())) {
-    throw new Error("Invalid date format");
+    return false;
   }
 
   if (dateToTrack > todaysDate) {
-    throw new Error("Cannot track beyond today's date");
+    return false;
   }
 
   // Normalize to midnight

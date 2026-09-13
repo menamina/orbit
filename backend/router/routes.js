@@ -133,7 +133,7 @@ router.get("/api/pill-pack/current", checkAuth, getCurrentPack);
 router.get("/api/all-packs", checkAuth, getAllPacks);
 router.get("/api/pill-pack/:packID/:packNumber", checkAuth, getPackByNumber);
 router.post("/api/new-blister-packs", checkAuth, startNewPack);
-router.post("/api/track-pill/:packID", checkAuth, trackPillInPack);
+router.post("/api/track-pill/:packNumber", checkAuth, trackPillInPack);
 router.delete("/api/dltPill/:pillID", checkAuth, dltBCPIll);
 router.delete("/api/dltPack/:packID", checkAuth, dltPack);
 
