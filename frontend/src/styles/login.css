@@ -1,0 +1,9 @@
+.loginBackground {
+  background-color: black;
+  color: white;
+}
+
+.loginBackground h1,
+.loginBackground h2 {
+  color: white;
+}

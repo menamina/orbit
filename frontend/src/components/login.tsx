@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
 import { useAuth } from "../authContext";
+import "../styles/login.css";
 
 import {
   checkIfUsernameIsInUse,
@@ -18,6 +19,27 @@ import type {
 } from "../tanstack/authTypes";
 
 import GitHubBlack from "../imgs/GitHub_Invertocat_Black_Clearspace.png";
+
+const textFieldCSS = {
+  "& .MuiInputBase-input": {
+    color: "white",
+  },
+  "& .MuiInputLabel-root": {
+    color: "white",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "white",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "white",
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "white",
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "white",
+  },
+};
 
 function Login() {
   const nav = useNavigate();
@@ -54,7 +76,6 @@ function Login() {
   const { mutate: login, error: loginError } = useMutation({
     ...loginMut(),
     onSuccess: (data: LoginResponse) => {
-      // Update access token and user info
       setAccessToken(data.accessToken);
       setUser(data.userINFO);
 
@@ -79,9 +100,9 @@ function Login() {
 
   useEffect(() => {
     if (user) {
-      nav("/home");
+      nav("/homepage");
     }
-  }, []);
+  }, [user, nav]);
 
   useEffect(() => {
     if (signupInfo.username === "") {
@@ -108,132 +129,156 @@ function Login() {
   }, [signupInfo.email]);
 
   return (
-    <>
-      {toggle === "login" && (
-        <Box>
+    <Box className="loginBackground" sx={{ width: "100%", height: "100%" }}>
+      <Box>
+        {toggle === "login" ? <h1>Login</h1> : <h1>Signup</h1>}
+        {toggle === "login" && (
+          <Box>
+            <Box>
+              {urlError && (
+                <Paper>
+                  {urlError === "oauth_failed"
+                    ? "GitHub login failed. Please try again."
+                    : null}
+                </Paper>
+              )}
+              {loginError && <Paper>{loginError.message}</Paper>}
+              {/* if the login error is email or password highlight the box later */}
+            </Box>
+
+            <Button
+              variant="outlined"
+              onClick={() => {
+                window.location.href = "http://localhost:5555/auth/github";
+              }}
+              sx={{ display: "flex", gap: 1, alignItems: "center" }}
+            >
+              <img
+                src={GitHubBlack}
+                alt="github logo"
+                style={{ width: 24, height: 24 }}
+              />
+              <Box>Login with GitHub</Box>
+            </Button>
+
+            {(Object.keys(loginInfo) as Array<keyof LoginData>).map((field) => (
+              <TextField
+                key={field}
+                label={field.charAt(0).toUpperCase() + field.slice(1)}
+                variant="outlined"
+                required
+                value={loginInfo[field]}
+                onChange={(e) => {
+                  setloginInfo((prev) => ({
+                    ...prev,
+                    [field]: e.target.value,
+                  }));
+                }}
+                sx={textFieldCSS}
+              />
+            ))}
+
+            {loginComplete && (
+              <Button variant="outlined" onClick={() => login(loginInfo)}>
+                login
+              </Button>
+            )}
+
+            {!loginComplete && (
+              <Button variant="outlined" disabled>
+                login
+              </Button>
+            )}
+          </Box>
+        )}
+        {toggle === "signup" && (
           <Box>
             {urlError && (
               <Paper>
                 {urlError === "oauth_failed"
-                  ? "GitHub login failed. Please try again."
-                  : null}
+                  ? "GitHub authentication failed. Please try again."
+                  : urlError === "no_token"
+                    ? "No token received from GitHub."
+                    : "Authentication error. Please try again."}
               </Paper>
             )}
-            {loginError && <Paper>{loginError.message}</Paper>}
-            {/* if the login error is email or password highlight the box later */}
-          </Box>
 
-          <Button
-            variant="outlined"
-            onClick={() => {
-              window.location.href = "http://localhost:5555/auth/github";
-            }}
-            sx={{ display: "flex", gap: 1, alignItems: "center" }}
-          >
-            <img
-              src={GitHubBlack}
-              alt="github logo"
-              style={{ width: 24, height: 24 }}
-            />
-            <Box>Login with GitHub</Box>
-          </Button>
-
-          {(Object.keys(loginInfo) as Array<keyof LoginData>).map((field) => (
-            <TextField
-              key={field}
-              label={field.charAt(0).toUpperCase()}
+            <Button
               variant="outlined"
-              required
-              value={loginInfo[field]}
-              onChange={(e) => {
-                setloginInfo((prev) => ({ ...prev, [field]: e.target.value }));
+              onClick={() => {
+                window.location.href = "http://localhost:5555/auth/github";
               }}
-            />
-          ))}
-
-          {loginComplete && (
-            <Button variant="outlined" onClick={() => login(loginInfo)}>
-              login
+              sx={{ display: "flex", gap: 1, alignItems: "center" }}
+            >
+              <img
+                src={GitHubBlack}
+                alt="github logo"
+                style={{ width: 24, height: 24 }}
+              />
+              <Box>Continue with GitHub</Box>
             </Button>
-          )}
 
-          {!loginComplete && (
-            <Button variant="outlined" disabled>
-              login
-            </Button>
-          )}
-        </Box>
-      )}
-      {toggle === "signup" && (
-        <Box>
-          {urlError && (
-            <Paper>
-              {urlError === "oauth_failed"
-                ? "GitHub authentication failed. Please try again."
-                : urlError === "no_token"
-                  ? "No token received from GitHub."
-                  : "Authentication error. Please try again."}
-            </Paper>
-          )}
+            <Box>
+              {usernameInUse && <Paper>{usernameInUse.message}</Paper>}
+              {emailInUse && <Paper>{emailInUse.message}</Paper>}
+              {signupError && <Paper>{signupError.message}</Paper>}
+            </Box>
 
-          <Box>
-            <Paper>Already have an account?</Paper>
-            <Button variant="outlined" onClick={() => setToggle("login")}>
-              login here
-            </Button>
-          </Box>
+            {(Object.keys(signupInfo) as Array<keyof SignupData>).map(
+              (field) => (
+                <TextField
+                  key={field}
+                  label={field.charAt(0).toUpperCase() + field.slice(1)}
+                  variant="outlined"
+                  required
+                  value={signupInfo[field]}
+                  onChange={(e) => {
+                    setSignupInfo((prev) => ({
+                      ...prev,
+                      [field]: e.target.value,
+                    }));
+                  }}
+                  sx={textFieldCSS}
+                />
+              ),
+            )}
 
-          <Button
-            variant="outlined"
-            onClick={() => {
-              window.location.href = "http://localhost:5555/auth/github";
-            }}
-            sx={{ display: "flex", gap: 1, alignItems: "center" }}
-          >
-            <img
-              src={GitHubBlack}
-              alt="github logo"
-              style={{ width: 24, height: 24 }}
-            />
-            <Box>Continue with GitHub</Box>
-          </Button>
-
-          <Box>
-            {usernameInUse && <Paper>{usernameInUse.message}</Paper>}
-            {emailInUse && <Paper>{emailInUse.message}</Paper>}
-            {signupError && <Paper>{signupError.message}</Paper>}
-          </Box>
-
-          {(Object.keys(signupInfo) as Array<keyof SignupData>).map((field) => (
-            <TextField
-              key={field}
-              label={field.charAt(0).toUpperCase() + field.slice(1)}
-              variant="outlined"
-              required
-              value={signupInfo[field]}
-              onChange={(e) => {
-                setSignupInfo((prev) => ({ ...prev, [field]: e.target.value }));
-              }}
-            />
-          ))}
-
-          {signupComplete && (
-            <Button variant="outlined" onClick={() => signup(signupInfo)}>
-              signup
-            </Button>
-          )}
-
-          {!signupComplete ||
-            ((usernameInUse || emailInUse) && (
-              <Button variant="outlined" disabled>
+            {signupComplete && (
+              <Button variant="outlined" onClick={() => signup(signupInfo)}>
                 signup
               </Button>
-            ))}
+            )}
 
-          {/* oauth login */}
-        </Box>
-      )}
-    </>
+            {!signupComplete ||
+              ((usernameInUse || emailInUse) && (
+                <Button variant="outlined" disabled>
+                  signup
+                </Button>
+              ))}
+
+            {/* oauth login */}
+          </Box>
+        )}
+
+        {
+          <Box>
+            <Box>
+              {toggle === "login"
+                ? "Don't have an account?"
+                : "Already have an account?"}
+            </Box>
+            <Button
+              variant="outlined"
+              onClick={() =>
+                setToggle((prev) => (prev === "login" ? "signup" : "login"))
+              }
+            >
+              {toggle === "login" ? "Sign Up" : "Log In"}
+            </Button>
+          </Box>
+        }
+      </Box>
+    </Box>
   );
 }
 

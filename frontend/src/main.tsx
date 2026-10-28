@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./authContext";
 import Index from "./index";
 
-import Login from "./components/login";
+import MainPage from "./components/mainPage";
 import OAuthToken from "./components/oauthToken";
 import Home from "./components/app/homePage";
 import PillComponent from "./components/pill/pillComponent";
@@ -21,12 +21,12 @@ const router = createBrowserRouter([
     element: <Index />,
     children: [
       {
-        index: true,
+        path: "homepage",
         element: <Home />,
       },
       {
         path: "login",
-        element: <Login />,
+        element: <MainPage />,
       },
       {
         path: "auth/callback",
@@ -42,7 +42,9 @@ const router = createBrowserRouter([
       },
       {
         path: "notes",
-        element: <Note noteData={null} date={new Date().toISOString().split("T")[0]} />,
+        element: (
+          <Note noteData={null} date={new Date().toISOString().split("T")[0]} />
+        ),
       },
       {
         path: "settings",
