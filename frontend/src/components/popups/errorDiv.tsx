@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../main";
+import { useState } from "react";
 import Alert from "@mui/material/Alert";
 
 type Err = {

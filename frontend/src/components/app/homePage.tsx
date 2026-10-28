@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 
-import Nav from "../nav";
+import Nav from "./nav";
 
 // media queries
 
@@ -14,6 +14,7 @@ function Home() {
       }}
     >
       <Nav />
+      <div>hi</div>
       <Outlet />
     </Box>
   );

@@ -111,19 +111,54 @@ function validateAndNormalizeDate(date) {
   }
 
   const todaysDate = new Date();
+  todaysDate.setHours(0, 0, 0, 0);
+
   const dateToTrack = new Date(date);
 
   if (isNaN(dateToTrack.getTime())) {
-    return false;
-  }
-
-  if (dateToTrack > todaysDate) {
-    return false;
+    throw new Error("Invalid date format");
   }
 
   // Normalize to midnight
   dateToTrack.setHours(0, 0, 0, 0);
+
+  if (dateToTrack > todaysDate) {
+    throw new Error("Cannot track beyond today's date");
+  }
+
   return dateToTrack;
+}
+
+function shouldCreateNewCycle(lastCycle, newDate) {
+  // No previous cycle exists
+  if (!lastCycle) {
+    return true;
+  }
+
+  // Use UTC date components to avoid timezone issues
+  const lastStartDate = new Date(lastCycle.startDate);
+  const lastUTC = Date.UTC(
+    lastStartDate.getFullYear(),
+    lastStartDate.getMonth(),
+    lastStartDate.getDate()
+  );
+
+  const newTrackDate = new Date(newDate);
+  const newUTC = Date.UTC(
+    newTrackDate.getFullYear(),
+    newTrackDate.getMonth(),
+    newTrackDate.getDate()
+  );
+
+  // Calculate days between dates
+  const daysDifference = Math.floor(
+    (newUTC - lastUTC) / (1000 * 60 * 60 * 24)
+  );
+
+  // Create new cycle if:
+  // 1. New date is before last cycle (negative days)
+  // 2. More than 10 days have passed
+  return daysDifference < 0 || daysDifference > 10;
 }
 
 // prediction: Update based on actual historical cycle data
@@ -241,4 +276,5 @@ export {
   trackCycle,
   updatePredictionsBasedOnActualData,
   validateAndNormalizeDate,
+  shouldCreateNewCycle,
 };

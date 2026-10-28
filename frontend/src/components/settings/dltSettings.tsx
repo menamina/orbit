@@ -15,7 +15,9 @@ import ErrorModal from "../popups/errorModal";
 import ConfirmModal from "../popups/confirmModal";
 import type { ConfirmModalProps } from "../popups/confirmModal";
 
-function DeleteSettings(setSettingsView: (view: string) => void) {
+type Views = "main" | "password" | "delete";
+
+function DeleteSettings({ setSettingsView }: { setSettingsView: (view: Views) => void }) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
 

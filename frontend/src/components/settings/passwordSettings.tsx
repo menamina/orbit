@@ -8,7 +8,7 @@ import { updatePasswordMut } from "../../tanstack/settingsTS";
 
 import { ApiError } from "../../tanstack/api";
 
-import { Box, Paper, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import TextField from "@mui/material/TextField";
 
 import ErrorDiv from "../popups/errorDiv";

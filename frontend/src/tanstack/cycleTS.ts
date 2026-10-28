@@ -2,7 +2,6 @@ import { queryOptions, mutationOptions } from "@tanstack/react-query";
 
 import type {
   CycleMonthResponse,
-  TrackCycleResponse,
   CycleDays,
 } from "./cycleTypes";
 import { apiFetch, ApiError, type AuthParams } from "./api";

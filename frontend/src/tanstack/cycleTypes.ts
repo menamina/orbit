@@ -15,4 +15,4 @@ export type CycleMonthResponse = {
   ovulationDates: number[];
 };
 
-export type TrackCycleResponse = CycleDay;
+export type TrackCycleResponse = CycleDays;

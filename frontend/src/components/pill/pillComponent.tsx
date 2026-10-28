@@ -16,7 +16,7 @@ import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import ConfirmModal from "../popups/confirmModal";
 import type { ConfirmModalProps } from "../popups/confirmModal";
-import Dots from "../imgs/dotsVert.svg";
+import Dots from "../../imgs/dotsVert.svg";
 
 import { Box, Paper, Button } from "@mui/material";
 

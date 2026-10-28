@@ -17,12 +17,12 @@ import type {
   LoginResponse,
 } from "../tanstack/authTypes";
 
-import GitHubBlack from "./imgs/GitHub_Invertocat_Black_Clearspace.png";
+import GitHubBlack from "../imgs/GitHub_Invertocat_Black_Clearspace.png";
 
 function Login() {
   const nav = useNavigate();
 
-  const { setAccessToken, setUser } = useAuth();
+  const { user, setAccessToken, setUser } = useAuth();
   const [toggle, setToggle] = useState("login");
   const [searchParams] = useSearchParams();
   const urlError = searchParams.get("error");
@@ -76,6 +76,12 @@ function Login() {
   );
 
   const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
+
+  useEffect(() => {
+    if (user) {
+      nav("/home");
+    }
+  }, []);
 
   useEffect(() => {
     if (signupInfo.username === "") {

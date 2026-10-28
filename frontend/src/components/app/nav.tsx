@@ -4,8 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { Box } from "@mui/material";
 import { keyframes } from "@mui/system";
 
-import Open from "../imgs/openArrow.svg";
-import Close from "../imgs/closeArrow.svg";
+import Open from "../../imgs/openArrow.svg";
+import Close from "../../imgs/closeArrow.svg";
+import { logoutMut } from "../../tanstack/authTS";
 
 const appNavOptions = ["pill", "cycle", "account", "logout"];
 
@@ -18,8 +19,6 @@ const rolling = keyframes`
     }
 
 `;
-
-import { logoutMut } from "../tanstack/authTS";
 
 function Nav() {
   const [menuToggle, setMenuToggle] = useState(false);

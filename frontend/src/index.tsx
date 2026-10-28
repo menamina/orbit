@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { authenticateQuery } from "./tanstack/authTS";
@@ -13,6 +13,12 @@ function Index() {
   );
 
   useEffect(() => {
+    if (!accessToken) {
+      nav("/login");
+      return;
+    }
+
+    // If authentication succeeded
     if (isSuccess && data) {
       if (
         typeof data === "object" &&
@@ -21,8 +27,8 @@ function Index() {
         data.authenticated
       ) {
         setUser(data.user);
+        nav("/homepage");
       }
-      nav("/home");
     }
 
     if (isError) {
@@ -30,9 +36,9 @@ function Index() {
       setUser(null);
       nav("/login");
     }
-  }, [isSuccess, isError, data, setUser, setAccessToken, nav]);
+  }, [accessToken, isSuccess, isError, data, setUser, setAccessToken, nav]);
 
-  return null;
+  return <Outlet />;
 }
 
 export default Index;

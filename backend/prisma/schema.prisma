@@ -85,7 +85,7 @@ model PillPack {
   startDayOfWeek    String           @default("sun")
 
   pills             PillTracking[]   // Pills in this pack
-  user              User             @relation(fields: [userID], references: [id])
+  user              User             @relation(fields: [userID], references: [id], onDelete: Cascade)
 
   @@unique([userID, id, packNumber])
   @@index([userID, startDate])

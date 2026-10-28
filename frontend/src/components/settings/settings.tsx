@@ -45,7 +45,7 @@ function Settings() {
       <Box>
         {view === "main" && <MainSettings />}
         {view === "password" && <PasswordSettings />}
-        {view === "delete" && <DeleteSettings setSettingsView={setView} />}
+        {view === "delete" && <DeleteSettings setSettingsView={(v: Views) => setView(v)} />}
       </Box>
     </>
   );

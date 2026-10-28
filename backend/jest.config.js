@@ -12,4 +12,5 @@ export default {
     '!**/node_modules/**',
     '!**/tests/**',
   ],
+  maxWorkers: 1, // Run tests sequentially to avoid database conflicts
 };

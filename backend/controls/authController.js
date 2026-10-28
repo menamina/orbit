@@ -72,7 +72,6 @@ async function login(req, res) {
 async function usernameInUse(req, res) {
   try {
     const { username } = req.query;
-    const userID = Number(req.user.userID);
 
     const inUse = await prisma.user.findUnique({ where: { username } });
     if (!inUse) {

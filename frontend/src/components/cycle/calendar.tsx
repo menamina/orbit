@@ -8,10 +8,11 @@ import { getCycleByMonthYearQuery } from "../../tanstack/cycleTS";
 import { getNotesByMonthQuery } from "../../tanstack/notesTS";
 
 import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import Badge from "@mui/material/Badge";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { PickerDay, PickerDayProps } from "@mui/x-date-pickers/PickerDay";
+import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import { ApiError } from "../../tanstack/api";
@@ -103,7 +104,7 @@ function Calendar() {
     const dayNum = day.date();
     const dayStr = day.format("YYYY-MM-DD");
 
-    const cycleDayDates = cycleDays.map((d) => d.date);
+    const cycleDayDates = cycleDays.map((d: CycleDays) => d.date);
     const isThisDayACyleDay = cycleDayDates.includes(dayStr);
 
     const isPeriodStart =
@@ -215,11 +216,11 @@ function Calendar() {
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DateCalendar
-          label={!editCalendar && "disabled"}
-          defaultValue={todayString}
+          defaultValue={dayjs(todayString)}
           loading={thisMonthPending || notesPending}
           onMonthChange={handleMonthChange}
           renderLoading={() => <DayCalendarSkeleton />}
+          disabled={!editCalendar}
           slots={{
             day: markedDays,
           }}
@@ -228,7 +229,7 @@ function Calendar() {
               cycleDays,
               noteDays,
               ovulationDays: thisMonthsData?.ovulationDates || [],
-            },
+            } as any,
           }}
         />
       </LocalizationProvider>

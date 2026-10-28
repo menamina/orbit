@@ -8,9 +8,9 @@ import Index from "./index";
 import Login from "./components/login";
 import OAuthToken from "./components/oauthToken";
 import Home from "./components/app/homePage";
-import Pill from "./components/pill/pillPack";
-import Cycle from "./components/cycle/cycleTracking";
-import Notes from "./components/notes/writeOrEditNote";
+import PillComponent from "./components/pill/pillComponent";
+import Calendar from "./components/cycle/calendar";
+import Note from "./components/notes/writeOrEditNote";
 import Settings from "./components/settings/settings";
 
 const queryClient = new QueryClient();
@@ -34,15 +34,15 @@ const router = createBrowserRouter([
       },
       {
         path: "pill",
-        element: <Pill />,
+        element: <PillComponent />,
       },
       {
         path: "cycle",
-        element: <Cycle />,
+        element: <Calendar />,
       },
       {
         path: "notes",
-        element: <Notes />,
+        element: <Note noteData={null} date={new Date().toISOString().split("T")[0]} />,
       },
       {
         path: "settings",

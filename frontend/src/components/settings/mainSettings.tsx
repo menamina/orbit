@@ -11,7 +11,7 @@ import {
 } from "../../tanstack/authTS";
 
 import { ApiError } from "../../tanstack/api";
-import type { SettingsType } from "../tanstack/SettingsType";
+import type { SettingsType } from "../../tanstack/settingsTypes";
 
 import { Box, TextField } from "@mui/material";
 
@@ -237,7 +237,7 @@ function MainSettings() {
                 <TextField
                   key={key}
                   label={label}
-                  value={settingsToUpdate[key]}
+                  value={settingsToUpdate[key as keyof SettingsType] as string}
                   onChange={(e) =>
                     setSettingsToUpdate({
                       ...settingsToUpdate,
@@ -245,7 +245,7 @@ function MainSettings() {
                     })
                   }
                   error={!!errorObj}
-                  helperText={errorObj?.error || ""}
+                  helperText={errorObj?.message || ""}
                   variant="outlined"
                   fullWidth
                 />
@@ -263,7 +263,7 @@ function MainSettings() {
                     key={key}
                     label={label}
                     type="number"
-                    value={settingsToUpdate[key] || ""}
+                    value={settingsToUpdate[key as keyof SettingsType] || ""}
                     onChange={(e) =>
                       setSettingsToUpdate({
                         ...settingsToUpdate,

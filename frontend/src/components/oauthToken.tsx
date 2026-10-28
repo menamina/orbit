@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "../src/main";
+import { useAuth } from "../authContext";
 
 function OAuthToken() {
   const { setAccessToken } = useAuth();
