@@ -92,13 +92,13 @@ async function isUsernameTaken(
   const res = await fetch(
     `http://localhost:5555/api/signup/username?username=${username}`,
   );
-  const data = await res.json();
 
   if (!res.ok) {
     const errorData = await res.json();
     throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
+  const data = await res.json();
   return data;
 }
 
@@ -106,13 +106,13 @@ async function isEmailTaken(email: string): Promise<{ success: boolean }> {
   const res = await fetch(
     `http://localhost:5555/api/signup/email?email=${email}`,
   );
-  const data = await res.json();
 
   if (!res.ok) {
     const errorData = await res.json();
     throw new ApiError(errorData.error, res.status, errorData.code);
   }
 
+  const data = await res.json();
   return data;
 }
 
@@ -126,8 +126,7 @@ async function signup(data: SignupData): Promise<{ success: boolean }> {
   const responseData = await res.json();
 
   if (!res.ok) {
-    const errorData = await res.json();
-    throw new ApiError(errorData.error, res.status, errorData.code);
+    throw new ApiError(responseData.error, res.status, responseData.code);
   }
 
   return responseData;
@@ -144,8 +143,7 @@ async function login(data: LoginData): Promise<LoginResponse> {
   const responseData = await res.json();
 
   if (!res.ok) {
-    const errorData = await res.json();
-    throw new ApiError(errorData.error, res.status, errorData.code);
+    throw new ApiError(responseData.error, res.status, responseData.code);
   }
 
   return responseData;

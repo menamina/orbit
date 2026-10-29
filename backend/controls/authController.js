@@ -28,9 +28,7 @@ async function login(req, res) {
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ invalidEmail: "Email is invalid or not in use" });
+      return res.status(400).json({ invalidEmail: "Email is invalid" });
     }
 
     const validPassword = await checkPassword(

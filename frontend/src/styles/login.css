@@ -1,9 +1,33 @@
 .loginBackground {
-  background-color: black;
   color: white;
 }
 
 .loginBackground h1,
 .loginBackground h2 {
   color: white;
+}
+
+.loginBackground h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 600px) {
+  .loginBackground h1 {
+    font-size: 2.5rem;
+  }
+}
+
+.moonGIF {
+  max-height: 60vh;
+  width: auto;
+  max-width: 100%;
+}
+
+@media (min-width: 900px) {
+  .moonGIF {
+    max-height: 80vh;
+    width: 50vw;
+    max-width: 600px;
+  }
 }

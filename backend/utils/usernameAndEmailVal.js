@@ -29,18 +29,13 @@ export function validateUsername(req, res, next) {
 
 export function validateEmail(req, res, next) {
   const { email } = req.query;
-  const errors = [];
 
   if (!email) {
-    return res.status(400).json({ errors: "Email is required" });
+    return res.status(400).json({ error: "Email is required" });
   }
 
   if (!validator.isEmail(email)) {
-    errors.push("Invalid email address");
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
+    return res.status(400).json({ error: "Invalid email address" });
   }
 
   next();
