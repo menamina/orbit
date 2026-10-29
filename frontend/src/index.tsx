@@ -5,6 +5,10 @@ import { authenticateQuery } from "./tanstack/authTS";
 import { useAuth } from "./authContext";
 import "./styles/global.css";
 
+import { Box } from "@mui/material";
+
+import Nav from "./components/app/nav";
+
 function Index() {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const nav = useNavigate();
@@ -29,7 +33,7 @@ function Index() {
 
     if (isSuccess && data && "authenticated" in data && data.authenticated) {
       setUser(data.user);
-      nav("/homepage");
+      nav("/pill");
     }
   }, [
     accessToken,
@@ -47,9 +51,16 @@ function Index() {
   }
 
   return (
-    <div className="mainDiv">
+    <Box
+      className="mainDiv"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* <Nav /> */}
       <Outlet />
-    </div>
+    </Box>
   );
 }
 

@@ -7,7 +7,7 @@ import Index from "./index";
 
 import MainPage from "./components/mainPage";
 import OAuthToken from "./components/oauthToken";
-import Home from "./components/app/homePage";
+// import Home from "./components/app/homePage";
 import PillComponent from "./components/pill/pillComponent";
 import Calendar from "./components/cycle/calendar";
 import Note from "./components/notes/writeOrEditNote";
@@ -20,10 +20,6 @@ const router = createBrowserRouter([
     path: "/",
     element: <Index />,
     children: [
-      {
-        path: "homepage",
-        element: <Home />,
-      },
       {
         path: "login",
         element: <MainPage />,

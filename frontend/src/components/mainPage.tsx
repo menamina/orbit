@@ -1,9 +1,9 @@
 import Login from "./login";
 import Moon from "../imgs/moonrot2.gif";
 
-import { Button, Box, Paper } from "@mui/material";
+import { Box } from "@mui/material";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function MainPage() {
   const [showText, setShowText] = useState(true);
@@ -15,10 +15,10 @@ function MainPage() {
         height: "100%",
         width: "100%",
         display: "flex",
-        flexDirection: { xs: "column", md: "row" }, // Stack on mobile, side-by-side on desktop
+        flexDirection: { xs: "column", md: "row" }, // stack mobile, side/side  desktop
       }}
     >
-      <Login />
+      {showText ? <Login /> : <Login />}
       <Box
         className="moonbox"
         sx={{

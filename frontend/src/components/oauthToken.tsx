@@ -32,7 +32,7 @@ function OAuthToken() {
       queryKey: ["auth", token],
     });
 
-    navigate("/homepage");
+    navigate("/pill");
   }, [searchParams, navigate, queryClient, setAccessToken]);
 
   return (

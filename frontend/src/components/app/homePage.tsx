@@ -1,23 +1,17 @@
-import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
+import PillComponent from "../pill/pillComponent";
 
-import Nav from "./nav";
+// function Home() {
+//   return (
+//     <Box
+//       sx={{
+//         display: "flex",
+//         flexDirection: "column",
+//       }}
+//     >
 
-// media queries
+//     </Box>
+//   );
+// }
 
-function Home() {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Nav />
-      <div>hi</div>
-      <Outlet />
-    </Box>
-  );
-}
-
-export default Home;
+// export default Home;

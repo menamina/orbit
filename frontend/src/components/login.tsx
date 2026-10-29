@@ -80,7 +80,7 @@ function Login() {
       setAccessToken(data.accessToken);
       setUser(data.userINFO);
 
-      nav("/home");
+      nav("/pill");
     },
   });
 
@@ -101,7 +101,7 @@ function Login() {
 
   useEffect(() => {
     if (user) {
-      nav("/homepage");
+      nav("/pill");
     }
   }, [user, nav]);
 
