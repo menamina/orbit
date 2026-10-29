@@ -175,7 +175,9 @@ function Login() {
                 <Paper>
                   {urlError === "oauth_failed"
                     ? "GitHub login failed. Please try again."
-                    : null}
+                    : urlError === "no_token"
+                      ? "No token received from GitHub. Please try again"
+                      : "Authentication error. Please try again."}
                 </Paper>
               )}
               {loginError && <Paper>{loginError.message} </Paper>}

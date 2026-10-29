@@ -19,7 +19,9 @@ function generateRefreshToken() {
 
 async function storeRefreshToken(userID, token) {
   const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + Number(refreshExpiry));
+  // Parse "30d" format - extract the number and convert to days
+  const days = parseInt(refreshExpiry);
+  expiresAt.setDate(expiresAt.getDate() + days);
   return await prisma.refreshToken.create({
     data: {
       token,

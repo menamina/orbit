@@ -39,10 +39,7 @@ import {
   dltPack,
 } from "../controls/bcPillControl.js";
 
-import {
-  getCycleByMonthYear,
-  trackCycle,
-} from "../controls/cycleControl.js";
+import { getCycleByMonthYear, trackCycle } from "../controls/cycleControl.js";
 
 import {
   getSettings,
@@ -93,7 +90,7 @@ router.get(
 router.get(
   "/auth/github/callback",
   passport.authenticate("github", {
-    failureRedirect: "/login",
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=oauth_failed`,
     session: false,
   }),
   async (req, res) => {
@@ -119,7 +116,7 @@ router.get(
       );
     } catch (error) {
       console.error("OAuth callback error:", error);
-      res.redirect("/login?error=oauth_failed");
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
     }
   },
 );

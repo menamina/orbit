@@ -17,13 +17,11 @@ function OAuthToken() {
     if (error) {
       console.error("OAuth error:", error);
       navigate("/login?error=oauth_failed");
-      return;
     }
 
     if (!token) {
       console.error("No token received from OAuth");
       navigate("/login?error=no_token");
-      return;
     }
 
     // Update access token state FIRST
@@ -34,7 +32,7 @@ function OAuthToken() {
       queryKey: ["auth", token],
     });
 
-    navigate("/home");
+    navigate("/homepage");
   }, [searchParams, navigate, queryClient, setAccessToken]);
 
   return (
