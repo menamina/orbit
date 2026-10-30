@@ -19,7 +19,7 @@ async function getCycleByMonthYear(req, res) {
 
     const data = await prisma.user.findUnique({
       where: {
-        userID,
+        id: userID,
       },
       select: {
         cycleDays: {
@@ -51,8 +51,15 @@ async function getCycleByMonthYear(req, res) {
       data?.settings?.ovulationPrediction,
     );
 
+    // Format cycleDays dates to YYYY-MM-DD strings
+    const formattedCycleDays = data?.cycleDays?.map((day) => ({
+      id: day.id,
+      date: day.date.toISOString().split('T')[0],
+    })) || [];
+
     return res.status(200).json({
-      ...data,
+      cycleDays: formattedCycleDays,
+      settings: data?.settings || null,
       ovulationDates,
     });
   } catch (error) {

@@ -13,7 +13,7 @@ function ErrorDiv(error: Err) {
 
   if (closeDiv === false) {
     return (
-      <div>
+      <div className="errorDIV">
         <Alert severity="warning" onClose={() => setCloseDiv(true)}>
           {errorMessage}
         </Alert>

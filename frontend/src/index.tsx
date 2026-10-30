@@ -33,7 +33,6 @@ function Index() {
 
     if (isSuccess && data && "authenticated" in data && data.authenticated) {
       setUser(data.user);
-      nav("/pill");
     }
   }, [
     accessToken,
@@ -50,6 +49,11 @@ function Index() {
     return null;
   }
 
+  // Don't render protected routes if not authenticated
+  if (!isOnPublicRoute && !accessToken) {
+    return null;
+  }
+
   return (
     <Box
       className="mainDiv"
@@ -58,7 +62,7 @@ function Index() {
         flexDirection: "column",
       }}
     >
-      {/* <Nav /> */}
+      {!isOnPublicRoute && <Nav />}
       <Outlet />
     </Box>
   );

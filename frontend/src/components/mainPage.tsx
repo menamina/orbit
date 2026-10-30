@@ -3,10 +3,21 @@ import Moon from "../imgs/moonrot2.gif";
 
 import { Box } from "@mui/material";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../authContext";
 
 function MainPage() {
+  const { user } = useAuth();
+
   const [showText, setShowText] = useState(true);
+  const nav = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      nav("/pill");
+    }
+  }, [user, nav]);
 
   return (
     <Box

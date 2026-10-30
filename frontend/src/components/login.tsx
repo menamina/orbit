@@ -45,7 +45,7 @@ const textFieldCSS = {
 function Login() {
   const nav = useNavigate();
 
-  const { user, setAccessToken, setUser } = useAuth();
+  const { setAccessToken, setUser } = useAuth();
   const [toggle, setToggle] = useState("login");
   const [searchParams] = useSearchParams();
   const urlError = searchParams.get("error");
@@ -98,12 +98,6 @@ function Login() {
   );
 
   const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
-
-  useEffect(() => {
-    if (user) {
-      nav("/pill");
-    }
-  }, [user, nav]);
 
   useEffect(() => {
     if (signupInfo.username === "") {

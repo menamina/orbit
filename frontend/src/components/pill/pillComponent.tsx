@@ -34,6 +34,7 @@ function PillComponent() {
   const { data: currentPack, error: getCurrentPackError } = useQuery({
     ...getCurrentPackQuery(accessToken, setAccessToken),
     retry: false,
+    enabled: !!accessToken,
   });
 
   const {
@@ -79,7 +80,7 @@ function PillComponent() {
   };
 
   return (
-    <>
+    <div className="pillComp">
       {((startingPackError instanceof ApiError &&
         startingPackError.isAuthError()) ||
         (dltingPackError instanceof ApiError &&
@@ -97,7 +98,7 @@ function PillComponent() {
       )}
       {startingPackError && <ErrorDiv error={startingPackError} />}
       {dltingPackError && <ErrorDiv error={dltingPackError} />}
-      {getCurrentPackError && <ErrorDiv error={getCurrentPackError} />}
+      {getCurrentPackError && <ErrorDiv error={getCurrentPackError.message} />}
       {!currentPack || currentPack?.pills?.length === 0 ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <Paper sx={{ padding: "20px", textAlign: "center" }}>
@@ -176,7 +177,7 @@ function PillComponent() {
         </>
       )}
       {displayDltModal && <ConfirmModal {...deletePackModalProps} />}
-    </>
+    </div>
   );
 }
 

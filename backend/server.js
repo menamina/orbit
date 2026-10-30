@@ -3,13 +3,14 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import routes from "./router/routes.js";
+import passport from "passport";
 
 const server = express();
 const port = process.env.PORT;
 
 server.use(
   cors({
-    origin: "http://localhost:5174",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
   }),
 );
@@ -22,7 +23,6 @@ function handleError(error) {
   console.log(`yay :-)`);
 }
 server.use(passport.initialize());
-server.use(passport.session());
 
 server.use(express.json());
 server.use(cookieParser());

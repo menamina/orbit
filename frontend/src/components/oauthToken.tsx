@@ -17,17 +17,20 @@ function OAuthToken() {
     if (error) {
       console.error("OAuth error:", error);
       navigate("/login?error=oauth_failed");
+      return;
     }
 
     if (!token) {
       console.error("No token received from OAuth");
       navigate("/login?error=no_token");
+      return;
     }
 
     // Update access token state FIRST
     setAccessToken(token);
 
     // Then invalidate auth query to trigger re-authentication check
+    // This will fetch user data from backend using the token
     queryClient.invalidateQueries({
       queryKey: ["auth", token],
     });

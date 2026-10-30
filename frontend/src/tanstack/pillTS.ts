@@ -73,7 +73,7 @@ async function getCurrentPack({
   accessToken,
   onTokenRefresh,
 }: AuthParams): Promise<PillPack> {
-  const res = await apiFetch(`/api/pill-pack/current`, {
+  const res = await apiFetch(`http://localhost:5555/api/pill-pack/current`, {
     accessToken,
     onTokenRefresh,
   });
@@ -118,7 +118,7 @@ async function getSpecificPillPack({
 }: { packID: number } & {
   packNumber: number;
 } & AuthParams): Promise<PillPack> {
-  const res = await apiFetch(`/api/pill-pack/${packID}/${packNumber}`, {
+  const res = await apiFetch(`http://localhost:5555/api/pill-pack/${packID}/${packNumber}`, {
     accessToken,
     onTokenRefresh,
   });

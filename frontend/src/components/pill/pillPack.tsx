@@ -73,7 +73,7 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
   });
 
   return (
-    <>
+    <div>
       {((takePillError instanceof ApiError && takePillError.isAuthError()) ||
         (dltPillError instanceof ApiError && dltPillError.isAuthError())) && (
         <ErrorModal
@@ -191,7 +191,7 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
           </Box>
         </Box>
       </Box>
-    </>
+    </div>
   );
 }
 

@@ -7,6 +7,7 @@ import { keyframes } from "@mui/system";
 import Open from "../../imgs/openArrow.svg";
 import Close from "../../imgs/closeArrow.svg";
 import { logoutMut } from "../../tanstack/authTS";
+import { useAuth } from "../../authContext";
 
 const appNavOptions = ["pill", "cycle", "account", "logout"];
 
@@ -23,10 +24,13 @@ const rolling = keyframes`
 function Nav() {
   const [menuToggle, setMenuToggle] = useState(false);
   const nav = useNavigate();
+  const { setAccessToken, setUser } = useAuth();
 
   const { mutate: logout } = useMutation({
     ...logoutMut(),
     onSuccess: () => {
+      setAccessToken(null);
+      setUser(null);
       nav("/login");
     },
   });

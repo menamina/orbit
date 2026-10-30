@@ -98,7 +98,7 @@ router.get(
       const user = req.user;
 
       // Generate JWT tokens
-      const accessToken = generateAccessToken(user.id, user.email);
+      const accessToken = generateAccessToken(user.id, user.name, user.username, user.email);
       const refreshTokenValue = generateRefreshToken();
 
       // Store refresh token
