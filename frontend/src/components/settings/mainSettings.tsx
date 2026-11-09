@@ -176,7 +176,7 @@ function MainSettings() {
                 ? icons[settingsToUpdate.icon as keyof typeof icons]
                 : icons[userSettings?.icon as keyof typeof icons]
             }
-            alt={`your profile picutre is ${userSettings.icon}`}
+            alt={`your profile picutre is ${userSettings?.icon}`}
           />
         </Box>
         {!edit && (

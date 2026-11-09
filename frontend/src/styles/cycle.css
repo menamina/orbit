@@ -1,11 +1,9 @@
-/* Cycle Calendar Styles */
 .cycle-calendar {
   max-width: 600px;
   margin: 2rem auto;
   padding: 1rem;
 }
 
-/* Material UI DateCalendar overrides */
 .cycle-calendar .MuiDateCalendar-root {
   width: 100%;
   max-width: 100%;
@@ -23,7 +21,6 @@
   background-color: rgba(27, 26, 97, 0.1);
 }
 
-/* Responsive adjustments */
 @media (max-width: 600px) {
   .cycle-calendar {
     padding: 0.5rem;
