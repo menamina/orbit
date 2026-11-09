@@ -65,9 +65,32 @@
   .pillComp {
     padding: 0.5rem;
     margin: 1rem auto;
+    max-width: 100%;
   }
 
   .pillComp .MuiPaper-root {
     min-height: 35px;
+    font-size: 0.85rem;
+  }
+
+  .pillComp button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .pillComp {
+    padding: 0.25rem;
+  }
+
+  .pillComp .MuiPaper-root {
+    min-height: 30px;
+    font-size: 0.75rem;
+  }
+
+  .pillComp button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
   }
 }

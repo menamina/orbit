@@ -118,33 +118,34 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
             marginBottom: "1rem"
           }}
         >
-          {days.map((day) => (
-            <Paper
-              onClick={() =>
-                setClickedCircle((prev) => (prev !== day ? day : prev))
-              }
-              key={day}
-              sx={{
-                textAlign: "center",
-                border:
-                  day === nextDayHalo ? "2px solid blue" : "1px solid #ccc",
-                borderRadius: "100%",
-                bgcolor: currentPack?.pills?.some(
-                  (pill: Pill) => pill.dayNumber === day,
-                )
-                  ? "#1b1a61"
-                  : "white",
-                color: currentPack?.pills?.some(
-                  (pill: Pill) => pill.dayNumber === day,
-                )
-                  ? "white"
-                  : "#666",
-                fontWeight: day === nextDayHalo ? "bold" : "normal"
-              }}
-            >
-              {day}
-            </Paper>
-          ))}
+          {days.map((day) => {
+            const isFuture = day > nextDayHalo;
+            const isTaken = currentPack?.pills?.some(
+              (pill: Pill) => pill.dayNumber === day,
+            );
+
+            return (
+              <Paper
+                onClick={() =>
+                  !isFuture && setClickedCircle((prev) => (prev !== day ? day : prev))
+                }
+                key={day}
+                sx={{
+                  textAlign: "center",
+                  border:
+                    day === nextDayHalo ? "2px solid blue" : "1px solid #ccc",
+                  borderRadius: "100%",
+                  bgcolor: isTaken ? "#1b1a61" : "white",
+                  color: isTaken ? "white" : isFuture ? "#ccc" : "#666",
+                  fontWeight: day === nextDayHalo ? "bold" : "normal",
+                  cursor: isFuture ? "not-allowed" : "pointer",
+                  opacity: isFuture ? 0.5 : 1
+                }}
+              >
+                {day}
+              </Paper>
+            );
+          })}
         </Box>
 
         <Box>

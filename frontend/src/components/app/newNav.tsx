@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function NewNav() {
   const [openTab, setOpenTab] = useState<boolean>(false);
 

@@ -2,6 +2,7 @@ import { useAuth } from "../../authContext";
 
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/cycle.css";
 
 import { useQuery } from "@tanstack/react-query";
 import { getCycleByMonthYearQuery } from "../../tanstack/cycleTS";
@@ -199,7 +200,7 @@ function Calendar() {
   }
 
   return (
-    <>
+    <div className="cycle-calendar">
       {((thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
         (notesError instanceof ApiError && notesError.isAuthError())) && (
         <ErrorModal
@@ -213,6 +214,24 @@ function Calendar() {
       )}
       {thisMonthError && <ErrorDiv error={thisMonthError} />}
       {notesError && <ErrorDiv error={notesError} />}
+
+      <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+        <button
+          onClick={() => setEditCalendar(prev => !prev)}
+          style={{
+            backgroundColor: editCalendar ? '#1b1a61' : '#fff',
+            color: editCalendar ? '#fff' : '#1b1a61',
+            border: '1px solid #1b1a61',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: 500
+          }}
+        >
+          {editCalendar ? 'View Mode' : 'Edit Mode'}
+        </button>
+      </div>
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DateCalendar
@@ -250,7 +269,7 @@ function Calendar() {
           sendData={daysToEdit}
         />
       )}
-    </>
+    </div>
   );
 }
 
