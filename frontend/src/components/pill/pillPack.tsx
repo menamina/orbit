@@ -89,8 +89,13 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
       {dltPillError && <ErrorDiv error={dltPillError} />}
 
       <Box
-        sx={{ display: "flex", flexDirection: "column", bgColor: "#E3DFFF" }}
-        // or "#c6c0ec" for this box and other color for main app?
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#E3DFFF",
+          padding: "1rem",
+          borderRadius: "8px"
+        }}
       >
         <Box
           sx={{
@@ -110,6 +115,7 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
             display: "grid",
             gridTemplateColumns: "repeat(7, 1fr)",
             gap: "5px",
+            marginBottom: "1rem"
           }}
         >
           {days.map((day) => (
@@ -120,75 +126,81 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
               key={day}
               sx={{
                 textAlign: "center",
-                // idk how i want halo yet but for now this is it
                 border:
-                  day === nextDayHalo ? "1px solid blue" : "1px solid gray",
+                  day === nextDayHalo ? "2px solid blue" : "1px solid #ccc",
                 borderRadius: "100%",
-
                 bgcolor: currentPack?.pills?.some(
                   (pill: Pill) => pill.dayNumber === day,
                 )
                   ? "#1b1a61"
                   : "white",
+                color: currentPack?.pills?.some(
+                  (pill: Pill) => pill.dayNumber === day,
+                )
+                  ? "white"
+                  : "#666",
+                fontWeight: day === nextDayHalo ? "bold" : "normal"
               }}
-            ></Paper>
+            >
+              {day}
+            </Paper>
           ))}
+        </Box>
 
-          <Box>
-            {clickedCircle === nextDayHalo && (
+        <Box>
+          {clickedCircle === nextDayHalo && (
+            <button
+              disabled={isTakingPill}
+              onClick={() =>
+                takePill({
+                  packNumber: currentPack!.packNumber,
+                  dayNumber: nextDayHalo,
+                  date: Date.now(),
+                  accessToken: accessToken,
+                  onTokenRefresh: setAccessToken,
+                })
+              }
+            >
+              {isTakingPill ? "Taking pill..." : "take today's pill"}
+            </button>
+          )}
+          {clickedCircle && allNumbersInPack.includes(clickedCircle) && (
+            <button
+              disabled={isDeletingPill}
+              onClick={() => {
+                const pillToDelete = currentPack?.pills?.find(
+                  (pill) => pill.dayNumber === clickedCircle,
+                );
+                if (pillToDelete) {
+                  dltPill({
+                    pillID: pillToDelete.id,
+                    accessToken: accessToken,
+                    onTokenRefresh: setAccessToken,
+                  });
+                }
+              }}
+            >
+              {isDeletingPill ? "Deleting..." : "delete"}
+            </button>
+          )}
+          {clickedCircle &&
+            clickedCircle !== nextDayHalo &&
+            !allNumbersInPack.includes(clickedCircle) && (
               <button
                 disabled={isTakingPill}
                 onClick={() =>
                   takePill({
                     packNumber: currentPack!.packNumber,
-                    dayNumber: nextDayHalo,
+                    dayNumber: clickedCircle,
                     date: Date.now(),
                     accessToken: accessToken,
                     onTokenRefresh: setAccessToken,
                   })
                 }
               >
-                {isTakingPill ? "Taking pill..." : "take today's pill"}
+                {isTakingPill ? "Taking pill..." : "take missed pill"}
               </button>
             )}
-            {clickedCircle && allNumbersInPack.includes(clickedCircle) && (
-              <button
-                disabled={isDeletingPill}
-                onClick={() => {
-                  const pillToDelete = currentPack?.pills?.find(
-                    (pill) => pill.dayNumber === clickedCircle,
-                  );
-                  if (pillToDelete) {
-                    dltPill({
-                      pillID: pillToDelete.id,
-                      accessToken: accessToken,
-                      onTokenRefresh: setAccessToken,
-                    });
-                  }
-                }}
-              >
-                {isDeletingPill ? "Deleting..." : "delete"}
-              </button>
-            )}
-            {clickedCircle &&
-              clickedCircle !== nextDayHalo &&
-              !allNumbersInPack.includes(clickedCircle) && (
-                <button
-                  disabled={isTakingPill}
-                  onClick={() =>
-                    takePill({
-                      packNumber: currentPack!.packNumber,
-                      dayNumber: clickedCircle,
-                      date: Date.now(),
-                      accessToken: accessToken,
-                      onTokenRefresh: setAccessToken,
-                    })
-                  }
-                >
-                  {isTakingPill ? "Taking pill..." : "take missed pill"}
-                </button>
-              )}
-          </Box>
         </Box>
       </Box>
     </div>

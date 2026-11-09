@@ -1,0 +1,40 @@
+/* Navigation Styles */
+nav {
+  padding: 1rem;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+nav img {
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  transition: opacity 0.2s;
+}
+
+nav img:hover {
+  opacity: 0.7;
+}
+
+nav a {
+  color: #1b1a61;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+nav a:hover {
+  color: #151349;
+}
+
+nav > div > div {
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+nav > div > div:hover {
+  color: #151349;
+}

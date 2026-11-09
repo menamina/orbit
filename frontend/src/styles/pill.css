@@ -1,0 +1,73 @@
+/* Pill Component Styles */
+.pillComp {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+/* Pill circles - make them actually circular */
+.pillComp .MuiPaper-root {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+/* Buttons */
+.pillComp button {
+  background-color: #1b1a61;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.pillComp button:hover:not(:disabled) {
+  background-color: #151349;
+}
+
+.pillComp button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Dots menu */
+.pillComp img[alt="3 dots"] {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  display: block;
+}
+
+/* Dots menu buttons container */
+.pillComp .dots-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.pillComp .dots-menu button {
+  margin-top: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .pillComp {
+    padding: 0.5rem;
+    margin: 1rem auto;
+  }
+
+  .pillComp .MuiPaper-root {
+    min-height: 35px;
+  }
+}

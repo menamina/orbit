@@ -19,6 +19,7 @@ import type { ConfirmModalProps } from "../popups/confirmModal";
 import Dots from "../../imgs/dotsVert.svg";
 
 import { Box, Paper, Button } from "@mui/material";
+import "../../styles/pill.css";
 
 function PillComponent() {
   const { accessToken, setAccessToken, setUser } = useAuth();
@@ -101,9 +102,9 @@ function PillComponent() {
       {getCurrentPackError && <ErrorDiv error={getCurrentPackError.message} />}
       {!currentPack || currentPack?.pills?.length === 0 ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <Paper sx={{ padding: "20px", textAlign: "center" }}>
+          <span style={{ textAlign: "center", marginBottom: "0.5rem", fontSize: "0.95rem", color: "#333" }}>
             Pick a day to start your new pack
-          </Paper>
+          </span>
           <Box
             sx={{
               display: "grid",
@@ -164,7 +165,7 @@ function PillComponent() {
           <Box onClick={() => setOpenedDots(true)}>
             <img src={Dots} alt="3 dots" />
             {openDots && (
-              <Box>
+              <Box className="dots-menu">
                 <button onClick={() => setDisplayDltModal(true)}>
                   delete current pack
                 </button>

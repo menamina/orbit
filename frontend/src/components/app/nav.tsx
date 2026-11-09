@@ -8,21 +8,36 @@ import Open from "../../imgs/openArrow.svg";
 import Close from "../../imgs/closeArrow.svg";
 import { logoutMut } from "../../tanstack/authTS";
 import { useAuth } from "../../authContext";
+import "../../styles/nav.css";
 
 const appNavOptions = ["pill", "cycle", "account", "logout"];
 
-const rolling = keyframes`
+const slideIn = keyframes`
   from {
     transform: translateX(-100%);
+    opacity: 0;
   }
-    to {
-    traansform: translateX(100%)
-    }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+`;
 
+const slideOut = keyframes`
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0
+
+  }
 `;
 
 function Nav() {
   const [menuToggle, setMenuToggle] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const nav = useNavigate();
   const { setAccessToken, setUser } = useAuth();
 
@@ -35,6 +50,19 @@ function Nav() {
     },
   });
 
+  const handleToggle = () => {
+    if (menuToggle) {
+      // Start exit animation
+      setIsAnimating(true);
+      setTimeout(() => {
+        setMenuToggle(false);
+        setIsAnimating(false);
+      }, 2000); // Match animation duration (2s)
+    } else {
+      setMenuToggle(true);
+    }
+  };
+
   return (
     <>
       <Box
@@ -45,10 +73,10 @@ function Nav() {
         }}
       >
         <Box
-          onClick={() => setMenuToggle((prev) => !prev)}
+          onClick={handleToggle}
           sx={{
             justifySelf: "flex-start",
-            width: "30%",
+            width: "50%",
           }}
         >
           <img
@@ -60,7 +88,7 @@ function Nav() {
         {menuToggle && (
           <Box
             sx={{
-              animation: `${rolling} 2s ease`,
+              animation: `${isAnimating ? slideOut : slideIn} 2s ease`,
               display: "flex",
               gap: "20px",
               width: "70%",
