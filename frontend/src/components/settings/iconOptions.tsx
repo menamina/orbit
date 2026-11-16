@@ -17,12 +17,13 @@ function IconOptions({
   const [clickedIcon, setClickedIcon] = useState<string>("");
 
   return (
-    <Box>
+    <Box sx={{ width: "50%" }}>
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
           gap: "10px",
+          width: "100%",
         }}
       >
         {Object.entries(images).map(([key, imgSrc]) => (
@@ -32,6 +33,8 @@ function IconOptions({
               setClickedIcon(key);
             }}
             sx={{
+              display: "flex",
+              justifyContent: "center",
               cursor: "pointer",
               border:
                 usersCurrentImg === key
@@ -47,7 +50,7 @@ function IconOptions({
             <img
               src={imgSrc}
               alt={key}
-              style={{ width: "100%", height: "auto" }}
+              style={{ width: "50%", height: "auto" }}
             />
           </Box>
         ))}

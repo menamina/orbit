@@ -1,0 +1,54 @@
+.mainSettings {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Profile Image */
+.mainSettings img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto;
+  display: block;
+  border: 3px solid #f0f0f0;
+  transition: border-color 0.2s ease;
+}
+
+.mainSettings img:hover {
+  border-color: rgb(143, 118, 187);
+}
+
+/* Info Display Boxes */
+.mainSettings > div > div {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+
+.mainSettings > div > div:last-child {
+  border-bottom: none;
+}
+
+/* Cycle Section */
+.mainSettings > div > div:first-child {
+  font-weight: 600;
+  color: #000;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Button Containers */
+.mainSettings button {
+  margin-top: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Text Field Spacing */
+.mainSettings .MuiTextField-root {
+  margin-bottom: 1rem;
+}

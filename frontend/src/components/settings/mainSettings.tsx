@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../authContext";
+import "../../styles/settings.css";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSettingsQuery, updateSettingsMut } from "../../tanstack/settingsTS";
@@ -134,8 +135,14 @@ function MainSettings() {
     return true;
   });
 
+  console.log("isFormValid:", isFormValid);
+  console.log("settingsToUpdate:", settingsToUpdate);
+  console.log("settingsUpdatePending:", settingsUpdatePending);
+  console.log("usernameInUseError:", usernameInUseError);
+  console.log("emailInUseError:", emailInUseError);
+
   return (
-    <>
+    <Box sx={{ display: "flex" }}>
       <Box className="mainSettings">
         {((updateSettingsError instanceof ApiError &&
           updateSettingsError.isAuthError()) ||
@@ -158,6 +165,9 @@ function MainSettings() {
           sx={{
             cursor: openImgOptions ? "default" : "pointer",
             position: "relative",
+            width: "120px",
+            height: "120px",
+            margin: "0 auto",
           }}
         >
           {edit && (
@@ -166,17 +176,22 @@ function MainSettings() {
               alt="camera image indicating ability to change photo"
               style={{
                 position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "50px",
+                height: "50px",
                 zIndex: 1,
               }}
             />
           )}
           <img
             src={
-              openImgOptions
+              edit
                 ? icons[settingsToUpdate.icon as keyof typeof icons]
                 : icons[userSettings?.icon as keyof typeof icons]
             }
-            alt={`your profile picutre is ${userSettings?.icon}`}
+            alt={`your profile picutre is ${edit ? settingsToUpdate.icon : userSettings?.icon}`}
           />
         </Box>
         {!edit && (
@@ -216,7 +231,22 @@ function MainSettings() {
               </Box>
             </Box>
 
-            <button onClick={() => setEdit(true)}>edit</button>
+            <button
+              className="button"
+              onClick={() => {
+                setEdit(true);
+                setSettingsToUpdate({
+                  name: userSettings?.name || "",
+                  username: userSettings?.username || "",
+                  email: userSettings?.email || "",
+                  icon: userSettings?.icon || "",
+                  cycleLength: userSettings?.cycleLength,
+                  daysBetweenPeriod: userSettings?.daysBetweenPeriod,
+                });
+              }}
+            >
+              edit
+            </button>
           </>
         )}
         {edit && (
@@ -278,27 +308,44 @@ function MainSettings() {
             </Box>
             <Box>
               <button
+                className="button"
                 onClick={() => {
                   setEdit(false);
                   setOpenImgOptions(false);
+                  setSettingsToUpdate({
+                    name: userSettings?.name || "",
+                    username: userSettings?.username || "",
+                    email: userSettings?.email || "",
+                    icon: userSettings?.icon || "",
+                    cycleLength: userSettings?.cycleLength,
+                    daysBetweenPeriod: userSettings?.daysBetweenPeriod,
+                  });
                 }}
               >
                 cancel
               </button>
               <button
+                className={
+                  !isFormValid ||
+                  settingsUpdatePending ||
+                  !!usernameInUseError ||
+                  !!emailInUseError
+                    ? "save"
+                    : "save button"
+                }
                 disabled={
                   !isFormValid ||
                   settingsUpdatePending ||
                   !!usernameInUseError ||
                   !!emailInUseError
                 }
-                onClick={() =>
+                onClick={() => {
                   updateSettings({
                     accessToken,
                     onTokenRefresh: setAccessToken,
                     ...settingsToUpdate,
-                  })
-                }
+                  });
+                }}
               >
                 save
               </button>
@@ -316,7 +363,7 @@ function MainSettings() {
           onClose={() => setOpenImgOptions(false)}
         />
       )}
-    </>
+    </Box>
   );
 }
 
