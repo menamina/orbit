@@ -136,7 +136,7 @@ function MainSettings() {
 
   return (
     <>
-      <Box>
+      <Box className="mainSettings">
         {((updateSettingsError instanceof ApiError &&
           updateSettingsError.isAuthError()) ||
           (getSettingsError instanceof ApiError &&

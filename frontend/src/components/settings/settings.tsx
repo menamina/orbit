@@ -11,41 +11,40 @@ type Views = "main" | "password" | "delete";
 function Settings() {
   const [view, setView] = useState<Views>("main");
 
+  const viewOptions: { key: Views; label: string }[] = [
+    { key: "main", label: "Settings" },
+    { key: "password", label: "Password" },
+    { key: "delete", label: "Delete Account" },
+  ];
+
   return (
     <>
-      <Box>
-        <button
-          onClick={() => {
-            if (view !== "main") {
-              setView("main");
-            }
-          }}
-        >
-          Settings
-        </button>
-        <button
-          onClick={() => {
-            if (view !== "password") {
-              setView("password");
-            }
-          }}
-        >
-          Password
-        </button>
-        <button
-          onClick={() => {
-            if (view !== "delete") {
-              setView("delete");
-            }
-          }}
-        >
-          Delete Account
-        </button>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        {viewOptions.map(({ key, label }) => (
+          <button
+            className="button"
+            key={key}
+            onClick={() => {
+              if (view !== key) {
+                setView(key);
+              }
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </Box>
-      <Box>
+      <Box className="settingsRendered">
         {view === "main" && <MainSettings />}
         {view === "password" && <PasswordSettings />}
-        {view === "delete" && <DeleteSettings setSettingsView={(v: Views) => setView(v)} />}
+        {view === "delete" && (
+          <DeleteSettings setSettingsView={(v: Views) => setView(v)} />
+        )}
       </Box>
     </>
   );

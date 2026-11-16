@@ -15,3 +15,27 @@ body,
   width: 100vw;
   height: 100vh;
 }
+
+.button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: 1px solid #00000045;
+  background-color: #fff;
+  color: #000000;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 0.5rem;
+}
+
+.button:hover {
+  background-color: rgb(143, 118, 187);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgb(143, 118, 187);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(27, 26, 97, 0.2);
+}
