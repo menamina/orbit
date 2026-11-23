@@ -11,7 +11,6 @@ import { ApiError } from "../../tanstack/api";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
-import { Box, Paper } from "@mui/material";
 
 interface PillPackProps {
   currentPack?: PillPackType;
@@ -88,67 +87,46 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
       {takePillError && <ErrorDiv error={takePillError} />}
       {dltPillError && <ErrorDiv error={dltPillError} />}
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#E3DFFF",
-          padding: "1rem",
-          borderRadius: "8px"
-        }}
-      >
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: "5px",
-          }}
-        >
+      <div className="pill-card">
+        <div className="pill-weekdays">
           {startPackThisDay.map((day) => (
-            <Paper key={day} sx={{ textAlign: "center", padding: "5px" }}>
+            <div key={day} className="pill-weekday">
               {day}
-            </Paper>
+            </div>
           ))}
-        </Box>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: "5px",
-            marginBottom: "1rem"
-          }}
-        >
+        </div>
+        <div className="pill-grid">
           {days.map((day) => {
             const isFuture = day > nextDayHalo;
             const isTaken = currentPack?.pills?.some(
               (pill: Pill) => pill.dayNumber === day,
             );
+            const isNext = day === nextDayHalo;
+
+            const className = [
+              "pill-day",
+              isTaken && "is-taken",
+              isNext && "is-next",
+              isFuture && "is-future",
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
-              <Paper
+              <div
                 onClick={() =>
                   !isFuture && setClickedCircle((prev) => (prev !== day ? day : prev))
                 }
                 key={day}
-                sx={{
-                  textAlign: "center",
-                  border:
-                    day === nextDayHalo ? "2px solid blue" : "1px solid #ccc",
-                  borderRadius: "100%",
-                  bgcolor: isTaken ? "#1b1a61" : "white",
-                  color: isTaken ? "white" : isFuture ? "#ccc" : "#666",
-                  fontWeight: day === nextDayHalo ? "bold" : "normal",
-                  cursor: isFuture ? "not-allowed" : "pointer",
-                  opacity: isFuture ? 0.5 : 1
-                }}
+                className={className}
               >
                 {day}
-              </Paper>
+              </div>
             );
           })}
-        </Box>
+        </div>
 
-        <Box>
+        <div className="pill-actions">
           {clickedCircle === nextDayHalo && (
             <button
               disabled={isTakingPill}
@@ -202,8 +180,8 @@ function PillPack({ currentPack, dayOfTheWeekToStart }: PillPackProps) {
                 {isTakingPill ? "Taking pill..." : "take missed pill"}
               </button>
             )}
-        </Box>
-      </Box>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,41 +1,146 @@
-/* Pill Component Styles */
+/* ============ Pill Component ============ */
 .pillComp {
-  max-width: 500px;
+  max-width: 440px;
   margin: 2rem auto;
-  padding: 1rem;
+  padding: 0 1rem;
+  animation: fade-up 0.35s ease both;
 }
 
-/* Pill circles - make them actually circular */
-.pillComp .MuiPaper-root {
+.pill-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* Pill header - weekdays */
+.pill-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.pill-weekday {
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pill-weekday.is-selectable {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pill-weekday.is-selectable:hover {
+  background-color: var(--accent-soft);
+}
+
+/* Pill grid */
+.pill-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 1rem;
+}
+
+/* Individual pill day circles */
+.pill-day {
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  font-size: 0.875rem;
   cursor: pointer;
   min-height: 40px;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease,
+    border-color 0.15s ease;
 }
 
-/* Buttons */
-.pillComp button {
-  background-color: #1b1a61;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
+.pill-day.is-taken {
+  background-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pill-day.is-taken:hover {
+  background-color: var(--accent-strong);
+}
+
+.pill-day.is-next {
+  border: 2px solid var(--accent);
+  background-color: var(--surface);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.pill-day.is-future {
+  background-color: var(--bg);
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pill-day:not(.is-future):not(.is-taken):hover {
+  background-color: var(--accent-soft);
+}
+
+.pill-day:active:not(.is-future) {
+  transform: scale(0.92);
+}
+
+/* Pill actions */
+.pill-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.pill-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  font: inherit;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: background-color 0.2s;
-  margin-top: 1rem;
-  width: 100%;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: var(--ink);
+  color: #fff;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
 }
 
-.pillComp button:hover:not(:disabled) {
-  background-color: #151349;
+.pill-actions button:hover:not(:disabled) {
+  background: #2a2885;
+  box-shadow: 0 4px 14px rgba(27, 26, 97, 0.25);
 }
 
-.pillComp button:disabled {
-  opacity: 0.6;
+.pill-actions button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.pill-actions button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -46,18 +151,41 @@
   cursor: pointer;
   margin-top: 1.5rem;
   display: block;
+  transition: opacity 0.15s ease;
 }
 
-/* Dots menu buttons container */
-.pillComp .dots-menu {
+.pillComp img[alt="3 dots"]:hover {
+  opacity: 0.7;
+}
+
+.dots-menu {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
 }
 
-.pillComp .dots-menu button {
-  margin-top: 0;
+.dots-menu button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-size: 0.85rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dots-menu button:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: var(--accent);
 }
 
 /* Responsive adjustments */
@@ -65,16 +193,19 @@
   .pillComp {
     padding: 0.5rem;
     margin: 1rem auto;
-    max-width: 100%;
   }
 
-  .pillComp .MuiPaper-root {
+  .pill-card {
+    padding: 1rem;
+  }
+
+  .pill-day {
     min-height: 35px;
     font-size: 0.85rem;
   }
 
-  .pillComp button {
-    padding: 0.6rem 1rem;
+  .pill-actions button {
+    padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
 }
@@ -84,12 +215,20 @@
     padding: 0.25rem;
   }
 
-  .pillComp .MuiPaper-root {
+  .pill-card {
+    padding: 0.75rem;
+  }
+
+  .pill-day {
     min-height: 30px;
     font-size: 0.75rem;
   }
 
-  .pillComp button {
+  .pill-weekday {
+    font-size: 0.65rem;
+  }
+
+  .pill-actions button {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }

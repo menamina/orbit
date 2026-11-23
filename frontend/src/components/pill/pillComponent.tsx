@@ -18,7 +18,6 @@ import ConfirmModal from "../popups/confirmModal";
 import type { ConfirmModalProps } from "../popups/confirmModal";
 import Dots from "../../imgs/dotsVert.svg";
 
-import { Box, Paper, Button } from "@mui/material";
 import "../../styles/pill.css";
 
 function PillComponent() {
@@ -101,80 +100,84 @@ function PillComponent() {
       {dltingPackError && <ErrorDiv error={dltingPackError} />}
       {getCurrentPackError && <ErrorDiv error={getCurrentPackError.message} />}
       {!currentPack || currentPack?.pills?.length === 0 ? (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <span style={{ textAlign: "center", marginBottom: "0.5rem", fontSize: "0.95rem", color: "#333" }}>
+        <div className="pill-card">
+          <p style={{ textAlign: "center", marginBottom: "1rem", fontSize: "0.95rem", color: "var(--text)" }}>
             Pick a day to start your new pack
-          </span>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
-              gap: "5px",
-            }}
-          >
-            {weekdays.map((day) => (
-              <Paper
-                key={day}
-                onClick={() => setDayOfTheWeekToStart(day)}
-                sx={{
-                  cursor: "pointer",
-                  textAlign: "center",
-                  padding: "10px",
-                  bgcolor: dayOfTheWeekToStart === day ? "#1b1a61" : "white",
-                  color: dayOfTheWeekToStart === day ? "white" : "black",
-                  "&:hover": {
-                    bgcolor:
-                      dayOfTheWeekToStart === day ? "#1b1a61" : "#f0f0f0",
-                  },
-                }}
-              >
-                {day}
-              </Paper>
-            ))}
-          </Box>
-          <Button
-            variant="contained"
-            onClick={() =>
-              startPackMutation({
-                startDayOfWeek: dayOfTheWeekToStart,
-                accessToken,
-                onTokenRefresh: setAccessToken,
-              })
-            }
-            disabled={newPackPending}
-            sx={{
-              bgcolor: "#1b1a61",
-              "&:hover": {
-                bgcolor: "#151349",
-              },
-            }}
-          >
-            {newPackPending ? "Starting..." : "Start Pack"}
-          </Button>
-          <PillPack
-            currentPack={currentPack}
-            dayOfTheWeekToStart={dayOfTheWeekToStart}
-          />
-        </Box>
+          </p>
+          <div className="pill-weekdays" style={{ marginBottom: "1rem" }}>
+            {weekdays.map((day) => {
+              const isSelected = dayOfTheWeekToStart === day;
+              const className = [
+                "pill-weekday",
+                isSelected && "is-selected",
+              ]
+                .filter(Boolean)
+                .join(" ");
+
+              return (
+                <div
+                  key={day}
+                  onClick={() => setDayOfTheWeekToStart(day)}
+                  className={className}
+                  style={{
+                    cursor: "pointer",
+                    padding: "0.75rem 0.5rem",
+                    backgroundColor: isSelected ? "var(--accent)" : "var(--surface)",
+                    color: isSelected ? "#fff" : "var(--text)",
+                    borderRadius: "var(--radius)",
+                    fontWeight: isSelected ? "600" : "500",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {day}
+                </div>
+              );
+            })}
+          </div>
+          <div className="pill-actions">
+            <button
+              onClick={() =>
+                startPackMutation({
+                  startDayOfWeek: dayOfTheWeekToStart,
+                  accessToken,
+                  onTokenRefresh: setAccessToken,
+                })
+              }
+              disabled={newPackPending}
+            >
+              {newPackPending ? "Starting..." : "Start Pack"}
+            </button>
+          </div>
+          <div style={{ marginTop: "1.5rem" }}>
+            <PillPack
+              currentPack={currentPack}
+              dayOfTheWeekToStart={dayOfTheWeekToStart}
+            />
+          </div>
+        </div>
       ) : (
         <>
           <PillPack
             currentPack={currentPack}
             dayOfTheWeekToStart={effectiveDayOfWeek}
           />
-          <Box onClick={() => setOpenedDots(true)}>
-            <img src={Dots} alt="3 dots" />
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={Dots}
+              alt="3 dots"
+              onClick={() => setOpenedDots(true)}
+            />
             {openDots && (
-              <Box className="dots-menu">
+              <div className="dots-menu">
                 <button onClick={() => setDisplayDltModal(true)}>
                   delete current pack
                 </button>
-                <button onClick={() => setDisplayDltModal(false)}>
+                <button onClick={() => setOpenedDots(false)}>
                   cancel
                 </button>
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
         </>
       )}
       {displayDltModal && <ConfirmModal {...deletePackModalProps} />}
