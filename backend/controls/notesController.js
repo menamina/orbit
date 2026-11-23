@@ -1,33 +1,38 @@
 import prisma from "../prisma/client.js";
 
 async function getDatesNote(req, res) {
-  const userID = Number(req.user.userID);
-  const dateString = req.body.date;
+  try {
+    const userID = Number(req.user.userID);
+    const dateString = req.params.date;
 
-  if (!dateString) {
-    return res.status(400).json({ error: "Date is required" });
+    if (!dateString) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return res.status(400).json({ error: "Invalid date" });
+    }
+
+    // Normalize to midnight for DATE comparison
+    date.setHours(0, 0, 0, 0);
+
+    const note = await prisma.notes.findFirst({
+      where: {
+        userID,
+        date,
+      },
+    });
+
+    if (!note) {
+      const noNote = [];
+      return res.status(200).json(noNote);
+    }
+    return res.status(200).json(note);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Server error" });
   }
-
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
-    return res.status(400).json({ error: "Invalid date" });
-  }
-
-  // Normalize to midnight for DATE comparison
-  date.setHours(0, 0, 0, 0);
-
-  const note = await prisma.notes.findFirst({
-    where: {
-      userID,
-      date,
-    },
-  });
-
-  if (!note) {
-    const noNote = [];
-    return res.status(200).json(noNote);
-  }
-  return res.status(200).json(note);
 }
 
 async function getNotes(req, res) {
@@ -80,6 +85,13 @@ async function writeNote(req, res) {
     if (date) {
       noteDate = new Date(date);
       noteDate.setHours(0, 0, 0, 0); // Normalize to midnight
+
+      // Prevent creating notes for future dates
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (noteDate > today) {
+        return res.status(400).json({ error: "Cannot create notes for future dates" });
+      }
     }
 
     const newNote = await prisma.notes.create({
