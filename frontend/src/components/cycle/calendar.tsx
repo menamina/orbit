@@ -12,6 +12,7 @@ import {
 import { getNotesByMonthQuery } from "../../tanstack/notesTS";
 
 import dayjs, { type Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
@@ -24,6 +25,8 @@ import type { CycleDays } from "../../tanstack/cycleTypes";
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import NoteCyclePopUp from "./popup";
+
+dayjs.extend(utc);
 
 const DATE_FMT = "YYYY-MM-DD";
 
@@ -160,7 +163,7 @@ function Calendar() {
     () =>
       new Set(
         (monthNotes ?? []).map((note) =>
-          typeof note.date === "number" ? note.date : dayjs(note.date).date(),
+          typeof note.date === "number" ? note.date : dayjs.utc(note.date).date(),
         ),
       ),
     [monthNotes],

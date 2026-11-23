@@ -27,6 +27,8 @@ function NoteCyclePopUp({ date, onClose, onEditPeriod }: PopupType) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
 
+  const isFutureDate = dayjs(date).isAfter(dayjs(), "day");
+
   const {
     data: selectedDayNote,
     isPending: notePending,
@@ -34,6 +36,7 @@ function NoteCyclePopUp({ date, onClose, onEditPeriod }: PopupType) {
   } = useQuery({
     ...getNoteByDayQuery(date, accessToken, setAccessToken),
     retry: false,
+    enabled: !isFutureDate, // Don't fetch notes for future dates
   });
 
   return (
@@ -70,7 +73,11 @@ function NoteCyclePopUp({ date, onClose, onEditPeriod }: PopupType) {
           )}
 
           <div className="cycle-popup-body">
-            {notePending ? (
+            {isFutureDate ? (
+              <div className="cycle-popup-loading">
+                You cannot create notes for future dates.
+              </div>
+            ) : notePending ? (
               <div className="cycle-popup-loading">Loading…</div>
             ) : (
               <Note
@@ -80,14 +87,9 @@ function NoteCyclePopUp({ date, onClose, onEditPeriod }: PopupType) {
                     : null
                 }
                 date={date}
+                onClose={onClose}
               />
             )}
-          </div>
-
-          <div className="cycle-popup-footer">
-            <button className="btn btn-soft" onClick={onEditPeriod}>
-              Edit period days
-            </button>
           </div>
         </div>
       </Modal>

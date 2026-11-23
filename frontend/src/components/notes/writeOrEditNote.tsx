@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../authContext";
 import { useNavigate } from "react-router-dom";
 
 import { Box, Button } from "@mui/material";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
 import ThoughtBubble from "../../imgs/thoughtbubble.svg";
-import dayjs from "dayjs";
+import Trash from "../../imgs/trash.svg";
 
 import {
   writeANoteMut,
@@ -29,19 +29,31 @@ type NoteData = {
 function Note({
   noteData = null,
   date,
+  onClose,
 }: {
   noteData: NoteData | null;
   date: string;
+  onClose?: () => void;
 }) {
   const [note, setNote] = useState({
     id: noteData?.id ? noteData.id : "",
     note: noteData?.note ? noteData.note : "",
   });
   const NOTE = note.note.trim() !== "";
-  const isFutureDate = dayjs(date).isAfter(dayjs(), "day");
 
-  const [isEditing, setIsEditing] = useState(noteData ? false : !isFutureDate);
+  const [isEditing, setIsEditing] = useState(noteData ? false : true);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Sync local state when noteData prop changes (after saving/fetching)
+  useEffect(() => {
+    if (noteData) {
+      setNote({
+        id: noteData.id,
+        note: noteData.note,
+      });
+      setIsEditing(false);
+    }
+  }, [noteData]);
 
   const { accessToken, setAccessToken, setUser } = useAuth();
   const queryClient = useQueryClient();
@@ -56,6 +68,8 @@ function Note({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
       queryClient.invalidateQueries({ queryKey: ["userNotes"] });
+      // Close modal after successful save
+      onClose?.();
     },
   });
 
@@ -69,6 +83,8 @@ function Note({
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
       queryClient.invalidateQueries({ queryKey: ["userNotes"] });
       setIsEditing(false);
+      // Close modal after successful update
+      onClose?.();
     },
   });
 
@@ -81,6 +97,8 @@ function Note({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
       queryClient.invalidateQueries({ queryKey: ["userNotes"] });
+      // Close modal after successful delete
+      onClose?.();
     },
   });
 
@@ -134,6 +152,9 @@ function Note({
             width: "100%",
           }}
         >
+          <Box>
+            <img src={ThoughtBubble} alt="thought bubble" style={{ width: "60px" }} />
+          </Box>
           {noteData && (
             <Button
               color="error"
@@ -143,88 +164,91 @@ function Note({
                 setConfirmDelete(true);
               }}
             >
-              {/* trash can icon */}
-              <img src="" alt="" />
+              <img src={Trash} alt="delete" width="20" />
             </Button>
           )}
-          <Box>
-            <img src={ThoughtBubble} alt="thought bubble" style={{ width: "60px" }} />
-          </Box>
         </Box>
         <Box>
-          {isFutureDate && (
-            <Box sx={{ color: "var(--muted)", fontSize: "0.875rem", marginBottom: "0.5rem" }}>
-              You cannot create notes for future dates.
+          {isEditing ? (
+            <TextareaAutosize
+              value={note.note}
+              placeholder="....."
+              aria-label="write or update a note"
+              minRows={15}
+              style={{ width: "100%" }}
+              onChange={(e) =>
+                setNote((prev) => ({ ...prev, note: e.target.value }))
+              }
+            />
+          ) : (
+            <Box
+              sx={{
+                whiteSpace: "pre-wrap",
+                padding: "0.75rem",
+                minHeight: "200px",
+                backgroundColor: "var(--bg)",
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--line)",
+              }}
+            >
+              {note.note}
             </Box>
           )}
-          <TextareaAutosize
-            value={note.note}
-            placeholder={isFutureDate ? "Cannot edit future dates" : "....."}
-            aria-label="write or update a note"
-            minRows={15}
-            style={{ width: 200 }}
-            disabled={!isEditing || isFutureDate}
-            onChange={(e) =>
-              setNote((prev) => ({ ...prev, note: e.target.value }))
-            }
-          />
         </Box>
-        {!isFutureDate && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              gap: "0.5rem",
-            }}
-          >
-            {isEditing && (
-              <Button
-                disabled={writePending || updatePending || dltPending}
-                onClick={() => {
-                  if (noteData) {
-                    // Restore original note text for existing notes
-                    setNote({ id: noteData.id, note: noteData.note });
-                    setIsEditing(false);
-                  } else {
-                    // Reset for new notes
-                    setNote({ id: "", note: "" });
-                  }
-                }}
-              >
-                cancel
-              </Button>
-            )}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "0.5rem",
+          }}
+        >
+          {isEditing && (
             <Button
-              disabled={
-                (!NOTE && (isEditing || !noteData)) ||
-                writePending ||
-                updatePending ||
-                dltPending
-              }
+              disabled={writePending || updatePending || dltPending}
               onClick={() => {
-                if (!noteData) {
-                  writeNote({
-                    accessToken,
-                    onTokenRefresh: setAccessToken,
-                    note: note.note,
-                    date,
-                  });
-                } else if (noteData && !isEditing) {
-                  setIsEditing(true);
+                if (noteData) {
+                  // Restore original note text for existing notes
+                  setNote({ id: noteData.id, note: noteData.note });
+                  setIsEditing(false);
                 } else {
-                  updateNote({
-                    accessToken,
-                    onTokenRefresh: setAccessToken,
-                    noteID: Number(note.id),
-                    noteContent: note.note,
-                  });
+                  // Close modal for new notes
+                  onClose?.();
                 }
               }}
             >
-              {!noteData ? "save" : isEditing ? "update" : "edit"}
+              cancel
             </Button>
-          </Box>
-        )}
+          )}
+          <Button
+            disabled={
+              (!NOTE && (isEditing || !noteData)) ||
+              writePending ||
+              updatePending ||
+              dltPending
+            }
+            onClick={() => {
+              if (!noteData) {
+                writeNote({
+                  accessToken,
+                  onTokenRefresh: setAccessToken,
+                  note: note.note,
+                  date,
+                });
+              } else if (noteData && !isEditing) {
+                setIsEditing(true);
+              } else {
+                updateNote({
+                  accessToken,
+                  onTokenRefresh: setAccessToken,
+                  noteID: Number(note.id),
+                  noteContent: note.note,
+                });
+              }
+            }}
+          >
+            {!noteData ? "save" : isEditing ? "update" : "edit"}
+          </Button>
+        </Box>
       </Box>
       {confirmDelete && <ConfirmModal {...confirmDlt} />}
     </Box>
