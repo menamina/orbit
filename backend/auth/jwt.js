@@ -82,7 +82,21 @@ async function deleteAllRefreshTokens(userID) {
   }
 }
 
+// path "/" matters: without it the browser scopes the cookie to the path of the
+// route that set it (/api or /auth/github), so the OAuth cookie was never sent
+// to /api/checkRefreshToken and every page reload logged the user out
+const refreshCookieOptions = {
+  httpOnly: true,
+  sameSite: "lax",
+  path: "/",
+  secure: process.env.NODE_ENV === "production",
+};
+
+const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
+
 export {
+  refreshCookieOptions,
+  REFRESH_COOKIE_MAX_AGE,
   generateAccessToken,
   generateRefreshToken,
   storeRefreshToken,

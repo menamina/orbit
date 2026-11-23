@@ -35,7 +35,7 @@ function Note({
     id: noteData?.id ? noteData.id : "",
     note: noteData?.note ? noteData.note : "",
   });
-  const NOTE = Object.values(note).every((item) => item !== "");
+  const NOTE = note.note.trim() !== "";
 
   const [isEditing, setIsEditing] = useState(noteData ? false : true);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -52,6 +52,7 @@ function Note({
     ...writeANoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      queryClient.invalidateQueries({ queryKey: ["userNotes"] });
     },
   });
 
@@ -63,6 +64,7 @@ function Note({
     ...updateNoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      queryClient.invalidateQueries({ queryKey: ["userNotes"] });
       setIsEditing(false);
     },
   });
@@ -75,6 +77,7 @@ function Note({
     ...dltNoteMut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["thisDaysNote", date] });
+      queryClient.invalidateQueries({ queryKey: ["userNotes"] });
     },
   });
 

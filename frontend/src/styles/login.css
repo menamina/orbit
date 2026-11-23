@@ -31,3 +31,56 @@
     max-width: 600px;
   }
 }
+
+/* ---- polish ---- */
+.loginBackground form {
+  animation: fade-up 0.4s ease both;
+}
+
+.loginBackground .login-error {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(232, 134, 155, 0.14);
+  border: 1px solid rgba(232, 134, 155, 0.45);
+  color: #ffd6df;
+  font-size: 0.875rem;
+  box-shadow: none;
+}
+
+.loginBackground .MuiOutlinedInput-root {
+  border-radius: 12px;
+}
+
+.loginBackground .MuiButton-root {
+  border-radius: 999px;
+  text-transform: none;
+  font-weight: 500;
+  padding: 0.6rem 1.25rem;
+}
+
+.loginBackground .MuiButton-outlined {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.loginBackground .MuiButton-outlined:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.loginBackground .MuiButton-contained {
+  background: #fff;
+  color: #000;
+  box-shadow: none;
+}
+
+.loginBackground .MuiButton-contained:hover {
+  background: #e9e3f5;
+  box-shadow: 0 6px 20px rgba(143, 118, 187, 0.35);
+}
+
+.loginBackground .MuiButton-contained.Mui-disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.4);
+}

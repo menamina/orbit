@@ -1,8 +1,13 @@
 /* Navigation Styles */
 nav {
-  padding: 1rem;
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 1rem 1.5rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  border-bottom: 1px solid var(--line, #ece8f3);
 }
 
 nav img {
@@ -25,7 +30,7 @@ nav a {
 }
 
 nav a:hover {
-  color: #151349;
+  color: var(--accent, #8f76bb);
 }
 
 nav > div > div {

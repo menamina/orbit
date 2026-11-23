@@ -7,6 +7,8 @@ import {
   verifyRefreshToken,
   deleteAllRefreshTokens,
   deleteRefreshToken,
+  refreshCookieOptions,
+  REFRESH_COOKIE_MAX_AGE,
 } from "../auth/jwt.js";
 
 import { passwordGenie, checkPassword } from "../utils/passwordUtil.js";
@@ -28,7 +30,7 @@ async function login(req, res) {
     });
 
     if (!user) {
-      return res.status(400).json({ invalidEmail: "Email is invalid" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const validPassword = await checkPassword(
@@ -37,7 +39,7 @@ async function login(req, res) {
     );
 
     if (!validPassword) {
-      return res.status(400).json({ error: "Invalid password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const userINFO = {
@@ -57,8 +59,8 @@ async function login(req, res) {
 
     await storeRefreshToken(user.id, refreshToken);
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      ...refreshCookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE,
     });
     return res.status(200).json({ accessToken, userINFO });
   } catch (error) {
@@ -173,7 +175,7 @@ async function logout(req, res) {
       await deleteRefreshToken(refreshToken);
     }
 
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", refreshCookieOptions);
     return res.json({ success: true });
   } catch (error) {
     console.log(error);
@@ -185,7 +187,7 @@ async function logoutEverywhere(req, res) {
   try {
     const userID = Number(req.user.userID);
     await deleteAllRefreshTokens(userID);
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", refreshCookieOptions);
     return res.json({ success: true });
   } catch (error) {
     console.log(error);

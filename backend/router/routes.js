@@ -8,6 +8,8 @@ import {
   generateRefreshToken,
   storeRefreshToken,
   verifyRefreshToken,
+  refreshCookieOptions,
+  REFRESH_COOKIE_MAX_AGE,
 } from "../auth/jwt.js";
 
 import passport from "../auth/passport.js";
@@ -105,8 +107,8 @@ router.get(
       await storeRefreshToken(user.id, refreshTokenValue);
 
       res.cookie("refreshToken", refreshTokenValue, {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        ...refreshCookieOptions,
+        maxAge: REFRESH_COOKIE_MAX_AGE,
       });
 
       // Redirect to frontend with access token

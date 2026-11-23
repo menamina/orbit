@@ -4,13 +4,14 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/cycle.css";
 
-import { useQuery } from "@tanstack/react-query";
-import { getCycleByMonthYearQuery } from "../../tanstack/cycleTS";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getCycleByMonthYearQuery,
+  trackCycleMut,
+} from "../../tanstack/cycleTS";
 import { getNotesByMonthQuery } from "../../tanstack/notesTS";
 
-import { Dayjs } from "dayjs";
-import dayjs from "dayjs";
-import Badge from "@mui/material/Badge";
+import dayjs, { type Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
@@ -24,25 +25,81 @@ import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 import NoteCyclePopUp from "./popup";
 
-const today = new Date();
-const month = today.getMonth() + 1;
-const year = today.getFullYear();
-const todayString = today.toISOString().split("T")[0] as string;
+const DATE_FMT = "YYYY-MM-DD";
 
-type DayToEditType = {
-  id?: number;
-  date: string;
+type CycleDayExtraProps = {
+  periodDates?: Set<string>;
+  pendingDates?: Set<string>;
+  noteDays?: Set<number>;
+  ovulationDays?: Set<number>;
+  editing?: boolean;
+  onDayClick?: (day: Dayjs) => void;
 };
+
+function CycleDay(props: PickerDayProps & CycleDayExtraProps) {
+  const {
+    periodDates,
+    pendingDates,
+    noteDays,
+    ovulationDays,
+    editing,
+    onDayClick,
+    day,
+    outsideCurrentMonth,
+    className,
+    ...other
+  } = props;
+
+  const d = day as Dayjs;
+  const dayStr = d.format(DATE_FMT);
+  const isPeriod = !outsideCurrentMonth && !!periodDates?.has(dayStr);
+  const isStart =
+    isPeriod && !periodDates?.has(d.subtract(1, "day").format(DATE_FMT));
+  const isEnd = isPeriod && !periodDates?.has(d.add(1, "day").format(DATE_FMT));
+  const isPending = editing && !!pendingDates?.has(dayStr);
+  const isOvulation = !outsideCurrentMonth && !!ovulationDays?.has(d.date());
+  const hasNote = !outsideCurrentMonth && !!noteDays?.has(d.date());
+
+  const classes = [
+    className,
+    "cycle-day",
+    isPeriod && "is-period",
+    isStart && "is-start",
+    isEnd && "is-end",
+    isPending && "is-pending",
+    isOvulation && "is-ovulation",
+    editing && "is-editing",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <span className="cycle-day-wrap">
+      <PickerDay
+        {...other}
+        day={day}
+        outsideCurrentMonth={outsideCurrentMonth}
+        className={classes}
+        onDaySelect={(selected) => onDayClick?.(selected as Dayjs)}
+      />
+      {hasNote && <span className="cycle-day-note" aria-label="has note" />}
+    </span>
+  );
+}
 
 function Calendar() {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
-  const [currentMonth, setCurrentMonth] = useState(month);
-  const [currentYear, setCurrentYear] = useState(year);
-  const [showOtherComp, setShowOtherComp] = useState(false);
+  const queryClient = useQueryClient();
+
+  const [visibleMonth, setVisibleMonth] = useState(() => dayjs());
+  const currentMonth = visibleMonth.month() + 1;
+  const currentYear = visibleMonth.year();
+
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [editCalendar, setEditCalendar] = useState(false);
-  const [daysToEdit, setDaysToEdit] = useState<DayToEditType[]>([]);
+  const [editing, setEditing] = useState(false);
+
+  const [pending, setPending] = useState<Set<string>>(new Set());
 
   const {
     data: thisMonthsData,
@@ -71,138 +128,98 @@ function Calendar() {
     retry: false,
   });
 
-  const cycleDays = useMemo(() => {
-    if (!thisMonthsData?.cycleDays) return [];
-    return thisMonthsData.cycleDays.map((day) => ({
-      id: day.id,
-      date: day.date,
-    }));
+  const {
+    mutate: trackCycle,
+    isPending: savePending,
+    error: saveError,
+  } = useMutation({
+    ...trackCycleMut(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cycle"] });
+      exitEditMode();
+    },
+  });
+
+  const trackedDays = useMemo(() => {
+    const map = new Map<string, number | undefined>();
+    thisMonthsData?.cycleDays?.forEach((d) => map.set(d.date, d.id));
+    return map;
   }, [thisMonthsData]);
 
-  const noteDays = useMemo(() => {
-    if (!monthNotes) return [];
-    return monthNotes.map((note) =>
-      typeof note.date === "number" ? note.date : new Date(note.date).getDate(),
-    );
-  }, [monthNotes]);
+  const periodDates = useMemo(() => {
+    const set = new Set(trackedDays.keys());
+    if (editing) {
+      pending.forEach((date) =>
+        set.has(date) ? set.delete(date) : set.add(date),
+      );
+    }
+    return set;
+  }, [trackedDays, pending, editing]);
 
-  function markedDays(
-    props: PickerDayProps & {
-      cycleDays?: CycleDays[];
-      ovulationDays?: number[];
-      noteDays?: number[];
-    },
-  ) {
-    const {
-      cycleDays = [],
-      ovulationDays = [],
-      noteDays = [],
-      day,
-      outsideCurrentMonth,
-      ...other
-    } = props;
+  const noteDays = useMemo(
+    () =>
+      new Set(
+        (monthNotes ?? []).map((note) =>
+          typeof note.date === "number" ? note.date : dayjs(note.date).date(),
+        ),
+      ),
+    [monthNotes],
+  );
 
-    const dayNum = day.date();
-    const dayStr = day.format("YYYY-MM-DD");
+  const ovulationDays = useMemo(
+    () => new Set(thisMonthsData?.ovulationDates ?? []),
+    [thisMonthsData],
+  );
 
-    const cycleDayDates = cycleDays.map((d: CycleDays) => d.date);
-    const isThisDayACyleDay = cycleDayDates.includes(dayStr);
-
-    const isPeriodStart =
-      isThisDayACyleDay &&
-      !cycleDayDates.includes(day.subtract(1, "day").format("YYYY-MM-DD"));
-    const isPeriodEnd =
-      isThisDayACyleDay &&
-      !cycleDayDates.includes(day.add(1, "day").format("YYYY-MM-DD"));
-
-    const isOvulation = !outsideCurrentMonth && ovulationDays.includes(dayNum);
-    const hasNote = !outsideCurrentMonth && noteDays.includes(dayNum);
-
-    const badgeContent = hasNote && "📝";
-
-    return (
-      <Badge
-        key={day.toString()}
-        overlap="circular"
-        badgeContent={badgeContent}
-      >
-        <PickerDay
-          {...other}
-          onDoubleClick={() => {
-            if (selectedDate !== day.format("YYYY-MM-DD")) {
-              handleDayDoubleClick(day.format("YYYY-MM-DD"));
-            }
-          }}
-          onClick={() => handleDaysToEdit(dayStr)}
-          outsideCurrentMonth={outsideCurrentMonth}
-          day={day}
-          sx={{
-            ...(!editCalendar &&
-              isThisDayACyleDay && {
-                bgcolor: "rgba(255, 182, 193, 0.4)",
-                borderRadius:
-                  isPeriodStart && isPeriodEnd
-                    ? "50%"
-                    : isPeriodStart
-                      ? "50% 0 0 50%"
-                      : isPeriodEnd
-                        ? "0 50% 50% 0"
-                        : "0",
-                "&:hover": {
-                  bgcolor: "rgba(255, 182, 193, 0.6)",
-                },
-              }),
-
-            ...(editCalendar &&
-              isThisDayACyleDay &&
-              daysToEdit.find((dayObj) => dayObj.date === dayStr) && {
-                bgcolor: "white",
-              }),
-
-            ...(isOvulation && {
-              border: "2px solid #9C27B0",
-              fontWeight: "bold",
-            }),
-          }}
-        />
-      </Badge>
-    );
+  function exitEditMode() {
+    setEditing(false);
+    setPending(new Set());
   }
 
-  function clear() {
-    setEditCalendar(false);
-    setDaysToEdit([]);
+  function handleDayClick(day: Dayjs) {
+    const dateStr = day.format(DATE_FMT);
+
+    if (!editing) {
+      setSelectedDate(dateStr);
+      return;
+    }
+
+    setPending((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateStr)) next.delete(dateStr);
+      else next.add(dateStr);
+      return next;
+    });
+  }
+
+  function handleSave() {
+    const payload: CycleDays[] = [...pending].map((date) => {
+      const id = trackedDays.get(date);
+      return trackedDays.has(date) && id !== undefined
+        ? { id, date }
+        : { date };
+    });
+
+    trackCycle({
+      accessToken,
+      onTokenRefresh: setAccessToken,
+      cycleDays: payload,
+    });
   }
 
   function handleMonthChange(date: Dayjs) {
-    setCurrentMonth(date.month() + 1);
-    setCurrentYear(date.year());
-    setShowOtherComp(false);
+    setVisibleMonth(date);
     setSelectedDate(null);
-    clear();
+    exitEditMode();
   }
 
-  function handleDayDoubleClick(date: string) {
-    setSelectedDate(date);
-    setShowOtherComp(true);
-  }
-
-  function handleDaysToEdit(dateToEdit: string) {
-    if (editCalendar) {
-      const isTracked = cycleDays.find((day) => day.date === dateToEdit);
-      setDaysToEdit((prev) => [
-        ...prev,
-        isTracked
-          ? { id: isTracked.id, date: isTracked.date }
-          : { date: dateToEdit },
-      ]);
-    }
-  }
+  const isAuthError = [thisMonthError, notesError, saveError].some(
+    (err) => err instanceof ApiError && err.isAuthError(),
+  );
 
   return (
     <div className="cycle-calendar">
-      {((thisMonthError instanceof ApiError && thisMonthError.isAuthError()) ||
-        (notesError instanceof ApiError && notesError.isAuthError())) && (
+      {isAuthError && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {
@@ -214,59 +231,87 @@ function Calendar() {
       )}
       {thisMonthError && <ErrorDiv error={thisMonthError} />}
       {notesError && <ErrorDiv error={notesError} />}
+      {saveError && <ErrorDiv error={saveError} />}
 
-      <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-        <button
-          onClick={() => setEditCalendar(prev => !prev)}
-          style={{
-            backgroundColor: editCalendar ? '#1b1a61' : '#fff',
-            color: editCalendar ? '#fff' : '#1b1a61',
-            border: '1px solid #1b1a61',
-            padding: '0.5rem 1rem',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 500
-          }}
-        >
-          {editCalendar ? 'View Mode' : 'Edit Mode'}
-        </button>
+      <header className="cycle-header">
+        <h1>Your cycle</h1>
+        <p>
+          {editing ? "Tap days to add or remove period days, then save." : null}
+        </p>
+      </header>
+
+      <div className={`cycle-card ${editing ? "is-editing" : ""}`}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DateCalendar
+            value={null}
+            referenceDate={visibleMonth}
+            loading={thisMonthPending || notesPending}
+            onMonthChange={handleMonthChange}
+            renderLoading={() => <DayCalendarSkeleton />}
+            disableFuture={editing}
+            views={["day"]}
+            slots={{ day: CycleDay }}
+            slotProps={{
+              day: {
+                periodDates,
+                pendingDates: pending,
+                noteDays,
+                ovulationDays,
+                editing,
+                onDayClick: handleDayClick,
+              } as Partial<PickerDayProps>,
+            }}
+          />
+        </LocalizationProvider>
+
+        <div className="cycle-legend">
+          <span>
+            <i className="dot dot-period" /> Period
+          </span>
+          <span>
+            <i className="dot dot-ovulation" /> Ovulation
+          </span>
+          <span>
+            <i className="dot dot-note" /> Note
+          </span>
+        </div>
+
+        <div className="cycle-actions">
+          {editing ? (
+            <>
+              <button
+                className="btn btn-ghost"
+                onClick={exitEditMode}
+                disabled={savePending}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={savePending || pending.size === 0}
+              >
+                {savePending
+                  ? "Saving…"
+                  : `Save${pending.size ? ` (${pending.size})` : ""}`}
+              </button>
+            </>
+          ) : (
+            <button className="btn btn-soft" onClick={() => setEditing(true)}>
+              Edit period days
+            </button>
+          )}
+        </div>
       </div>
 
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DateCalendar
-          defaultValue={dayjs(todayString)}
-          loading={thisMonthPending || notesPending}
-          onMonthChange={handleMonthChange}
-          renderLoading={() => <DayCalendarSkeleton />}
-          disabled={!editCalendar}
-          slots={{
-            day: markedDays,
-          }}
-          slotProps={{
-            day: {
-              cycleDays,
-              noteDays,
-              ovulationDays: thisMonthsData?.ovulationDates || [],
-            } as any,
-          }}
-        />
-      </LocalizationProvider>
-
-      {showOtherComp && selectedDate && (
+      {selectedDate && (
         <NoteCyclePopUp
           date={selectedDate}
-          month={currentMonth}
-          year={currentYear}
-          onClose={() => {
-            setShowOtherComp(false);
+          onClose={() => setSelectedDate(null)}
+          onEditPeriod={() => {
             setSelectedDate(null);
-            clear();
+            setEditing(true);
           }}
-          clearEdits={clear}
-          editCalendar={() => setEditCalendar((prev) => !prev)}
-          isEditingCalendar={editCalendar}
-          sendData={daysToEdit}
         />
       )}
     </div>

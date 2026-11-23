@@ -10,7 +10,7 @@ import { Box } from "@mui/material";
 import Nav from "./components/app/nav";
 
 function Index() {
-  const { accessToken, setAccessToken, setUser } = useAuth();
+  const { accessToken, setAccessToken, setUser, authReady } = useAuth();
   const nav = useNavigate();
   const location = useLocation();
 
@@ -22,7 +22,14 @@ function Index() {
     location.pathname === "/login" || location.pathname === "/auth/callback";
 
   useEffect(() => {
-    if (isOnPublicRoute) return;
+    // wait until we've tried restoring the session from the refresh cookie
+    if (!authReady) return;
+
+    if (isOnPublicRoute) {
+      // already logged in (e.g. restored session) -> skip the login page
+      if (accessToken && location.pathname === "/login") nav("/pill");
+      return;
+    }
 
     if (!accessToken || isError) {
       setAccessToken(null);
@@ -34,6 +41,9 @@ function Index() {
     if (isSuccess && data && "authenticated" in data && data.authenticated) {
       setUser(data.user);
     }
+
+    // "/" has no page of its own
+    if (location.pathname === "/") nav("/pill");
   }, [
     accessToken,
     isSuccess,
@@ -43,7 +53,13 @@ function Index() {
     setAccessToken,
     nav,
     isOnPublicRoute,
+    authReady,
+    location.pathname,
   ]);
+
+  if (!authReady) {
+    return null;
+  }
 
   if (!isOnPublicRoute && isLoading) {
     return null;

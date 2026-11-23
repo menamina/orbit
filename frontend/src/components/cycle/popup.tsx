@@ -4,45 +4,28 @@ import { useAuth } from "../../authContext";
 
 import { useNavigate } from "react-router-dom";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getNoteByDayQuery } from "../../tanstack/notesTS";
-import { trackCycleMut } from "../../tanstack/cycleTS";
 
+import dayjs from "dayjs";
 import Close from "../../imgs/closeArrow.svg";
 
 import { ApiError } from "../../tanstack/api";
 
-import { Box, Button, Modal, Paper } from "@mui/material";
+import { Modal } from "@mui/material";
 
 import ErrorDiv from "../popups/errorDiv";
 import ErrorModal from "../popups/errorModal";
 
-import type { CycleDays } from "../../tanstack/cycleTypes";
-
 type PopupType = {
   date: string;
-  month: number;
-  year: number;
-  isEditingCalendar: boolean;
-  editCalendar: () => void;
   onClose: () => void;
-  clearEdits: () => void;
-  sendData: CycleDays[];
+  onEditPeriod: () => void;
 };
 
-function NoteCyclePopUp({
-  date,
-  month,
-  year,
-  isEditingCalendar,
-  editCalendar,
-  clearEdits,
-  onClose,
-  sendData,
-}: PopupType) {
+function NoteCyclePopUp({ date, onClose, onEditPeriod }: PopupType) {
   const { accessToken, setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const {
     data: selectedDayNote,
@@ -53,21 +36,9 @@ function NoteCyclePopUp({
     retry: false,
   });
 
-  const {
-    mutate: trackCycle,
-    isPending: trackingPending,
-    error: trackingError,
-  } = useMutation({
-    ...trackCycleMut(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cycle", month, year] });
-    },
-  });
-
   return (
     <>
-      {((noteError instanceof ApiError && noteError.isAuthError()) ||
-        (trackingError instanceof ApiError && trackingError.isAuthError())) && (
+      {noteError instanceof ApiError && noteError.isAuthError() && (
         <ErrorModal
           error="Your session expired. Please login again."
           onClose={() => {
@@ -77,50 +48,30 @@ function NoteCyclePopUp({
           }}
         />
       )}
-      {noteError && <ErrorDiv error={noteError} />}
-      {trackingError && <ErrorDiv error={trackingError} />}
 
-      <Modal open={true} onClose={onClose}>
-        <Paper>
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-            <Box sx={{ fontSize: "20px", fontWeight: "600" }}>{date}</Box>
+      <Modal open onClose={onClose}>
+        <div className="cycle-popup" role="dialog" aria-label={date}>
+          <div className="cycle-popup-header">
+            <div>
+              <div className="cycle-popup-weekday">
+                {dayjs(date).format("dddd")}
+              </div>
+              <div className="cycle-popup-date">
+                {dayjs(date).format("MMMM D, YYYY")}
+              </div>
+            </div>
+            <button className="icon-btn" onClick={onClose} aria-label="close">
+              <img src={Close} alt="" />
+            </button>
+          </div>
 
-            <Button onClick={onClose}>
-              <img src={Close} alt="close" />
-            </Button>
-          </Box>
-
-          {isEditingCalendar ? (
-            <Box>
-              <Box>
-                <Button disabled={trackingPending} onClick={clearEdits}>
-                  cancel
-                </Button>
-              </Box>
-              <Box>
-                <Button
-                  disabled={trackingPending}
-                  onClick={() => {
-                    trackCycle({
-                      accessToken,
-                      onTokenRefresh: setAccessToken,
-                      cycleDays: sendData,
-                    });
-                  }}
-                >
-                  save
-                </Button>
-              </Box>
-            </Box>
-          ) : (
-            <Box sx={{ mb: 2 }} onClick={editCalendar}>
-              <Button variant="outlined">edit period dates</Button>
-            </Box>
+          {noteError && !(noteError instanceof ApiError && noteError.isAuthError()) && (
+            <ErrorDiv error={noteError} />
           )}
 
-          <Box>
+          <div className="cycle-popup-body">
             {notePending ? (
-              <Box>Loading...</Box>
+              <div className="cycle-popup-loading">Loading…</div>
             ) : (
               <Note
                 noteData={
@@ -131,8 +82,14 @@ function NoteCyclePopUp({
                 date={date}
               />
             )}
-          </Box>
-        </Paper>
+          </div>
+
+          <div className="cycle-popup-footer">
+            <button className="btn btn-soft" onClick={onEditPeriod}>
+              Edit period days
+            </button>
+          </div>
+        </div>
       </Modal>
     </>
   );

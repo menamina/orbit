@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { TextField, Button, Box, Paper } from "@mui/material";
@@ -74,7 +74,11 @@ function Login() {
 
   //  mutations for logging in + signing up \\
 
-  const { mutate: login, error: loginError } = useMutation({
+  const {
+    mutate: login,
+    error: loginError,
+    isPending: loginPending,
+  } = useMutation({
     ...loginMut(),
     onSuccess: (data: LoginResponse) => {
       setAccessToken(data.accessToken);
@@ -84,7 +88,11 @@ function Login() {
     },
   });
 
-  const { mutate: signup, error: signupError } = useMutation({
+  const {
+    mutate: signup,
+    error: signupError,
+    isPending: signupPending,
+  } = useMutation({
     ...signupMut(),
     onSuccess: () => {
       setToggle("login");
@@ -98,6 +106,9 @@ function Login() {
   );
 
   const { error: emailInUse } = useQuery(checkIfEmailIsInUse(emailQuery));
+
+  const canSignup =
+    signupComplete && !usernameInUse && !emailInUse && !signupPending;
 
   useEffect(() => {
     if (signupInfo.username === "") {
@@ -128,7 +139,6 @@ function Login() {
       className="loginBackground"
       sx={{
         width: "100%",
-        height: "100%",
         display: "flex",
         justifyContent: { xs: "center", md: "flex-end" }, // center mobile, right desktop
         alignItems: "center",
@@ -147,6 +157,12 @@ function Login() {
         {toggle === "login" ? <h1>Login</h1> : <h1>Signup</h1>}
         {toggle === "login" && (
           <Box
+            component="form"
+            noValidate
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault();
+              if (loginComplete && !loginPending) login(loginInfo);
+            }}
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -166,7 +182,7 @@ function Login() {
               }}
             >
               {urlError && (
-                <Paper>
+                <Paper className="login-error">
                   {urlError === "oauth_failed"
                     ? "GitHub login failed. Please try again."
                     : urlError === "no_token"
@@ -174,7 +190,7 @@ function Login() {
                       : "Authentication error. Please try again."}
                 </Paper>
               )}
-              {loginError && <Paper>{loginError.message} </Paper>}
+              {loginError && <Paper className="login-error">{loginError.message} </Paper>}
               {/* if the login error is email or password highlight the box later */}
             </Box>
 
@@ -197,6 +213,7 @@ function Login() {
             ))}
 
             <Button
+              type="button"
               variant="outlined"
               onClick={() => {
                 window.location.href = "http://localhost:5555/auth/github";
@@ -216,25 +233,24 @@ function Login() {
               <Box>Login with GitHub</Box>
             </Button>
 
-            {loginComplete && (
-              <Button
-                variant="outlined"
-                onClick={() => login(loginInfo)}
-                sx={{ width: "100%" }}
-              >
-                login
-              </Button>
-            )}
-
-            {!loginComplete && (
-              <Button variant="outlined" disabled sx={{ width: "100%" }}>
-                login
-              </Button>
-            )}
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!loginComplete || loginPending}
+              sx={{ width: "100%" }}
+            >
+              {loginPending ? "logging in…" : "login"}
+            </Button>
           </Box>
         )}
         {toggle === "signup" && (
           <Box
+            component="form"
+            noValidate
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault();
+              if (canSignup) signup(signupInfo);
+            }}
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -245,7 +261,7 @@ function Login() {
             }}
           >
             {urlError && (
-              <Paper>
+              <Paper className="login-error">
                 {urlError === "oauth_failed"
                   ? "GitHub authentication failed. Please try again."
                   : urlError === "no_token"
@@ -255,11 +271,11 @@ function Login() {
             )}
 
             <Box>
-              {usernameInUse && <Paper>{usernameInUse.message}</Paper>}
+              {usernameInUse && <Paper className="login-error">{usernameInUse.message}</Paper>}
               {emailInUse && signupInfo.email && (
-                <Paper>{emailInUse.message}</Paper>
+                <Paper className="login-error">{emailInUse.message}</Paper>
               )}
-              {signupError && <Paper>{signupError.message}</Paper>}
+              {signupError && <Paper className="login-error">{signupError.message}</Paper>}
             </Box>
 
             {(Object.keys(signupInfo) as Array<keyof SignupData>).map(
@@ -287,6 +303,7 @@ function Login() {
             )}
 
             <Button
+              type="button"
               variant="outlined"
               onClick={() => {
                 window.location.href = "http://localhost:5555/auth/github";
@@ -306,22 +323,14 @@ function Login() {
               <Box>Continue with GitHub</Box>
             </Button>
 
-            {signupComplete && (
-              <Button
-                variant="outlined"
-                onClick={() => signup(signupInfo)}
-                sx={{ width: "100%" }}
-              >
-                signup
-              </Button>
-            )}
-
-            {!signupComplete ||
-              ((usernameInUse || emailInUse) && (
-                <Button variant="outlined" disabled sx={{ width: "100%" }}>
-                  signup
-                </Button>
-              ))}
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!canSignup}
+              sx={{ width: "100%" }}
+            >
+              {signupPending ? "signing up…" : "signup"}
+            </Button>
 
             {/* oauth login */}
           </Box>

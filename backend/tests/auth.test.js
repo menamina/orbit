@@ -177,8 +177,7 @@ describe(" logging in // token checking ", () => {
     });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("invalidEmail");
-    expect(res.body.invalidEmail).toBe("Email is invalid");
+    expect(res.body.error).toBe("Invalid email or password");
   });
 
   it("does not log a user in with incorrect password", async () => {
@@ -188,8 +187,7 @@ describe(" logging in // token checking ", () => {
     });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("invalidPassword");
-    expect(res.body.invalidPassword).toBe("Invalid password");
+    expect(res.body.error).toBe("Invalid email or password");
   });
 
   it("verifies a valid access token", async () => {

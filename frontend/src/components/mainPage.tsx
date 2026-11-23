@@ -23,7 +23,10 @@ function MainPage() {
     <Box
       sx={{
         backgroundColor: "black",
-        height: "100%",
+        // fill the rest of .mainDiv instead of height: 100%, which collapses
+        // when the parent only has a min-height and leaves white space below
+        flex: 1,
+        minHeight: "100vh",
         width: "100%",
         display: "flex",
         flexDirection: { xs: "column", md: "row" }, // stack mobile, side/side  desktop
@@ -33,8 +36,7 @@ function MainPage() {
       <Box
         className="moonbox"
         sx={{
-          height: { xs: "auto", md: "100%" },
-          width: { xs: "100%", md: "100%" },
+          width: "100%",
           paddingBottom: { xs: "20px", md: "30px" },
           display: "flex",
           flexDirection: "column",

@@ -14,8 +14,9 @@ async function getCycleByMonthYear(req, res) {
       return res.status(400).json({ error: "Invalid year" });
     }
 
-    const startOfMonth = new Date(yearNum, monthNum - 1, 1);
-    const startOfNextMonth = new Date(yearNum, monthNum, 1);
+    // cycle dates are stored as DATE columns (UTC midnight), so use UTC bounds
+    const startOfMonth = new Date(Date.UTC(yearNum, monthNum - 1, 1));
+    const startOfNextMonth = new Date(Date.UTC(yearNum, monthNum, 1));
 
     const data = await prisma.user.findUnique({
       where: {
@@ -73,34 +74,60 @@ async function trackCycle(req, res) {
     const userID = Number(req.user.userID);
     const cycleDays = req.body;
 
-    for (const obj of cycleDays) {
-      if (isNaN(obj.id) || isNaN(obj.date)) {
-        return res.status(400).json({ error: "Invalid date" });
-      }
+    if (!Array.isArray(cycleDays)) {
+      return res.status(400).json({ error: "Expected an array of cycle days" });
     }
 
     if (cycleDays.length === 0) {
       return res.status(200).json({ success: true });
     }
 
-    for (const obj of cycleDays) {
-      if (obj.id) {
-        const deleted = await prisma.cycleDay.delete({
-          where: { id: obj.id },
-        });
-      } else if (!obj.id) {
-        const dateToTrack = validateAndNormalizeDate(obj.date);
-        if (!dateToTrack) {
-          return res.status(400).json({ error: "Invalid date" });
-        }
+    // validate everything before touching the database
+    const toDelete = [];
+    const toCreate = [];
 
-        const created = await prisma.cycleDay.create({
-          data: {
-            userID,
-            date: dateToTrack,
-          },
-        });
+    for (const obj of cycleDays) {
+      if (obj?.id !== undefined && obj?.id !== null) {
+        const id = Number(obj.id);
+        if (!Number.isInteger(id)) {
+          return res.status(400).json({ error: "Invalid cycle day id" });
+        }
+        toDelete.push(id);
+        continue;
       }
+
+      let normalized;
+      try {
+        normalized = validateAndNormalizeDate(obj?.date);
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+
+      // store as UTC midnight so the DATE column keeps the calendar day the user picked
+      toCreate.push(
+        new Date(
+          Date.UTC(
+            normalized.getFullYear(),
+            normalized.getMonth(),
+            normalized.getDate(),
+          ),
+        ),
+      );
+    }
+
+    if (toDelete.length > 0) {
+      // scoped to userID so users can only delete their own days
+      await prisma.cycleDay.deleteMany({
+        where: { id: { in: toDelete }, userID },
+      });
+    }
+
+    for (const date of toCreate) {
+      await prisma.cycleDay.upsert({
+        where: { userID_date: { userID, date } },
+        update: {},
+        create: { userID, date },
+      });
     }
 
     await updatePredictionsBasedOnActualData(userID);
@@ -120,7 +147,12 @@ function validateAndNormalizeDate(date) {
   const todaysDate = new Date();
   todaysDate.setHours(0, 0, 0, 0);
 
-  const dateToTrack = new Date(date);
+  // "YYYY-MM-DD" strings are parsed as UTC by JS, which shifts the day in
+  // timezones behind UTC — build them as local dates instead
+  const dateOnly = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date);
+  const dateToTrack = dateOnly
+    ? new Date(...date.split("-").map((n, i) => (i === 1 ? Number(n) - 1 : Number(n))))
+    : new Date(date);
 
   if (isNaN(dateToTrack.getTime())) {
     throw new Error("Invalid date format");

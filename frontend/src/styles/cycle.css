@@ -1,44 +1,256 @@
+/* ============ Cycle calendar ============ */
+
 .cycle-calendar {
-  max-width: 600px;
+  width: 100%;
+  max-width: 440px;
   margin: 2rem auto;
-  padding: 1rem;
+  padding: 0 1rem;
+  animation: fade-up 0.35s ease both;
+}
+
+.cycle-header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.cycle-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.cycle-header p {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.cycle-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 0.5rem 0.5rem 1.25rem;
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.cycle-card.is-editing {
+  border-color: var(--period);
+  box-shadow:
+    0 0 0 4px var(--period-soft),
+    var(--shadow-sm);
 }
 
 .cycle-calendar .MuiDateCalendar-root {
   width: 100%;
-  max-width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin: 0 auto;
 }
 
-.cycle-calendar .MuiPickersCalendarHeader-root {
-  padding: 1rem 0.5rem;
+.cycle-calendar .MuiPickersCalendarHeader-label {
+  font-weight: 600;
+  color: var(--ink);
 }
 
-.cycle-calendar .MuiPickersDay-root {
-  font-size: 0.9rem;
+/* ---- day cells ---- */
+.cycle-day-wrap {
+  position: relative;
+  display: inline-flex;
 }
 
-.cycle-calendar .MuiPickersDay-root:hover {
-  background-color: rgba(27, 26, 97, 0.1);
+.cycle-calendar .cycle-day {
+  font-size: 0.875rem;
+  color: var(--ink);
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 
-@media (max-width: 600px) {
-  .cycle-calendar {
-    padding: 0.5rem;
-    margin: 1rem auto;
-    max-width: 100%;
+.cycle-calendar .cycle-day:hover {
+  background-color: var(--accent-soft);
+}
+
+.cycle-calendar .cycle-day.MuiPickerDay-today {
+  border-color: var(--accent);
+}
+
+.cycle-calendar .cycle-day.is-period {
+  background-color: var(--period-soft);
+  color: var(--period-ink);
+  font-weight: 600;
+}
+
+.cycle-calendar .cycle-day.is-period:hover {
+  background-color: var(--period-hover);
+}
+
+.cycle-calendar .cycle-day.is-pending {
+  outline: 2px dashed var(--period);
+  outline-offset: -4px;
+}
+
+.cycle-calendar .cycle-day.is-editing:active {
+  transform: scale(0.92);
+}
+
+.cycle-calendar .cycle-day.is-ovulation {
+  box-shadow: inset 0 0 0 2px var(--ovulation);
+  color: var(--ovulation);
+  font-weight: 600;
+}
+
+.cycle-day-note {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* ---- legend + actions ---- */
+.cycle-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.cycle-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-period {
+  background: var(--period-soft);
+  border: 1px solid var(--period);
+}
+
+.dot-ovulation {
+  border: 2px solid var(--ovulation);
+}
+
+.dot-note {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+}
+
+.cycle-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+/* ---- note popup ---- */
+.cycle-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 460px);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
+  outline: none;
+  animation: pop-in 0.2s ease both;
+}
+
+.cycle-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.cycle-popup-weekday {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.cycle-popup-date {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cycle-popup-body > div {
+  padding: 0 !important;
+}
+
+.cycle-popup-body textarea {
+  width: 100% !important;
+  font: inherit;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  resize: vertical;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.cycle-popup-body textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.cycle-popup-loading {
+  color: var(--muted);
+  padding: 1rem 0;
+}
+
+.cycle-popup-footer {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.98);
   }
-
-  .cycle-calendar .MuiPickersDay-root {
-    font-size: 0.8rem;
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
 @media (max-width: 400px) {
   .cycle-calendar {
-    padding: 0.25rem;
+    margin: 1rem auto;
+    padding: 0 0.5rem;
   }
 
-  .cycle-calendar .MuiPickersDay-root {
-    font-size: 0.75rem;
+  .cycle-card {
+    padding: 0.25rem 0.25rem 1rem;
   }
 }
