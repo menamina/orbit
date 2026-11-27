@@ -1,43 +1,93 @@
+/* ============ Settings ============ */
 .mainSettings {
   max-width: 600px;
   margin: 2rem auto;
-  padding: 2rem;
+  padding: 0 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  animation: fade-up 0.35s ease both;
 }
 
-/* Profile Image */
-.mainSettings img {
+/* Profile Image Container */
+.profile-image-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.profile-image-container.is-editing::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(27, 26, 97, 0.5);
+  border-radius: 50%;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.profile-image-container.is-editing:hover::before {
+  background: rgba(27, 26, 97, 0.65);
+}
+
+.profile-image-container img {
   width: 120px;
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  margin: 0 auto;
   display: block;
-  border: 3px solid #f0f0f0;
+  border: 3px solid var(--line);
   transition: border-color 0.2s ease;
 }
 
-.mainSettings img:hover {
-  border-color: rgb(143, 118, 187);
+.profile-image-container.is-editing img {
+  border-color: var(--accent);
+}
+
+.camera-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  z-index: 2;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.profile-image-container:hover .camera-icon {
+  opacity: 1;
 }
 
 /* Info Display Boxes */
-.mainSettings > div > div {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
 }
 
-.mainSettings > div > div:last-child {
+.settings-card > div {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+}
+
+.settings-card > div:last-child {
   border-bottom: none;
 }
 
 /* Cycle Section */
-.mainSettings > div > div:first-child {
+.settings-section-title {
   font-weight: 600;
-  color: #000;
+  color: var(--ink);
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
@@ -51,4 +101,57 @@
 /* Text Field Spacing */
 .mainSettings .MuiTextField-root {
   margin-bottom: 1rem;
+}
+
+/* Icon Options Grid Styling */
+.mainSettings > div:first-of-type {
+  justify-content: center;
+  align-items: center;
+}
+
+/* Icon grid container - better centering */
+.mainSettings > div:first-of-type > div:last-child {
+  margin: 0 auto;
+  justify-content: center;
+}
+
+/* Individual icon boxes - better borders */
+.mainSettings > div:first-of-type > div:last-child > div {
+  border-radius: var(--radius) !important;
+  transition: all 0.2s ease !important;
+}
+
+.mainSettings > div:first-of-type > div:last-child > div:hover {
+  transform: scale(1.05);
+}
+
+/* Current image - subtle gray border */
+.mainSettings > div:first-of-type > div:last-child > div[style*="1px solid gray"] {
+  border: 3px solid var(--muted) !important;
+  box-shadow: 0 0 0 1px var(--line) !important;
+}
+
+/* Selected/clicked image - accent border with glow */
+.mainSettings > div:first-of-type > div:last-child > div[style*="1px solid blue"] {
+  border: 3px solid var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+  transform: scale(1.05);
+}
+
+.mainSettings > div:first-of-type > div:last-child > div img {
+  border-radius: var(--radius);
+}
+
+/* Icon options buttons */
+.mainSettings > div:first-of-type > div:last-child + div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .mainSettings {
+    padding: 0.5rem;
+  }
 }
